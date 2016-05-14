@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>The mfenced element</title>
+    <meta charset="utf-8"/>
+    <script type="text/javascript">
+      window.addEventListener("load", function() {
+         var mfenced_js = document.createElement("script");
+         mfenced_js.setAttribute("type","text/javascript")
+         mfenced_js.setAttribute("src", "mfenced-min.js");
+         document.head.appendChild(mfenced_js);
+         document.getElementById("button").addEventListener("click", function() { window.expandMathMLFencedElements(); });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>The mfenced element</h1>
+
+    <p>This page contains some tests for the <a href="https://www.w3.org/TR/MathML/chapter3.html#presm.fenced">mfenced element</a>. Click the following button to load a <a href="mfenced.js">polyfill</a> and convert them into an equivalent expanded form.
+    </p>
+    <p><input id="button" type="button" value="Load mfenced.js!"/></p>
+
+    <ol>
+      <li>empty:
+        <math>
+          <mfenced>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>1 argument:
+        <math>
+          <mfenced>
+            <mn>0</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>2 arguments:
+        <math>
+          <mfenced>
+            <mn>0</mn>
+            <mn>1</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>3 arguments:
+        <math>
+          <mfenced>
+            <mn>0</mn>
+            <mn>1</mn>
+            <mn>2</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>open:
+        <math>
+          <mfenced open="[">
+            <mn>0</mn>
+            <mn>1</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>close:
+        <math>
+          <mfenced close="]">
+            <mn>0</mn>
+            <mn>1</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>separators:
+        <math>
+          <mfenced separators=";">
+            <mn>0</mn>
+            <mn>1</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>open, close, one separator:
+        <math>
+          <mfenced open="[" separators=";" close="]">
+            <mn>0</mn>
+            <mn>1</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>several separators:
+        <math>
+          <mfenced separators=",;|">
+            <mn>0</mn>
+            <mn>1</mn>
+            <mn>2</mn>
+            <mn>3</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>multiple characters in open/close attributes:
+        <math>
+          <mfenced open="ABC" close="EDF">
+            <mn>0</mn>
+            <mn>1</mn>
+            <mn>2</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>too few separators (last one is repeated):
+        <math>
+          <mfenced separators=",;|">
+            <mn>0</mn>
+            <mn>1</mn>
+            <mn>2</mn>
+            <mn>3</mn>
+            <mn>4</mn>
+            <mn>5</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>too many separators (excess is ignored):
+        <math>
+          <mfenced separators=",;|/">
+            <mn>0</mn>
+            <mn>1</mn>
+            <mn>2</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>no separators (no &lt;mo&gt; separators should be output):
+        <math>
+          <mfenced separators="">
+            <mn>0</mn>
+            <mn>1</mn>
+            <mn>2</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>whitespace (they should be ignored):
+        <math>
+          <mfenced open="&#x20;&#x9;&#x20;&#x9;&#xA;&#xD;&#xA;&#xD;&#x20;&#x9;&#xA;&#xD;[&#x20;&#x9;&#x20;&#x9;&#xA;&#xD;&#xA;&#xD;&#x20;&#x9;&#xA;&#xD;" close="&#x20;&#x9;&#x20;&#x9;&#xA;&#xD;&#xA;&#xD;&#x20;&#x9;&#xA;&#xD;]&#x20;&#x9;&#x20;&#x9;&#xA;&#xD;&#xA;&#xD;&#x20;&#x9;&#xA;&#xD;" separators="&#x20;&#x9;&#x20;&#x9;&#xA;&#xD;&#xA;&#xD;&#x20;&#x9;&#xA;&#xD;,&#x20;&#x9;&#x20;&#x9;&#xA;&#xD;&#xA;&#xD;&#x20;&#x9;&#xA;&#xD;;&#x20;&#x9;&#x20;&#x9;&#xA;&#xD;&#xA;&#xD;&#x20;&#x9;&#xA;&#xD;|&#x20;&#x9;&#x20;&#x9;&#xA;&#xD;&#xA;&#xD;&#x20;&#x9;&#xA;&#xD;">
+            <mn>0</mn>
+            <mn>1</mn>
+            <mn>2</mn>
+            <mn>3</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>surrogate pairs (each pair should be treated as one character):
+        <math>
+          <mfenced open="𝐀" separators="𝐁𝐂𝐃" close="𝐄">
+            <mn>0</mn>
+            <mn>1</mn>
+            <mn>2</mn>
+            <mn>3</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>Other attributes (they should be attached to the expanded mrow):
+        <style scoped="scoped">.b { font-family: monospace; }</style>
+        <math>
+          <mfenced class="b"
+                   style="font-size: 3em;"
+                   href="http://example.com/"
+                   mathcolor="blue"
+                   mathbackground="red">
+            <mn>0</mn>
+            <mn>1</mn>
+            <mn>2</mn>
+          </mfenced>
+        </math>
+      </li>
+
+      <li>Invalid rtl attribute (it should not be attached to the expanded mrow):
+        <math>
+          <mfenced dir="rtl">
+            <mn>0</mn>
+            <mn>1</mn>
+            <mn>2</mn>
+          </mfenced>
+        </math>
+      </li>
+    </ol>
+
+  </body>
+</html>
