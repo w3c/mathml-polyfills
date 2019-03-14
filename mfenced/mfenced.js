@@ -1,7 +1,7 @@
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
 /*
-  Copyright (c) 2016 Igalia S.L.
+  Copyright (c) 2016-2019 Igalia S.L.
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 
     function collapseWhiteSpace(text) {
         // Collapse the whitespace as specified by the MathML specification.
-        // See https://www.w3.org/TR/MathML/chapter2.html#fund.collapse
+        // https://mathml-refresh.github.io/mathml/chapter2.html#fund.collapse
         return text.replace(/^[\s]+|[\s]+$/g, '').replace(/[\s]+/g, ' ');
     }
 
@@ -70,14 +70,15 @@
     function shouldCopyAttribute(attribute) {
         // The <mfenced> and <mrow> elements have the same attributes except
         // that dir is only accepted on <mrow> and open/close/separators are
-        // only accepted on <mfenced>. See https://www.w3.org/Math/RelaxNG/
+        // only accepted on <mfenced>.
+        // https://mathml-refresh.github.io/mathml/appendixa.html#parsing.rnc.pres
         const excludedAttributes = ["dir", "open", "close", "separators"];
         return attribute.namespaceURI || !excludedAttributes.includes(attribute.localName);
     }
 
     function expandFencedElement(mfenced) {
         // Return an <mrow> element representing the expanded <mfenced>.
-        // See https://www.w3.org/TR/MathML/chapter3.html#presm.fenced
+        // https://mathml-refresh.github.io/mathml/chapter3.html#presm.mfenced
         let outerMrow = newMrow();
         outerMrow.appendChild(newOperator(collapseWhiteSpace(mfenced.getAttribute("open") || "(")));
         if (mfenced.childElementCount === 1) {
