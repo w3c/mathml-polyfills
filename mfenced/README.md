@@ -1,7 +1,7 @@
 # mfenced polyfill
 
 This repository contains a small polyfill for the MathML
-[mfenced element](https://www.w3.org/TR/MathML/chapter3.html#presm.fenced).
+[mfenced element](https://mathml-refresh.github.io/mathml/chapter3.html#presm.mfenced).
 In order to use it, just load the mfenced.js script:
 
     <html>
