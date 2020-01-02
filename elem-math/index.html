@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Elementary MathML elements</title>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" type="text/css" href="elemMath.css">
+    <script type="module" src="elemMath.js"> </script>
+    <style>
+      ol li {
+        margin-top: 2ex;
+      }
+      th, td {
+        padding-left: 5px;
+        padding-right: 5px;
+        text-align: center;
+      }
+      .not-implemented {
+        background-color: indianred;
+      }
+
+      .not-right {
+        background-color: yellow;
+      }
+
+      table.longdiv-table {
+        border-collapse: collapse;
+        border: 1px solid lightblue;
+      }
+
+      table.longdiv-table > tbody> tr > td {
+        vertical-align: top;
+        padding: 1ex 1em 1ex 1em;
+        border: 1px solid lightblue;
+      }
+
+      /* numbering headings */
+      body { counter-reset: H1; } 	/* Create the counter for H1 */
+      h1:before {
+        content: counter(H1) ". "; 	/* Print the H1 number */
+        counter-increment: H1; 	/* Add 1 to next H1 */
+      }
+      h1 { counter-reset: H2; }
+      h2:before {
+        content: counter(H1) "." counter(H2) " ";
+        counter-increment: H2;
+      }
+      h2 { counter-reset: H3; }
+      h3:before {
+        content: counter(H1) "." counter(H2) "." counter(H3) " ";
+        counter-increment:H3;
+      }
+      h3 { counter-reset: H4; }
+      h4:before {
+        content: counter(H1) "." counter(H2) "." counter(H3) "." counter(H4) " ";
+        counter-increment:H4;
+      }
+    </style>
+
+     <!-- these probably belong elsewhere as they really belong to the .js file -->
+    <style>
+      table.elem-math {
+        border-collapse: collapse;
+        border-spacing: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Elementary math</h1>
+
+    <p>This page contains some tests for the <a href=https://mathml-refresh.github.io/mathml/#elementary-math>MathML elementary math elements</a>.
+      These are rendered via the 'elemMath.js' polyfill.
+    </p>
+
+    <h2>mstack examples from MathML spec (some general examples)</h2>
+    <ol>
+    <li>Simple addition with operator on the left
+      <table><tr><th>Image</th><th>MathML</th></tr><tr>
+        <td><img src="https://www.w3.org/Math/draft-spec/image/em-plus-shift.png"></td>
+        <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+          <mstack>
+            <mn>424</mn>
+            <msrow> <mo>+</mo> <none/> <mn>33</mn> </msrow>
+            <msline/>
+          </mstack>
+        </math>
+      </td></tr></table>
+    </li>
+
+  <li>Simple addition with operator on the right
+    <table><tr><th>Image</th><th>MathML</th></tr><tr>
+      <td><img src="https://www.w3.org/Math/draft-spec/image/em-plus-right.png"></td>
+      <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+          <mn>123</mn> 
+          <msrow> <mn>456</mn> <mo>+</mo> </msrow>
+          <msline/>
+          <mn>579</mn>
+        </mstack>
+      </math>
+    </td></tr></table>
+  </li>
+
+  <li>Two examples showing carries and crossouts
+    <table><tr><th>Image</th><th>MathML</th></tr><tr>
+      <td><img src=https://www.w3.org/Math/draft-spec/image/em-sub-borrow-above.png></td>
+      <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mstack>
+          <mscarries crossout='updiagonalstrike'>
+            <mn>2</mn>  <mn>12</mn>  <mscarry crossout='none'> <none/> </mscarry>
+          </mscarries>
+          <mn>2,327</mn>
+          <msrow> <mo>-</mo> <mn> 1,156</mn> </msrow>
+          <msline/>
+          <mn>1,171</mn>
+        </mstack>
+      </math>
+    </td></tr><tr>
+      <td><img src="https://www.w3.org/Math/draft-spec/image/em-sub-borrow-aboveleft.png"></td>
+      <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mstack>
+          <mscarries location='nw'>
+            <none/>
+            <mscarry crossout='updiagonalstrike' location='n'> <mn>2</mn> </mscarry>
+            <mn>1</mn>
+            <none/>
+          </mscarries>
+          <mn>2,327</mn>
+          <msrow> <mo>-</mo> <mn> 1,156</mn> </msrow>
+          <msline/>
+          <mn>1,171</mn>
+        </mstack>
+      </math>
+      </td></tr></table>
+  </li>
+
+  <li class='not-implemented'>Carries and crossouts, but with multiple digits in carry and <em>underlined</em>
+    <table><tr><th>Image</th><th>MathML</th></tr><tr>
+      <td><img src="https://www.w3.org/Math/draft-spec/image/em-sub-borrow-swedish.png"></td>
+      <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mstack>
+          <mscarries>
+            <mscarry crossout='updiagonalstrike'><none/></mscarry>
+            <menclose notation='bottom'> <mn>10</mn> </menclose>
+          </mscarries>
+          <mn>52</mn>
+          <msrow> <mo>-</mo> <mn> 7</mn> </msrow>
+          <msline/>
+          <mn>45</mn>
+        </mstack>
+      </math>
+    </td></tr></table>
+  </li>
+
+
+  <li>Simple multiplication (uses msgroup)
+    <table><tr><th>Image</th><th>MathML</th></tr><tr>
+      <td><img src="https://www.w3.org/Math/draft-spec/image/em-mult-simple.png"></td>
+      <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mstack>
+          <msgroup>
+            <mn>123</mn>
+            <msrow><mo>&#xD7;<!--MULTIPLICATION SIGN--></mo><mn>321</mn></msrow>
+          </msgroup>
+          <msline/>
+          <msgroup shift="1">
+            <mn>123</mn>
+            <mn>246</mn>
+            <mn>369</mn>
+          </msgroup>
+          <msline/>
+        </mstack>
+      </math>
+    </td></tr></table>
+  </li>
+
+  <li>This example has multiple rows of carries.
+    It also (somewhat artificially) includes commas (",") as digit separators.
+    The encoding includes these separators in the spacing attribute value.
+    <table><tr><th>Image</th><th>MathML</th></tr><tr>
+      <td><img src="https://www.w3.org/Math/draft-spec/image/em-mult-carries.png"></td>
+      <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mstack>
+          <mscarries><mn>1</mn><mn>1</mn><none/></mscarries>
+          <mscarries><mn>1</mn><mn>1</mn><none/></mscarries>
+          <mn>1,234</mn>
+          <msrow><mo>&#xD7;<!--MULTIPLICATION SIGN--></mo><mn>4,321</mn></msrow>
+          <msline/>
+        
+          <mscarries position='2'>
+            <mn>1</mn>
+            <none/>
+            <mn>1</mn>
+            <mn>1</mn>
+            <mn>1</mn>
+            <none/>
+            <mn>1</mn>
+          </mscarries>
+          <msgroup shift="1">
+            <mn>1,234</mn>
+            <mn>24,68</mn>
+            <mn>370,2</mn>
+            <msrow position="1"> <mn>4,936</mn> </msrow>
+          </msgroup>
+          <msline/>
+          
+          <mn>5,332,114</mn>
+        </mstack>
+      </math>
+    </td></tr></table>
+  </li>
+  <li>Repeating decimals (line over 3):
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack stackalign="right">
+        <msline length="1"/>
+        <mn> 0.3333 </mn>
+      </mstack>
+    </math>
+  </li>
+  <li>Repeating decimals (line over fractional part):
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack stackalign="right">
+        <msline length="6"/>
+        <mn> 0.142857 </mn>
+      </mstack>
+    </math>
+  </li>
+  <li>Repeating decimals (line under fractional part):
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack stackalign="right">
+        <mn> 0.142857 </mn>
+        <msline length="6"/>
+      </mstack>
+    </math>
+  </li>
+  <li>Repeating decimals (dots over start and end of fractional part):
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack stackalign="right">
+        <msrow> <mo>.</mo> <none/><none/><none/><none/> <mo>.</mo> </msrow>
+        <mn> 0.142857 </mn>
+      </mstack>
+    </math>
+  </li>
+
+  </ol> 
+
+    <h2>mstack</h2>
+    <h3>Test with different number of args</h3>
+    <ol>
+      <li>mstack with no elements (should be empty, no console warnings):
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+          <mstack>
+          </mstack>
+        </math>
+      </li>
+
+      <li>mstack with a single number (should just be a number):
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+          <mstack>
+            <mn>123</mn>
+          </mstack>
+        </math>
+      </li>
+
+      <li>2 arguments (simple stack of numbers):
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+          <mstack>
+            <mn>123</mn>
+            <mn>456</mn>
+          </mstack>
+        </math>
+      </li>
+    </ol>
+
+
+    <h3>Test with different attr args/values</h3>
+    <h4>align</h4>
+    <p class="not-implemented"'>Not implemented</p>
+    <h4>stackalign (alignment of stack of elements</h4>
+    <ol>
+    <li>left
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mstack stackalign='left'>
+          <mn>2123.4</mn> 
+          <msrow> <mn>456.018</mn> <mo>+</mo> </msrow>
+          <msline/>
+          <mn>2579.418</mn>
+        </mstack>
+      </math>
+  </li>
+    <li>center
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mstack stackalign='center'>
+          <mn>2123.4</mn> 
+          <msrow> <mn>456.018</mn> <mo>+</mo> </msrow>
+          <msline/>
+          <mn>2579.418</mn>
+        </mstack>
+      </math>
+  </li>
+    <li>right
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mstack stackalign='right'>
+          <mn>2123.4</mn> 
+          <msrow> <mn>456.018</mn> <mo>+</mo> </msrow>
+          <msline/>
+          <mn>2579.418</mn>
+        </mstack>
+      </math>
+  </li>
+  <li>decimal
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack stackalign='decimalpoint'>
+        <mn>2123.4</mn> 
+        <msrow> <mn>456.018</mn> <mo>+</mo> </msrow>
+        <msline/>
+        <mn>2579.418</mn>
+      </mstack>
+    </math>
+  </li>
+  <li>decimal (default value)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mn>2123.4</mn> 
+        <msrow> <mn>456.018</mn> <mo>+</mo> </msrow>
+        <msline/>
+        <mn>2579.418</mn>
+      </mstack>
+    </math>
+  </li>
+  <li>decimal (default value, using inherited value set by mstyle)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstyle decimalpoint=','>
+      <mstack>
+        <mn>2123,</mn> 
+        <msrow> <mn>456,018</mn> <mo>+</mo> </msrow>
+        <msline/>
+        <mn>2579,418</mn>
+      </mstack>
+      </mstyle>
+    </math>
+  </li>
+    </ol>
+
+    <h4>charalign (alignment of character in a column)</h4>
+    <ol>
+      <li>left
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+          <mstack charalign='left'>
+            <mn>12</mn>
+            <msrow> <mi>wide</mi> <mn>1</mn> </msrow>
+            <msline/>
+          </mstack>
+        </math>
+    </li>
+        <li>center
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mstack charalign='center'>
+              <mn>12</mn>
+              <msrow> <mi>wide</mi> <mn>1</mn> </msrow>
+              <msline/>
+            </mstack>
+          </math>
+      </li>
+        <li>right
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mstack charalign='right'>
+              <mn>12</mn>
+              <msrow> <mi>wide</mi> <mn>1</mn> </msrow>
+              <msline/>
+            </mstack>
+          </math>
+      </li>
+        <li>default (right)
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mstack>
+              <mn>12</mn>
+              <msrow> <mi>wide</mi> <mn>1</mn> </msrow>
+              <msline/>
+            </mstack>
+          </math>
+      </li>
+      </ol>
+  <h4>charspacing</h4>
+  <ol>
+    <li>loose
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mstack charspacing='loose'>
+          <mn>432</mn>
+          <msrow> <mo>+</mo><mn>33</mn> </msrow>
+          <msline/>
+        </mstack>
+      </math>
+  </li>
+  <li>medium
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack charspacing='medium'>
+        <mn>432</mn>
+        <msrow> <mo>+</mo> <mn>33</mn> </msrow>
+        <msline/>
+      </mstack>
+    </math>
+</li>
+  <li>tight
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack charspacing='tight'>
+        <mn>432</mn>
+        <msrow> <mo>+</mo> <mn>33</mn> </msrow>
+        <msline/>
+      </mstack>
+    </math>
+</li>
+  <li>value (1em -- really wide)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack charspacing='1em'>
+        <mn>432</mn>
+        <msrow> <mo>+</mo> <mn>33</mn> </msrow>
+        <msline/>
+      </mstack>
+    </math>
+</li>
+<li>tight with a none value
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+    <mstack charspacing='tight'>
+      <mn>4321</mn>
+      <msrow> <mo>+</mo> <none/><mn>33</mn> </msrow>
+      <msline/>
+    </mstack>
+  </math>
+
+</ol>
+
+
+<h2>msgroup tests</h2>
+<h3>Test with different number of args</h3>
+<ol>
+  <li>msgroup with no elements (should be empty, no console warnings):
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msgroup>
+        </msgroup>
+      </mstack>
+    </math>
+  </li>
+
+  <li>msgroup with a single number (position=2, shift=1 -- visually not much but two empty columns on right):
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msgroup position="2", shift="1">
+          <mn>123</mn>
+        </msgroup>
+      </mstack>
+    </math>
+  </li>
+
+  <li>msgroup with 2 arguments (position=-1, shift=2 -- visually '1's should align):
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msgroup position="-1", shift="2">
+        <mn>123</mn>
+        <mn>321</mn>
+      </msgroup>
+    </mstack>
+  </math>
+  </li>
+  <li>Nested msgroups (position=-1, shift=2, with position=-1, shift=1 nested inside (rows 4-6)-- visually all digits should align):
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mn>123</mn>
+        <msgroup position="-1", shift="-1">
+        <mn>234</mn>
+        <mn>345</mn>
+        <msgroup position="-1", shift="1">
+          <mn>567</mn>
+          <mn>456</mn>           
+          <mn>345</mn>           
+        </msgroup>
+      </msgroup>
+      <mn>0123</mn>
+    </mstack>
+  </math>
+  </li>
+</ol>
+
+
+<h3>Test with different attr args/values</h3>
+<h4>position</h4>
+<ol>
+<li>two msgroups (position=1, position=-1) -- the '3's should align:
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+    <mstack>
+    <msgroup position='1'>
+      <mn>123</mn>
+    </msgroup>
+    <msgroup position='-1'>
+      <mn>345</mn>
+    </msgroup>
+  </mstack>
+</math>
+</li>
+<li>two msgroups (1st two lines position=1, last two lines position=-1) -- the '3's should align.
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+    <mstack>
+    <msgroup position='1'>
+      <mn>123</mn>
+      <mn>123</mn>
+    </msgroup>
+    <msgroup position='-1'>
+      <mn>345</mn>
+      <mn>345</mn>
+    </msgroup>
+  </mstack>
+</math>
+</li>
+</ol>
+<h4>shift</h4>
+<li>2 msgroups (shift=1, shift=-1) -- the digits should align.
+The first group should shift to the left; the second group should shift to the right:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+      <msgroup shift='1'>
+        <mn>345</mn>
+        <mn>234</mn>
+        <mn>123</mn>
+      </msgroup>
+      <msgroup shift='-1'>
+        <mn>345</mn>
+        <mn>456</mn>
+        <mn>567</mn>
+      </msgroup>
+    </mstack>
+  </math>
+</li>
+<li>2 msgroups (position='-2' shift='-2' and position ='-6' shift='2') with 123 above and below the groups -- 
+the digits should align.
+The first group should shift to the right by two digits each line; the second group should similarly shift to the left:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+      <mn>123</mn>
+      <msgroup position='-2' shift='-2'>
+        <mn>345</mn>
+        <mn>567</mn>
+        <mn>789</mn>
+      </msgroup>
+      <msgroup position ='-6' shift='2'>
+        <mn>789</mn>
+        <mn>567</mn>
+        <mn>345</mn>
+      </msgroup>
+      <mn>123</mn>
+    </mstack>
+  </math>
+</li>
+<h2>msrow tests</h2>
+<h3>Test with different number of args</h3>
+<ol>
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msrow>
+        </mrow>
+      </mstack>
+    </math>
+  </li>
+
+  <li>msrow with a single number -- visually not much:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msrow>
+          <mn>123</mn>
+        </msrow>
+      </mstack>
+    </math>
+  </li>
+
+  <li>msrow with 3 arguments -- the two decimal numbers should align:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msrow>
+        <mn>123.45</mn>
+        <mo>|</mo>
+        <mn>456</mn>
+      </msrow>
+      <mn>123.45</mn>
+    </mstack>
+  </math>
+  </li>
+</ol>
+
+<h3>Test with different attr args/values</h3>
+<h4>position</h4>
+<ol>
+  <li>mrow with no elements (position=2) -- should be empty, no console warnings:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msrow position='2'>
+        </mrow>
+      </mstack>
+    </math>
+  </li>
+
+  <li>msrow with a single number (position='-2') -- visually not much (should be two blank cells on left):
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msrow  position='-2'>
+          <mn>123</mn>
+        </msrow>
+      </mstack>
+    </math>
+  </li>
+
+<li>msrows (position=1, position=-1) -- the '3's should align:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+      <msrow position='1'>
+        <mn>123</mn>
+      </msrow>
+      <msrow position='-1'>
+        <mn>345</mn>
+      </msrow>
+      </mstack>
+  </math>
+  </li>
+</ol>
+
+
+<h2>mscarries tests</h2>
+<h3>Test with different number of args</h3>
+<ol>
+  <li>mscarries with no elements (position=2) -- should see just '123', no padding, no console warnings:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries position='2'>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+    </math>
+  </li>
+
+  <li>mscarries with no elements and no following line (position=2) -- should not see anything, no console warnings:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries position='2'>
+        </mscarries>
+      </mstack>
+    </math>
+  </li>
+
+  <li>mscarries with one child and no following line (position=2) -- should see a small 9, no console warnings:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries position='2'>
+          <mn>9</mn>
+        </mscarries>
+      </mstack>
+    </math>
+  </li>
+
+  <li>mscarries with two children, should see 8 over 2, 9 over the 3:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+
+  <li>mscarries with two children (position=2), should see 1 over empty space, 9 over the 2:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries>
+          <mn>1</mn>
+          <mn>2</mn>
+        </mscarries>
+        <mn>9</mn>
+      </mstack>
+  </math>
+  </li>
+
+  <li>two rows of mscarries over each other, should see carry '1' over carry '2' over '9':
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries>
+          <mn>1</mn>
+        </mscarries>
+        <mscarries>
+          <mn>2</mn>
+        </mscarries>
+        <mn>789</mn>
+      </mstack>
+  </math>
+  </li>
+
+  <li>three rows of mscarries over each other, should see carry '1' over carry '2' over carry '3' over '9':
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries>
+          <mn>1</mn>
+        </mscarries>
+        <mscarries>
+          <mn>2</mn>
+        </mscarries>
+        <mscarries>
+          <mn>3</mn>
+        </mscarries>
+        <mn>789</mn>
+      </mstack>
+  </math>
+  </li>
+
+  <li>two rows of numbers with a carry between them
+    (3's should align, with middle one small, not crash together or crash into line):
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mn>123</mn>
+        <msline/>
+        <mscarries>
+          <mn>3</mn>
+        </mscarries>
+        <mn>543</mn>
+      </mstack>
+  </math>
+  </li>
+
+</ol>
+<h3>Test with different attr args/values</h3>
+<h4>position</h4>
+<ol>
+  <li>mscarries with single child (position=-1), should see 9 one column to the right of 3:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries position='-1'>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+  <li>mscarries with single child (position=1), should see 9 over 2:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries position='1'>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+  <li>mscarries with single child and no position give should see 9 over 1:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+</ol>
+
+<h4>location</h4>
+<ol>
+  <li>'w': 8 and 9 should be before 2 and 3 respectivly
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='w'>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+
+
+  <li>'nw': 8 and 9 should be pre-superscripts before 2 and 3 respectivly
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='nw'>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+
+  <li>'n': 8 and 9 should be above 2 and 3 respectivly
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='n'>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+
+  <li>'ne': 8 and 9 should be superscripts to 2 and 3 respectivly
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='ne'>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+
+  <li>'e': 8 and 9 should be after 2 and 3 respectivly
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='e'>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+
+  <li>'se': 8 and 9 should be subscripts to 2 and 3 respectivly
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='se'>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+  <li>'s': 8 and 9 should be below 2 and 3 respectivly
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='s'>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+
+  <li>'sw': 8 and 9 should be presubscripts before 2 and 3 respectivly
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='sw'>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+  <li> default ('n'): 8 and 9 should be above 2 and 3 respectivly
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+</ol>
+
+<h4>crossout</h4>
+test individually and in combinations
+<ol>
+  <li>No cross out ('none') (carry 'n': 9 should be above 3)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='n' crossout='none'>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+
+  <li> Crossout is updiagonalstrike (carry 'ne': 9 should be superscript to 3)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='ne' crossout='updiagonalstrike'>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+  <li> Crossout is downdiagonalstrike (carry 'nw': 9 should be superscript to 3)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='nw' crossout='downdiagonalstrike'>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+  <li>Cross out is verticalstrike (carry 'n': 9 should be above 3)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='n' crossout='verticalstrike'>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+
+  <li> Crossout is horizontalstrike (carry 'ne': 9 should be superscript to 3)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='ne' crossout='horizontalstrike'>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+  <li> Crossout is both downdiagonalstrike and updiagonalstrike (carry 'nw': 9 should be superscript to 3)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='nw' crossout='downdiagonalstrike updiagonalstrike'>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+
+  <li class> Crossout is all four (carry 'n, position=1': 9 should be above the 2)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries position='1' location='n' crossout='verticalstrike horizontalstrike downdiagonalstrike updiagonalstrike'>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+  <li> Crossout is both downdiagonalstrike (twice) and updiagonalstrike (carry 'nw': 9 should be superscript to 3) -- lots of extra spaces in attr value
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mscarries location='nw' crossout='  downdiagonalstrike    updiagonalstrike downdiagonalstrike '>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+
+</ol>
+
+<h4>scriptsizemultiplier</h4>
+<ol>
+  <li> .4 -- should be smaller than normal (compare to second line of carries)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack charspacing='loose'>
+        <mscarries scriptsizemultiplier='.4'>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>12345</mn>
+        <mscarries>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+  <li class='not-right'> 1.5 -- should be bigger than normal (compare to second line of carries) and overflow into each other
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack charspacing='tight'>
+        <mscarries scriptsizemultiplier='1.5'>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+
+        <mn>12345</mn>
+        <mscarries>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+  </math>
+  </li>
+  <li> .4 -- should be smaller than normal (value inherited from mstyle). Both rows of carries should be small.
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstyle  scriptsizemultiplier='.4'>
+        <mstack charspacing='loose'>
+        <mscarries>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>12345</mn>
+        <mscarries>
+          <mn>8</mn>
+          <mn>9</mn>
+        </mscarries>
+        <mn>123</mn>
+      </mstack>
+    </mstyle>
+  </math>
+  </li>
+</ol>
+
+
+<h2>mscarry tests</h2>
+<h3>Test with different number of args</h3>
+<ol>
+<li>mscarry with no child -- should see no change (just 123):
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+    <mstack>
+      <mscarries>
+        <mscarry><mn></mn></mscarry>
+      </mscarries>
+      <mn>123</mn>
+    </mstack>
+</math>
+</li class='not-right'>
+<li>mscarry with single child and no position give should see 9 over 3:
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+    <mstack>
+      <mscarries>
+        <mscarry><mn>9</mn></mscarry>
+      </mscarries>
+      <mn>123</mn>
+    </mstack>
+</math>
+</li>
+<li class='not-right'>mscarry with multiple digits over '2' -- should overflow to other columns and not change spacing:
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+    <mstack>
+      <mscarries>
+        <mscarry><mn>789</mn></mscarry>
+        <none/>
+      </mscarries>
+      <mn>123</mn>
+    </mstack>
+</math>
+</li>
+</ol>
+<h3>Test with different attr args/values</h3>
+<h4>location</h4>
+<ol>
+  <li>mscarry with location starting a 'w' (on left) ending with 'sw' and
+    finally default inheritance of 'n' over 9; nothing should be over the '+':
+   <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+     <mstack>
+       <mscarries>
+         <mscarry location='w'><mn>0</mn></mscarry>
+         <mscarry location='nw'><mn>0</mn></mscarry>
+         <mscarry location='n'><mn>0</mn></mscarry>
+         <mscarry location='ne'><mn>0</mn></mscarry>
+         <mscarry location='e'><mn>0</mn></mscarry>
+         <mscarry location='se'><mn>0</mn></mscarry>
+         <mscarry location='s'><mn>0</mn></mscarry>
+         <mscarry location='sw'><mn>0</mn></mscarry>
+         <mscarry ><mn>0</mn></mscarry>
+       </mscarries>
+       <msrow>
+         <mo>+</mo>
+         <mn>123456789</mn>
+       </msrow>
+     </mstack>
+   </math>
+   </li>
+
+   <li>mscarry with location starting a 'w' (on left) ending with 'sw' and
+    finally default inheritance of 'nw' over 9; nothing should be over the '+':
+   <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+     <mstack>
+       <mscarries location='nw'>
+         <mscarry location='w'><mn>0</mn></mscarry>
+         <mscarry location='nw'><mn>0</mn></mscarry>
+         <mscarry location='n'><mn>0</mn></mscarry>
+         <mscarry location='ne'><mn>0</mn></mscarry>
+         <mscarry location='e'><mn>0</mn></mscarry>
+         <mscarry location='se'><mn>0</mn></mscarry>
+         <mscarry location='s'><mn>0</mn></mscarry>
+         <mscarry location='sw'><mn>0</mn></mscarry>
+         <mscarry ><mn>0</mn></mscarry>
+       </mscarries>
+       <msrow>
+         <mo>+</mo>
+         <mn>123456789</mn>
+       </msrow>
+     </mstack>
+   </math>
+   </li>
+  
+</ol>
+
+<h4>crossout</h4>
+<ol>
+  <li>mscarry with crossout starting at 
+    "none", "updiagonalstrike", "downdiagonalstrike", "verticalstrike", "horizontalstrike", with the default of diag up/down over the '9':
+   <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+     <mstack>
+      <mscarries location='nw' crossout='updiagonalstrike downdiagonalstrike'>
+         <mscarry crossout='none'> <NONE/> </mscarry>
+         <mscarry crossout='updiagonalstrike'> <NONE/> </mscarry>
+         <mscarry crossout='downdiagonalstrike'> <NONE/> </mscarry>
+         <mscarry crossout='verticalstrike'> <NONE/> </mscarry>
+         <mscarry crossout='horizontalstrike'> <NONE/> </mscarry>
+         <mscarry > <NONE/> </mscarry>
+       </mscarries>
+       <msrow>
+         <mo>+</mo>
+         <mn>56789</mn>
+       </msrow>
+     </mstack>
+   </math>
+   </li>
+  </ol>
+
+
+<h2>msline tests</h2>
+<h3>Test with different number of args</h3>
+<ol>
+  <li>only a msline (length=3) -- should display as a line, perhaps somewhat short due to cells having a small width:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msline length='3'/>
+    </mstack>
+  </math>
+  </li>
+  <li>msline first line (position='1' length='2') -- should be above 1 and 2:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msline position='1' length='2'/>
+        <mn>123</mn>
+    </mstack>
+  </math>
+  </li>
+</ol>
+<h3>Test with different attr args/values</h3>
+<h4>position</h4>
+<ol>
+  <li>msline (position=1, length unspecified) -- should draw line under all digits:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mn>123</mn>
+        <msline position='1'/>
+    </mstack>
+  </math>
+  </li>
+  <li>msline (position=1, length=1) -- should draw line under '2'':
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mn>123</mn>
+        <msline position='1' length='1'/>
+    </mstack>
+  </math>
+  </li>
+  <li>msline (position=4, length=1) -- should draw line before '1'':
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mn>123</mn>
+        <msline position='4' length='1'/>
+    </mstack>
+  </math>
+  </li>
+  <li>msline (position=-1, length=1) -- should draw line after '3':
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mn>123</mn>
+        <msline position='-1' length='1'/>
+    </mstack>
+  </math>
+  </li>
+</ol>
+
+<h4>length</h4>
+<ol>
+  <li> Both lines should be all the way across (default value)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msgroup>
+          <mn>123</mn>
+          <msrow><mo>&#xD7;<!--MULTIPLICATION SIGN--></mo><mn>321</mn></msrow>
+        </msgroup>
+        <msline/>
+        <msgroup shift="1">
+          <mn>123</mn>
+          <mn>246</mn>
+          <mn>369</mn>
+        </msgroup>
+        <msline/>
+      </mstack>
+    </math>
+  </li>
+  <li> Both lines should be all the way across (length=0)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msgroup>
+          <mn>123</mn>
+          <msrow><mo>&#xD7;<!--MULTIPLICATION SIGN--></mo><mn>321</mn></msrow>
+        </msgroup>
+        <msline/>
+        <msgroup shift="1">
+          <mn>123</mn>
+          <mn>246</mn>
+          <mn>369</mn>
+        </msgroup>
+        <msline/>
+      </mstack>
+    </math>
+  </li>
+  <li>First line only to '×' (length=4); second only under 369 (length=3, position=2)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <msgroup>
+          <mn>123</mn>
+          <msrow><mo>&#xD7;<!--MULTIPLICATION SIGN--></mo><mn>321</mn></msrow>
+        </msgroup>
+        <msline length='4'/>
+        <msgroup shift="1">
+          <mn>123</mn>
+          <mn>246</mn>
+          <mn>369</mn>
+        </msgroup>
+        <msline length='3' position='2'/>
+      </mstack>
+    </math>
+</li>
+<li>line extends beyond number one column on each side (length=5, position=-1)
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+    <mstack>
+      <mn>123</mn>
+      <msline length='5' position='-1'/>
+    </mstack>
+  </math>
+</li>
+</ol>
+
+<h4>leftoverhang</h4>
+<p class="not-implemented"'>Not implemented</p>
+<h4>rightoverhang</h4>
+<p class="not-implemented"'>Not implemented</p>
+
+<h4>mslinethickness</h4>
+<ol>
+  <li> thin
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mn>123</mn>
+        <msline mslinethickness='thin'/>
+      </mstack>
+    </math>
+  </li>
+  <li> medium
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mn>123</mn>
+        <msline mslinethickness='medium'/>
+      </mstack>
+    </math>
+  </li>
+  <li> thick
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mn>123</mn>
+        <msline mslinethickness='thick'/>
+      </mstack>
+    </math>
+  </li>
+  <li> default (medium)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mn>123</mn>
+        <msline/>
+      </mstack>
+    </math>
+  </li>
+
+  <li> 3ex (very fat)
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstack>
+        <mn>123</mn>
+        <msline mslinethickness='3ex'/>
+      </mstack>
+    </math>
+  </li>
+  </ol>
+
+
+  <h4>inherited value of mathcolor</h4>
+  <ol>
+    <li> the number and line should be gray
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+    <mstyle mathcolor='gray'>
+    <mstack>
+        <mn>123</mn>
+        <msline/>
+      </mstack>
+      </mstyle>
+    </math>
+  </li>
+  
+  <li> mstyle inside of mstyle -- numbers should be gray, the second should be a fat blue line
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mstyle mathcolor='gray'>
+          <mstack>
+        <mn>123</mn>
+        <mstyle mathcolor='blue'>
+          <msline mslinethickness='1ex'/>
+        </mstyle>
+      </mstack>
+  </mstyle>
+</math>
+  </li>
+  </ol>
+  
+  
+
+  <h1> mlongdiv</h1>
+
+  <p>Long division examples from MathML spec
+    (the polyfill supports a 'decimalpoint' attr on 'mlongdiv'/'mstack', which is not part of MathML 3;
+    see <a src="https://github.com/mathml-refresh/mathml/issues/180">this issue</a> for why)
+
+    <table class="longdiv-table">
+      <tr>
+        <td>longdivstyle</td>
+        <th>lefttop</th>
+        <th>stackedrightright</th>
+        <th>mediumstackedrightright</th>
+        <th>shortstackedrightright</th>
+        <th>righttop</th>
+      </tr>
+      <tr>
+       <td>Image from spec</td>
+       <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-us.png"</td>
+        <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-french.png"</td>
+        <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-medium-stacked-rightright.png"</td>
+        <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-short-stacked-rightright.png"</td>
+        <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-righttop.png"</td>
+      </tr>
+      <tr>
+        <td>Polyfill rendering</td>
+        <td>    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mlongdiv longdivstyle="lefttop">
+          <mn> 3 </mn>
+          <mn> 435.3</mn>
+        
+          <mn> 1306</mn>
+        
+          <msgroup position="2" shift="-1">
+            <msgroup>
+              <mn> 12</mn>
+              <msline length="2"/>
+            </msgroup>
+            <msgroup>
+              <mn> 10</mn>
+              <mn> 9</mn>
+              <msline length="2"/>
+            </msgroup>
+            <msgroup>
+              <mn> 16</mn>
+              <mn> 15</mn>
+              <msline length="2"/>
+              <mn> 1.0</mn>           <!-- aligns on '.', not the right edge ('0') -->
+            </msgroup>
+            <msgroup position='-1'>   <!-- extra shift to move to the right of the "." -->
+               <mn> 9</mn>
+              <msline length="3"/>
+              <mn> 1</mn>
+            </msgroup>
+          </msgroup>
+        </mlongdiv>
+      </math>
+  </td>
+  <td id='spec-longdiv-template'>
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+    <mstyle decimalpoint=",">
+    <mlongdiv longdivstyle="stackedrightright" >
+      <mn> 3 </mn>
+      <mn> 435,3</mn>
+    
+      <mn> 1306</mn>
+    
+      <msgroup position="2" shift="-1">
+        <msgroup>
+          <mn> 12</mn>
+          <msline length="2"/>
+        </msgroup>
+        <msgroup>
+          <mn> 10</mn>
+          <mn> 9</mn>
+          <msline length="2"/>
+        </msgroup>
+        <msgroup>
+          <mn> 16</mn>
+          <mn> 15</mn>
+          <msline length="2"/>
+          <mn> 1,0</mn>           <!-- aligns on '.', not the right edge ('0') -->
+        </msgroup>
+        <msgroup position='-1'>   <!-- extra shift to move to the right of the "." -->
+           <mn> 9</mn>
+          <msline length="3"/>
+          <mn> 1</mn>
+        </msgroup>
+      </msgroup>
+    </mlongdiv>
+  </mstyle>
+  </math>
+</td>
+  <td class='replace-me'></td>
+  <td class='replace-me'></td>
+  <td class='replace-me'></td>
+</tr>
+</table>
+<table class="longdiv-table">
+  <tr>
+  <td>longdivstyle</td>
+  <th>left/\right</th>
+<th>left)(right</th>
+<th>:right=right</th>
+<th>stackedleftleft </th>
+<th>stackedleftlinetop</th>
+</tr>
+<tr>
+  <td>Image from spec</td>
+  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-leftright.png"</td>
+  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-indian.png"</td>
+  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-colonrightright.png"</td>
+  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-mirrored-french.png"</td>
+  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-arabic-lefttop.png"</td>
+</tr>
+<tr>
+  <td>Polyfill rendering</td>
+  <td class='replace-me'></td>
+  <td class='replace-me'></td>
+  <td class='replace-me'></td>
+  <td class='replace-me'></td>
+  <td>
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mlongdiv longdivstyle="stackedleftlinetop" decimalpoint="&#x066B;">
+        <mn> &#x0663;<!--ARABIC-INDIC DIGIT THREE--> </mn>
+        <mn> &#x0664;<!--ARABIC-INDIC DIGIT FOUR-->&#x0663;<!--ARABIC-INDIC DIGIT THREE-->&#x0665;<!--ARABIC-INDIC DIGIT FIVE-->&#x066B;<!--ARABIC DECIMAL SEPARATOR-->&#x0663;<!--ARABIC-INDIC DIGIT THREE--></mn>
+      
+        <mn> &#x0661;<!--ARABIC-INDIC DIGIT ONE-->&#x0663;<!--ARABIC-INDIC DIGIT THREE-->&#x0660;<!--ARABIC-INDIC DIGIT ZERO-->&#x0666;<!--ARABIC-INDIC DIGIT SIX--></mn>
+        <msgroup position="2" shift="-1">
+          <msgroup>
+            <mn> &#x0661;<!--ARABIC-INDIC DIGIT ONE-->&#x0662;<!--ARABIC-INDIC DIGIT TWO--></mn>
+            <msline length="2"/>
+          </msgroup>
+          <msgroup>
+            <mn> &#x0661;<!--ARABIC-INDIC DIGIT ONE-->&#x0660;<!--ARABIC-INDIC DIGIT ZERO--></mn>
+            <mn> &#x0669;<!--ARABIC-INDIC DIGIT NINE--></mn>
+            <msline length="2"/>
+          </msgroup>
+          <msgroup>
+            <mn> &#x0661;<!--ARABIC-INDIC DIGIT ONE-->&#x0666;<!--ARABIC-INDIC DIGIT SIX--></mn>
+            <mn> &#x0661;<!--ARABIC-INDIC DIGIT ONE-->&#x0665;<!--ARABIC-INDIC DIGIT FIVE--></mn>
+            <msline length="2"/>
+              <mn> &#x0661;<!--ARABIC-INDIC DIGIT ONE-->&#x066B;<!--ARABIC DECIMAL SEPARATOR-->&#x0660;<!--ARABIC-INDIC DIGIT ZERO--></mn>
+         </msgroup>
+         <msgroup position='-1'>
+             <mn> &#x0669;<!--ARABIC-INDIC DIGIT NINE--></mn>
+            <msline length="3"/>
+            <mn> &#x0661;<!--ARABIC-INDIC DIGIT ONE--></mn>
+          </msgroup>
+        </msgroup>
+      </mlongdiv>
+       </math>
+      </td>
+  </tr>
+</table>
+</p>
+<script>
+  // rather than writing out the same tests for each style, this code copies the template above and it into the table changing the style
+  function longdivSpecExamples() {
+    const styles = ['mediumstackedrightright', 'shortstackedrightright', 'righttop',
+                    'left/\\right','left)(right', ':right=right', 'stackedleftleft'];
+    let example = document.getElementById('spec-longdiv-template');
+    const emptyNodes = document.getElementsByClassName('replace-me');   // this is "live", so as a child is replaced, the list shrinks
+    for (var i = 0; i < styles.length; i++) {
+        let clone = example.cloneNode(true);
+        clone.removeAttribute('id');
+        clone.getElementsByTagName('mlongdiv')[0].setAttribute('longdivstyle', styles[i]);
+        emptyNodes[0].parentElement.replaceChild(clone, emptyNodes[0]);
+    }
+  }
+  longdivSpecExamples();
+</script>
+
+
+</p>
+
+<h2>Long divsion with too few arguments</h2>
+<li> three arguments
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mlongdiv longdivstyle='lefttop'>
+          <mn>1</mn>
+          <mn>2</mn>
+          <mn>3</mn>
+        </mlongdiv>
+    </math>
+    </li>
+
+<h3>No arguments</h3>
+<ol>
+    <li id='longdiv0'>
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mlongdiv longdivstyle='lefttop'>
+            </mlongdiv>
+        </math>
+</li>
+</ol>
+
+<h3>One argument</h3>
+<ol>
+    <li id='longdiv1'>
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mlongdiv longdivstyle='lefttop'>
+                 <mn>11.1</mn>
+            </mlongdiv>
+        </math>
+    </li>
+</ol>
+
+<h3>Two arguments</h3>
+<ol>
+    <li id='longdiv2'> 
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mlongdiv longdivstyle='lefttop'>
+              <mn>11.1</mn>
+              <mn>22.2</mn>
+         </mlongdiv>
+        </math>
+    </li>
+</ol>
+
+<h3>Three arguments</h3>
+<ol>
+    <li id='longdiv3'>
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mlongdiv longdivstyle='lefttop'>
+              <mn>11.1</mn>
+              <mn>22.2</mn>
+              <mn>33.3</mn>
+         </mlongdiv>
+        </math>
+    </li>
+</ol>
+
+<script>
+  // rather than writing out the same tests for each style, this code copies the templates above and adds them in
+  function longidvArgScript() {
+    const styles = ['lefttop', 'stackedrightright', 'mediumstackedrightright', 'shortstackedrightright', 'righttop',
+                  'left/\\right', 'left)(right', ':right=right', 'stackedleftleft', 'stackedleftlinetop'];
+    const ids = ['longdiv0', 'longdiv1', 'longdiv2', 'longdiv3'];
+    for (const id of ids) {
+      let example = document.getElementById(id);
+      for (const style of styles) {
+          let clone = example.cloneNode(true);
+          clone.removeAttribute('id');
+          clone.childNodes[0].textContent += `style='${style}'`;
+          clone.getElementsByTagName('mlongdiv')[0].setAttribute('longdivstyle', style);
+          example.parentElement.appendChild(clone);
+      }
+      example.parentElement.removeChild(example);     // it was a template to be replaced
+    }
+  }
+  longidvArgScript();
+</script>
+
+  </body>
+  </html>
