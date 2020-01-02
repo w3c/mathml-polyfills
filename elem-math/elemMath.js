@@ -909,6 +909,7 @@ class ElemMath {
 
         let table = document.createElement('table');
         table.setAttribute('class', 'elem-math');
+        table.setAttribute('data-mathml', el.outerHTML);
         for (const row of stackRows) {
             let htmlRow = document.createElement('tr');
             if (row.style) {
