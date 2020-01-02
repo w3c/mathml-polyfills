@@ -7,7 +7,7 @@ In order to use it, just load the elem-math.js script and related CSS file:
     <html>
       <head>
         ...
-	<link rel="stylesheet" type="text/css" href="elemMath.css">
+        <link rel="stylesheet" type="text/css" href="elemMath.css">
         <script src="elem-math.js"></script>
         ...
       </head>
