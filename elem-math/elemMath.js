@@ -55,18 +55,18 @@ class MathMLAttrs {
     constructor(el, previousAttrs) {
         this.attrs = {};
         if (!previousAttrs) {
-            while (el && el.tagName !== 'math') {
-                if (el.tagName === 'mstyle') {
+            while (el && el.tagName.toLowerCase() !== 'math') {
+                if (el.tagName.toLowerCase() === 'mstyle') {
                     this.addAttrs(el);
                 }
                 el = el.parentElement;
             }
-            if (el && el.tagName === 'math') {
+            if (el && el.tagName.toLowerCase() === 'math') {
                 this.addAttrs(el);
             }
         } else {
             this.attrs = Object.assign({}, previousAttrs);
-            if (el.tagName === 'mstyle') {
+            if (el.tagName.toLowerCase() === 'mstyle') {
                 // Override any attr that is already present
                 for (let attr of el.attributes) {
                     this.attrs[attr.name] = attr.value;
@@ -432,7 +432,7 @@ class ElemMath {
         let cells = [];
         for (let i=0; i<msrow.children.length; i++) {
             const child = msrow.children[i];
-            if (child.tagName === 'mn') {
+            if (child.tagName.toLowerCase() === 'mn') {
                 const chars = child.textContent.trim().split('');
                 cells = cells.concat( chars.map( c => new TableCell(c)) );
                 if (foundNumber) {
@@ -469,7 +469,7 @@ class ElemMath {
             const data = child.textContent.trim();
             let cellLocation = location;
             let cellCrossout = crossout
-            if (child.tagName === 'mscarry') {
+            if (child.tagName.toLowerCase() === 'mscarry') {
                 cellLocation = this.getAttr(child, 'location', 'n');
                 cellCrossout = this.getAttr(child, 'crossout', 'none');
                 // FIX: child could be any MathML construct -- currently only supporting a *leaf*
@@ -494,7 +494,7 @@ class ElemMath {
         rowShift = rowShift || 0;
         
         // Note: we only want to compute a decimal position (which is an align point) when stackAlign==='decimalpoint'; otherwise alignment will be off
-        for (let i= (node.tagName === 'mlongdiv' ? 2 : 0); i<node.children.length; i++) {
+        for (let i= (node.tagName.toLowerCase() === 'mlongdiv' ? 2 : 0); i<node.children.length; i++) {
             rows = this.processChild(node.children[i], rows, position);
             position += rowShift;           // non-zero when specified by msgroup; applies to 2nd and subsequent rows
         }
@@ -509,7 +509,7 @@ class ElemMath {
 	 */
     processChild(child, rows, position) {
         let shift = position + parseInt(this.getAttr(child, 'position', '0'));
-        switch (child.tagName) {
+        switch (child.tagName.toLowerCase()) {
             case 'mn': {
                 const chars = child.textContent.trim().split('');
                 const iDecimalPt = child.textContent.trim().indexOf(this.getAttr(child, 'decimalpoint', '.'));
@@ -558,7 +558,7 @@ class ElemMath {
             case 'mstyle': {
                 const oldAttrs = this.attrs;
                 this.attrs = new MathMLAttrs(child, oldAttrs);
-                if (child.children.length === 1 && child.children[0].tagName === 'msline') {
+                if (child.children.length === 1 && child.children[0].tagName.toLowerCase() === 'msline') {
                     // FIX: not legal according to spec, but should be able to wrap msline in mstyle to change mathcolor
                     // FIX:   spec should be fixed
                     this.processChild(child.children[0], rows, shift);
@@ -576,7 +576,7 @@ class ElemMath {
                 let cells;
                 let nDigitsRightOfDecimalPt = 0;
 
-                if (child.tagName == 'msrow') {
+                if (child.tagName.toLowerCase() == 'msrow') {
                     [cells, nDigitsRightOfDecimalPt] = this.process_msrow(child);                       
                 } else {
                     // FIX: this isn't right for non-leaf cells
@@ -898,7 +898,7 @@ class ElemMath {
         let stackRows = [];
         stackRows = this.processChildren(el, stackRows, 0, 0);
         stackRows = this.processShifts(stackRows, this.stackAlign);
-        if (el.tagName === 'mlongdiv') {
+        if (el.tagName.toLowerCase() === 'mlongdiv') {
             stackRows = this.addOnLongDivParts(el.children[0], el.children[1], stackRows);
         }
 
@@ -909,7 +909,6 @@ class ElemMath {
 
         let table = document.createElement('table');
         table.setAttribute('class', 'elem-math');
-        table.setAttribute('data-mathml', el.outerHTML);
         for (const row of stackRows) {
             let htmlRow = document.createElement('tr');
             if (row.style) {
@@ -952,25 +951,95 @@ class ElemMath {
     }
 }
 
+/**
+ * 
+ * @param {ShadowRoot} shadowRoot 
+ */
+function addStyleSheetToShadowRoot(shadowRoot) {
+    const style = document.createElement("style");
+    const link = document.createElement("link");
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = 'elemMath.css';
+    style.appendChild(link);
+    shadowRoot.appendChild(style); 
+}
 
 /**
- * @param {Element} el
+ * @param {HTMLElement} el
  */
 let upgrade = (el) => {
-    /*
-    if (!el.shadowRoot) {
-      el.attachShadow({mode: "open"})
-    }
-    el.shadowoot.innerHTML = CSS_STYLES;
-    el.shadowRoot.appendChild(new ElemMath(el).expandMStackElement());
-    */
-   const  table = new ElemMath(el).expandMStackElement(el);
-   const  mtext = document.createElement("mtext");
+    // Ideally, we would attach a shadow root to the <mstack> or <mlongdiv>, but that's not legal (now)
+    // Instead, we wrap the math element in a span and attach a shadowRoot to that. In the shadowRoot, we replace the
+    // elementary math with a table and stick it inside an mtext so we still have legal MathML that hopefully renders if there
+    // is other MathML inside the <math> element.
+    // This seems like the least disruptive change to the original structure.
+
+   // hack to allow definition of custom element "elementary-math" to also work with 'upgrade()'
+   if (el.parentElement && (el.parentElement.tagName === 'ELEMENTARY-MATH' ||
+                            (el.parentElement.parentElement && el.parentElement.parentElement.tagName === 'ELEMENTARY-MATH'))) {
+       return;
+   }
+
+   // find parent <math> element
+   let math = el.parentElement;
+   while (math && math.tagName.toLowerCase() !== 'math') {
+       math = math.parentElement;
+   }
+
+   if (!math) {     // shouldn't happen
+       math = el;
+   }
+
+    // create the table equivalent
+    const  table = new ElemMath(el).expandMStackElement(el);
+   
+   // put the math with table into a shadow DOM
+   const spanShadowHost =  document.createElement("span");
+   spanShadowHost.attachShadow({mode: "open"});
+   addStyleSheetToShadowRoot(spanShadowHost.shadowRoot);
+
+   // We need to make a clone of the math node so that one copy is in the regular DOM and the other (modified) is in the shadow
+   // there is probably a better way to do this, but because we know 'el' and want to change it in the shadow, I only thought of two ways:
+   //   1. change the original because we know 'el', put it in the shadow, and put the clone in the DOM.
+   //   2. temporarily add a class to 'el' so we can find it in the clone, then the remove the clas in both
+   //      Note: can't use 'id' because can't find it unless the clone is in the doc, but then we are modifying a live DOM which is slow
+   // '2' seems like it would be faster because less DOM surgery happens, so that's what we do.
+   const newClassName = Date.now().toString(36).slice(-4) + Math.floor(Math.random() * 0x186a0).toString(36);
+   el.className += newClassName;
+   const mathClone = math.cloneNode(true);                  // FIX: should remove all 'id's from clone...
+   el.classList.remove(newClassName);
+   const clonedEl = mathClone.getElementsByClassName(newClassName)[0];
+   clonedEl.classList.remove(newClassName);
+   
+
+   // modify the clonded math to use the table and add that to the shadowRoot
+   const mtext = document.createElement("mtext");
    mtext.appendChild(table);
-   el.parentNode.replaceChild(mtext, el);
-  }
+   clonedEl.parentNode.replaceChild(mtext, clonedEl);
+   spanShadowHost.shadowRoot.appendChild(mathClone);
+
+   // finally create a span in the light DOM, replace the math element with it and put everything under it
+   math.parentNode.replaceChild(spanShadowHost, math);   
+   spanShadowHost.appendChild(math);        // removes 'math' from DOM
+}
 
 poly.define('mstack', upgrade)
 poly.define('mlongdiv', upgrade)
+
+customElements.define('elementary-math', class extends HTMLElement {
+    constructor() {
+        super();
+        
+        // create the table equivalent
+        const  table = new ElemMath(this.children[0]).expandMStackElement(this.children[0]);
+        
+        // put the table into a shadow DOM
+        const shadowRoot =  this.attachShadow({mode: 'open'});
+        addStyleSheetToShadowRoot(shadowRoot);
+        shadowRoot.appendChild(table);
+    }
+  });
+  
   
 export default upgrade
