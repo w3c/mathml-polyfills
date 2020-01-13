@@ -1,4 +1,4 @@
-# mfenced polyfill
+# elementary math polyfill (mstack, mlongdiv)
 
 This repository contains a polyfill for the MathML [elementary math elements: mstack, msgroup, msrow, msline, mscarries, mscarry, and mlongdiv](https://mathml-refresh.github.io/mathml/#elementary-math).
 
