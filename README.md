@@ -6,4 +6,5 @@ on [MathML Core](https://mathml-refresh.github.io/mathml-core/) and other
 web technologies natively implemented in browsers.
 
 * [The mfenced element](mfenced/)
+* [Elmentary math elements: mstack, mlongdiv, and others](elem-math/)
 * ...
