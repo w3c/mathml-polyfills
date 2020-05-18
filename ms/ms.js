@@ -37,29 +37,6 @@ function collapseWhiteSpace(text) {
 }
 
 /**
- * 
- * @param {HTMLElement} el 
- */
-function getDirection(el) {
-    // We need to take into account the writing direction. This comes either from MathML "dir" attr or from
-    //   the CSS "direction" property, with CSS taking priority.
-    // FIX: can't tell when a CSS value is set on an element such as
-    // FIX:  mfrac {direction:rtl;} vs inherited from higher element unless set as an inline style)
-    const dir = getComputedStyle(el).direction;
-    while (el) {
-        const attr = (el.style && el.style.direction) || el.getAttribute('dir');
-        if (attr) {
-            return attr;
-        }
-        if (el.tagName.toLowerCase === 'math') {
-            return dir;
-        }
-        el = el.parentElement;
-    }
-    return dir;
-}
-
-/**
  * @param {HTMLElement} el
  */
 let upgrade = (el) => {
@@ -73,7 +50,7 @@ let upgrade = (el) => {
     if (rquote !== lquote) {
         content = content.replace(rquote,'\\'+rquote);
     }
-    el.textContent = getDirection(el) === 'ltr' ? lquote + content + rquote : rquote + content + lquote;
+    el.textContent = lquote + content + rquote;
 }
 
 // poly.define('ms', upgrade)

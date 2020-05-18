@@ -50,10 +50,10 @@
     </p>
 
     <h1>Values for lquote/rquote</h1>
-    <h2>Simple string with default values</h2>
+    <h2>String with default values</h2>
     <p>Simple string should have '&quot;' around it.</p>
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-      <ms id='test'>  A   string </ms>
+      <ms>  A   string </ms>
     </math>
     <p>String with quotes (which should be escaped)</p>
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -62,31 +62,29 @@
     <h2>Open/close quotes given for the values for lquote/rquote</h2>
     <p>Simple string should have '&quot;' around it.</p>
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-      <ms lquote="&#x201c;" rquote="&#x201d">A string</ms>
+      <ms lquote="“" rquote="”">A string</ms>
     </math>
     <p>String with quotes (which should be escaped)</p>
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-      <ms lquote="&#x201c;" rquote="&#x201d">A string has &#x201c;&#x201ds around it.</ms>
+      <ms lquote="“" rquote="”">A string has “ ”s around it.</ms>
     </math>
-
+    <p>String with Spanish quotes ("comillas angulares") (which should be escaped)</p>
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <ms lquote="«" rquote="»">A string has «...» around it.</ms>
+    </math>
     <h1>Values for dir/direction</h1>
-    <h2>Open/close quotes given for the values for lquote/rquote with dir='rtl' on math element (quotes should be reversed)</h2>
-    <p>Simple string should have '&quot;' around it.</p>
-    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir='rtl'>
-      <ms>A string  </ms>
-    </math>
+    <p>Nothing should change when doing rtl because the renderer should reverse the entire string. Hence the lquote remains the first
+      character in the string.
+    </p>
+    <h2>Open/close quotes given for the values for lquote/rquote with dir='rtl' on math element</h2>
     <p>String with quotes (which should be escaped)</p>
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir='rtl'>
-      <ms lquote="&#x201c;" rquote="&#x201d">A string has &#x201c;&#x201ds around it.</ms>
+      <ms lquote="“" rquote="”">A string has “ ”s around it.</ms>
     </math>
-    <h2>Open/close quotes given for the values for lquote/rquote with inline style 'rtl' on ms (quotes should be reversed)</h2>
-    <p>Simple string should have '&quot;' around it.</p>
-    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-      <ms style='direction: rtl;'>A string  </ms>
-    </math>
+    <h2>Open/close quotes given for the values for lquote/rquote with inline style 'rtl' on ms</h2>
     <p>String with quotes (which should be escaped)</p>
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir='rtl'>
-      <ms lquote="&#x201c;" rquote="&#x201d"  style='direction: rtl;'>A string has &#x201c;&#x201ds around it.</ms>
+      <ms lquote="“" rquote="”"  style='direction: rtl;'>A string has “ ”s around it.</ms>
     </math>
   </body>
 </html>
