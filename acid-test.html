@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test ms polyfill</title>
+    <meta charset="utf-8"/>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+  </head>
+  <body>
+      <table>
+          <tr>
+              <td>
+                 mfenced 
+              </td>
+              <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mfenced open="[" separators=";" close="]">
+                      <mn>0</mn>
+                      <mn>1</mn>
+                    </mfenced>
+                  </math>
+              </td>
+          </tr>
+          <tr>
+              <td>
+                 bevelled fraction (outermost fraction)
+              </td>
+              <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mfrac bevelled="true">
+                        <mfrac>
+                           <mi> a </mi>
+                           <mi> b </mi>
+                        </mfrac>
+                        <mfrac>
+                           <mi> c </mi>
+                           <mi> d </mi>
+                        </mfrac>
+                     </mfrac>                  </math>
+              </td>
+          </tr>
+          <tr>
+              <td>
+                 under/over scripts with an mo that should be displayed as an accent 
+              </td>
+              <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mover>
+                        <mi>x</mi>
+                        <mo>&#x21C0;</mo>
+                    </mover>
+                    <mo>+</mo>
+                    <mover>
+                        <mi>x</mi>
+                        <mo>^</mo>
+                    </mover>
+                    <mo>+</mo>
+                    <munder>
+                        <mo>&#x2211;</mo>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>&#x2208;</mo>
+                            <mi>D</mi>
+                        </mrow>
+                    </munder>
+                    <mi>f</mi>
+                    <mo>(</mo>
+                    <mi>x</mi>
+                    <mo>)</mo>
+                </math>
+              </td>
+          </tr>
+          <tr>
+              <td>
+                 mfrac with named linethickness (thin, medium, thick) 
+              </td>
+              <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML"  display="block">
+                    <mfrac>
+                        <mn>1</mn>
+                        <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac linethickness="thin">
+                        <mn>1</mn>
+                        <mn>3</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac linethickness="medium">
+                        <mn>1</mn>
+                        <mn>4</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac linethickness="thick">
+                        <mn>1</mn>
+                        <mn>5</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac linethickness="8px">
+                        <mn>1</mn>
+                        <mn>6</mn>
+                    </mfrac>
+                </math>
+            </td>
+          </tr>
+  </body>
+</html>
