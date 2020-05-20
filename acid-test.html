@@ -1,23 +1,38 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Test ms polyfill</title>
+    <title>Browser transform MathML tests</title>
     <meta charset="utf-8"/>
     <style>
         table {
             border-collapse: collapse;
+            margin-top: 3ex;
         }
         table, th, td {
             border: 1px solid black;
         }
         th, td {
             padding: 10px;
-            text-align: left;
         }
     </style>
   </head>
   <body>
+      <h1>MathML transform tests</h1>
+      <p>The following table contains MathML that is not part of core.
+          The page loads transforms that will transform the full MathML into MathML core.
+          The transforms will <em>not</em> run until you click the button below.
+          This allows you to see the effects of the transform.
+      </p>
+      <label>
+          Click to see the effect of the transform <br>
+          <button>Apply transforms</button>
+        
+      </label>
       <table>
+          <tr>
+              <th>Description</th>
+              <th>Math example</th>
+          </tr>
           <tr>
               <td>
                  mfenced 
