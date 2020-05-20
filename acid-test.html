@@ -3,6 +3,17 @@
   <head>
     <title>Browser transform MathML tests</title>
     <meta charset="utf-8"/>
+    <script type="module">
+      import { _MathTransforms } from './common/math-transforms.js'
+      import { expandFencedElement } from './mfenced/mfenced.js'
+
+      _MathTransforms.add('mfenced', expandFencedElement)
+      window.addEventListener("DOMContentLoaded", () => {
+        apply.onclick = () => {
+          _MathTransforms.transform(document.body)
+        }
+      })
+    </script>
     <style>
         table {
             border-collapse: collapse;
@@ -25,7 +36,7 @@
       </p>
       <label>
           Click to see the effect of the transform <br>
-          <button>Apply transforms</button>
+          <button id="apply">Apply transforms</button>
         
       </label>
       <table>

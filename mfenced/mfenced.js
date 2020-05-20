@@ -22,8 +22,8 @@
   THE SOFTWARE.
 */
 
-(function () {
-    "use strict";
+//(function () {
+//    "use strict";
 
     const namespaceURI = "http://www.w3.org/1998/Math/MathML";
 
@@ -76,7 +76,7 @@
         return attribute.namespaceURI || !excludedAttributes.includes(attribute.localName);
     }
 
-    function expandFencedElement(mfenced) {
+    export const expandFencedElement = (mfenced) => {
         // Return an <mrow> element representing the expanded <mfenced>.
         // https://mathml-refresh.github.io/mathml/chapter3.html#presm.mfenced
         let outerMrow = newMrow();
@@ -106,7 +106,7 @@
         return outerMrow;
     }
 
-    window["expandMathMLFencedElements"] = function () {
+    /*window["expandMathMLFencedElements"] = function () {
         // Replace all the <mfenced> elements with their expanded equivalent.
         let mfencedElements = document.body.getElementsByTagNameNS(namespaceURI, "mfenced");
         while (mfencedElements.length) {
@@ -116,4 +116,5 @@
     };
 
     window.addEventListener("load", window["expandMathMLFencedElements"]);
-}());
+    */
+//}());
