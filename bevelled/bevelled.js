@@ -1,7 +1,8 @@
-// @ts-check
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
 /*
+  Copyright (c) 2016-2019 Igalia S.L.
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -21,38 +22,35 @@
   THE SOFTWARE.
 */
 
-
 import { _MathTransforms } from '../common/math-transforms.js'
 
-const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
-
+const namespaceURI = "http://www.w3.org/1998/Math/MathML";
 
 /**
  * 
- * @param {string} text 
+ * @param {HTMLElement} mfrac 
  */
-function collapseWhiteSpace(text) {
-    // Collapse the whitespace as specified by the MathML specification.
-    // https://mathml-refresh.github.io/mathml/chapter2.html#fund.collapse
-    return text.replace(/^[\s]+|[\s]+$/g, '').replace(/[\s]+/g, ' ');
+const transformBevelled = (mfrac) => {
+    // Return an <mrow> element representing the bevelled fraction.
+    // The numerator is shifted up 0.5em
+    let mrow = document.createElementNS(namespaceURI, "mrow");
+
+    // create the numerator
+    let mpadded = document.createElementNS(namespaceURI, "mpadded");
+    mpadded.setAttribute("height", "+0.5em");
+    mpadded.setAttribute("voffset", "0.5em");
+    mpadded.appendChild(mfrac.firstElementChild);
+    mrow.appendChild(mpadded);
+
+    // add the "/"
+    let slash = document.createElementNS(namespaceURI, "mo");
+    slash.setAttribute("stretchy", "true");
+    slash.appendChild(document.createTextNode('/'));
+    mrow.appendChild(slash);
+
+    // add the denominator
+    mrow.appendChild(mfrac.lastElementChild);
+    return mrow;
 }
 
-/**
- * @param {HTMLElement} ms
- */
-const transformMs = (ms) => {
-    // Ideally, we would attach a shadow root to <ms> and put the result in there, but that's not legal (now)
-    // Instead, we just move the lquote/rquote attrs into the ms and change the DOM.
-    // If lquote or rquote appear in the string contents, they should be escaped.
-    const lquote = ms.getAttribute('lquote') || '"';
-    const rquote = ms.getAttribute('rquote') || '"';
-    let content = collapseWhiteSpace(ms.textContent);
-    content = content.replace(lquote,'\\'+lquote);
-    if (rquote !== lquote) {
-        content = content.replace(rquote,'\\'+rquote);
-    }
-    ms.textContent = lquote + content + rquote;
-    return 
-}
-
-_MathTransforms.add('ms', transformMs);
+_MathTransforms.add('mfrac[bevelled]', transformBevelled);

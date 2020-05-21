@@ -5,9 +5,13 @@
     <meta charset="utf-8"/>
     <script type="module">
       import { _MathTransforms } from './common/math-transforms.js'
-      import { expandFencedElement } from './mfenced/mfenced.js'
+      import './mfenced/mfenced.js'
+      import'./bevelled/bevelled.js'
+      //import'./accent/accent.js'
+      import'./mathsize/mathsize.js'
+      import'./linethickness/linethickness.js'
+      import'./ms/ms.js'
 
-      _MathTransforms.add('mfenced', expandFencedElement)
       window.addEventListener("DOMContentLoaded", () => {
         apply.onclick = () => {
           _MathTransforms.transform(document.body)
@@ -59,20 +63,28 @@
           </tr>
           <tr>
               <td>
-                 bevelled fraction (outermost fraction)
+                 bevelled fraction
               </td>
               <td>
                 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mi>f</mi>
+                    <mo>(</mo>
                     <mfrac bevelled="true">
-                        <mfrac>
-                           <mi> a </mi>
-                           <mi> b </mi>
-                        </mfrac>
-                        <mfrac>
-                           <mi> c </mi>
-                           <mi> d </mi>
-                        </mfrac>
-                     </mfrac>                  </math>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>+</mo>
+                            <mn>1</mn>    
+                        </mrow>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>-</mo>
+                            <mn>1</mn>    
+                        </mrow>
+                    </mfrac> 
+                    <mo>)</mo>
+                    <mo>+</mo>
+                    <mn>1</mn>
+                </math>
               </td>
           </tr>
           <tr>
@@ -108,7 +120,7 @@
           </tr>
           <tr>
               <td>
-                 mfrac with named linethickness (thin, medium, thick) 
+                 mfrac with named linethickness (none, thin, medium, thick, 8px) 
               </td>
               <td>
                 <math xmlns="http://www.w3.org/1998/Math/MathML"  display="block">
@@ -139,5 +151,55 @@
                 </math>
             </td>
           </tr>
-  </body>
+          <tr>
+              <td>
+                  fraction with named mathsize for numerator
+                  (none, small, medium, big, 20px) 
+              </td>
+              <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML"  display="block">
+                    <mfrac>
+                        <mn>1</mn>
+                        <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac>
+                        <mn mathsize="small">1</mn>
+                        <mn>3</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac>
+                        <mn mathsize="medium">1</mn>
+                        <mn>4</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac>
+                        <mn mathsize="big">1</mn>
+                        <mn>5</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac>
+                        <mn mathsize="20px">1</mn>
+                        <mn>6</mn>
+                    </mfrac>
+                </math>
+            </td>
+          </tr>
+          <tr>
+            <td>
+               ms -- default quotes and curly quotes; internal quotes should be escaped 
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mi>f</mi>
+                    <mo>(</mo>
+                    <ms>normal '&quot;'s</ms>
+                    <mo>,</mo>
+                    <ms lquote="“" rquote="”"open/close quotes</ms>
+                    <mo>)</mo>
+                </math>
+            </td>
+        </tr>
+    </table>
+</body>
 </html>
