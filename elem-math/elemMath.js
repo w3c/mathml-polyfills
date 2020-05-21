@@ -30,7 +30,7 @@
  * Once all the rows are processed, that data structure is turned into an HTML table.
  */
 
-import {poly} from '../common/math-polys-core.js'
+import { _MathTransforms } from '../common/math-transforms.js'
 
 const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
 
@@ -960,7 +960,7 @@ function addStyleSheetToShadowRoot(shadowRoot) {
     const link = document.createElement("link");
     link.rel = 'stylesheet';
     link.type = 'text/css';
-    link.href = 'elemMath.css';
+    link.href = 'https://mathml-refresh.github.io/mathml-polyfills/elem-math/elemMath.css';
     style.appendChild(link);
     shadowRoot.appendChild(style); 
 }
@@ -968,66 +968,92 @@ function addStyleSheetToShadowRoot(shadowRoot) {
 /**
  * @param {HTMLElement} el
  */
-let upgrade = (el) => {
+let transformElemMath = (el) => {
     // Ideally, we would attach a shadow root to the <mstack> or <mlongdiv>, but that's not legal (now)
-    // Instead, we wrap the math element in a span and attach a shadowRoot to that. In the shadowRoot, we replace the
-    // elementary math with a table and stick it inside an mtext so we still have legal MathML that hopefully renders if there
-    // is other MathML inside the <math> element.
+    // Instead, we wrap 'el' (the root of the elementary) with "<mtext><span><math> el <math></span></mtext>".
+    // The span can serve as the shadow root.
+    // [current transformer makes a clone, so can't do this] As an optimization (likely very common), if the parent of 'el' is 'math', we more directly add a <span> around the 'math'.
+    // Very ugly, but at least the DOM doesn't have the ugly table in it.
     // This seems like the least disruptive change to the original structure.
 
-   // hack to allow definition of custom element "elementary-math" to also work with 'upgrade()'
-   if (el.parentElement && (el.parentElement.tagName === 'ELEMENTARY-MATH' ||
-                            (el.parentElement.parentElement && el.parentElement.parentElement.tagName === 'ELEMENTARY-MATH'))) {
-       return;
-   }
+    // hack to allow definition of custom element "m-elem-math" to also work with 'transformElemMath()'
+    if (el.parentElement && (el.parentElement.tagName === 'M-ELEM-MATH' ||
+                            (el.parentElement.parentElement && el.parentElement.parentElement.tagName === 'M-ELEM-MATH'))) {
+        return;
+    }
 
-   // find parent <math> element
-   let math = el.parentElement;
-   while (math && math.tagName.toLowerCase() !== 'math') {
-       math = math.parentElement;
-   }
+    // put the math with table into a shadow DOM
+    const spanShadowHost =  document.createElement("span");
+    spanShadowHost.attachShadow({mode: "open"});
+    addStyleSheetToShadowRoot(spanShadowHost.shadowRoot);
 
-   if (!math) {     // shouldn't happen
-       math = el;
-   }
-
-    // create the table equivalent
+    // create the table equivalent and put it into the shadow DOM
     const  table = new ElemMath(el).expandMStackElement(el);
-   
-   // put the math with table into a shadow DOM
-   const spanShadowHost =  document.createElement("span");
-   spanShadowHost.attachShadow({mode: "open"});
-   addStyleSheetToShadowRoot(spanShadowHost.shadowRoot);
+    spanShadowHost.shadowRoot.appendChild(table);
 
-   // We need to make a clone of the math node so that one copy is in the regular DOM and the other (modified) is in the shadow
-   // there is probably a better way to do this, but because we know 'el' and want to change it in the shadow, I only thought of two ways:
-   //   1. change the original because we know 'el', put it in the shadow, and put the clone in the DOM.
-   //   2. temporarily add a class to 'el' so we can find it in the clone, then the remove the clas in both
-   //      Note: can't use 'id' because can't find it unless the clone is in the doc, but then we are modifying a live DOM which is slow
-   // '2' seems like it would be faster because less DOM surgery happens, so that's what we do.
-   const newClassName = Date.now().toString(36).slice(-4) + Math.floor(Math.random() * 0x186a0).toString(36);
-   el.className += newClassName;
-   const mathClone = math.cloneNode(true);                  // FIX: should remove all 'id's from clone...
-   el.classList.remove(newClassName);
-   const clonedEl = mathClone.getElementsByClassName(newClassName)[0];
-   clonedEl.classList.remove(newClassName);
-   
+    // need to create <mtext> <span> <math> elem math </math> </span> </mtext>
+    let mtext = document.createElementNS(MATHML_NS, "mtext");
+    mtext.appendChild(spanShadowHost);                      // now have <mtext> <span> ...
+    let math = document.createElementNS(MATHML_NS, "math");
+    spanShadowHost.appendChild(math);                       // now have <mtext> <span> <math> ...
+    math.appendChild(el);                                   // make el a child of math
 
-   // modify the clonded math to use the table and add that to the shadowRoot
-   const mtext = document.createElement("mtext");
-   mtext.appendChild(table);
-   clonedEl.parentNode.replaceChild(mtext, clonedEl);
-   spanShadowHost.shadowRoot.appendChild(mathClone);
+    return mtext;
 
-   // finally create a span in the light DOM, replace the math element with it and put everything under it
-   math.parentNode.replaceChild(spanShadowHost, math);   
-   spanShadowHost.appendChild(math);        // removes 'math' from DOM
+    /*
+    // now its time to modify the light DOM
+    let elemMathParent = el.parentElement;
+    if (elemMathParent && elemMathParent.tagName.toLocaleLowerCase() === 'math') {
+        let math = elemMathParent;
+        math.parentElement.replaceChild(spanShadowHost, math);   // put span in place of 'math' -- math is now disconnected
+        spanShadowHost.appendChild(math);                        // make 'math' a child of span
+    } else {
+        // need to create <mtext> <span> <math> elem math </math> </span> </mtext>
+        let mtext = document.createElementNS(MATHML_NS, "mtext");
+        mtext.appendChild(spanShadowHost);                      // now have <mtext> <span> ...
+        let math = document.createElementNS(MATHML_NS, "math");
+        spanShadowHost.appendChild(math);                       // now have <mtext> <span> <math> ...
+        elemMathParent.replaceChild(mtext, el);                 // replace el with <mtext> -- el now disconnected
+        math.appendChild(el);                                   // make el a child of math
+   }
+
+   return null; // signal we did the replacement
+   */
+/*
+    // We need to make a clone of the math node so that one copy is in the regular DOM and the other (modified) is in the shadow
+    // there is probably a better way to do this, but because we know 'el' and want to change it in the shadow, I only thought of two ways:
+    //   1. change the original because we know 'el', put it in the shadow, and put the clone in the DOM.
+    //   2. temporarily add a class to 'el' so we can find it in the clone, then the remove the class in both
+    //      Note: can't use 'id' because can't find it unless the clone is in the doc, but then we are modifying a live DOM which is slow
+    // '2' seems like it would be faster because less DOM surgery happens, so that's what we do.
+    const newClassName = Date.now().toString(36).slice(-4) + Math.floor(Math.random() * 0x186a0).toString(36);
+    el.className += newClassName;
+    const mathClone = math.cloneNode(true);                  // FIX: should remove all 'id's from clone...
+    el.classList.remove(newClassName);
+    const clonedEl = mathClone.getElementsByClassName(newClassName)[0];
+    clonedEl.classList.remove(newClassName);
+
+
+    // modify the cloned math to use the table and add that to the shadowRoot
+    const mtext = document.createElement("mtext");
+    mtext.appendChild(table);
+    clonedEl.parentNode.replaceChild(mtext, clonedEl);
+    spanShadowHost.shadowRoot.appendChild(mathClone);
+    // finally create a span in the light DOM, replace the math element with it and put everything under it
+    elemMathParent.replaceChild(spanShadowHost, math);   
+    spanShadowHost.appendChild(math);        // removes 'math' from DOM
+    */
 }
 
-poly.define('mstack', upgrade)
-poly.define('mlongdiv', upgrade)
+_MathTransforms.add('mstack', transformElemMath);
+_MathTransforms.add('mlongdiv', transformElemMath);
 
-customElements.define('elementary-math', class extends HTMLElement {
+// import {poly} from '../common/math-polys-core.js'
+// poly.define('mstack', transformElemMath)
+// poly.define('mlongdiv', transformElemMath)
+
+
+customElements.define('m-elem-math', class extends HTMLElement {
     constructor() {
         super();
         
@@ -1042,4 +1068,3 @@ customElements.define('elementary-math', class extends HTMLElement {
   });
   
   
-export default upgrade

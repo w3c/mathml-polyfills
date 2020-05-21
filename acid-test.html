@@ -6,11 +6,12 @@
     <script type="module">
       import { _MathTransforms } from './common/math-transforms.js'
       import './mfenced/mfenced.js'
-      import'./bevelled/bevelled.js'
+      import './bevelled/bevelled.js'
       //import'./accent/accent.js'
-      import'./mathsize/mathsize.js'
-      import'./linethickness/linethickness.js'
-      import'./ms/ms.js'
+      import './mathsize/mathsize.js'
+      import './linethickness/linethickness.js'
+      import './ms/ms.js'
+      import './elem-math/elemMath.js'
 
       window.addEventListener("DOMContentLoaded", () => {
         apply.onclick = () => {
@@ -200,6 +201,72 @@
                 </math>
             </td>
         </tr>
+        <tr>
+            <td>Elementary math: 2D subtraction problem with borrows and carries</td>
+            <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstack>
+                <mscarries location='nw'>
+                  <none/>
+                  <mscarry crossout='updiagonalstrike' location='n'> <mn>2</mn> </mscarry>
+                  <mn>1</mn>
+                  <none/>
+                </mscarries>
+                <mn>2,327</mn>
+                <msrow> <mo>-</mo> <mn> 1,156</mn> </msrow>
+                <msline/>
+                <mn>1,171</mn>
+              </mstack>
+            </math>
+            </td>
+        </tr>
+        <tr>
+            <td>Elementary math: Repeating decimals (line over fractional part)</td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mstack stackalign="right">
+                      <msline length="6"/>
+                      <mn> 0.142857 </mn>
+                    </mstack>
+                  </math>
+            </td>
+        </tr>
+        <tr>
+            <td>Elementary math: Long Division</td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mlongdiv longdivstyle="lefttop">
+                      <mn> 3 </mn>
+                      <mn> 435.3</mn>
+                    
+                      <mn> 1306</mn>
+                    
+                      <msgroup position="2" shift="-1">
+                        <msgroup>
+                          <mn> 12</mn>
+                          <msline length="2"/>
+                        </msgroup>
+                        <msgroup>
+                          <mn> 10</mn>
+                          <mn> 9</mn>
+                          <msline length="2"/>
+                        </msgroup>
+                        <msgroup>
+                          <mn> 16</mn>
+                          <mn> 15</mn>
+                          <msline length="2"/>
+                          <mn> 1.0</mn>           <!-- aligns on '.', not the right edge ('0') -->
+                        </msgroup>
+                        <msgroup position='-1'>   <!-- extra shift to move to the right of the "." -->
+                           <mn> 9</mn>
+                          <msline length="3"/>
+                          <mn> 1</mn>
+                        </msgroup>
+                      </msgroup>
+                    </mlongdiv>
+                  </math>
+            </td>
+        </tr>
+          
     </table>
 </body>
 </html>

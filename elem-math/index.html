@@ -4,7 +4,14 @@
     <title>Elementary MathML elements</title>
     <meta charset="utf-8"/>
     <link rel="stylesheet" type="text/css" href="elemMath.css">
-    <script type="module" src="elemMath.js"> </script>
+    <script type="module"> 
+      import { _MathTransforms } from '../common/math-transforms.js'
+      import './elemMath.js'
+
+      window.addEventListener("DOMContentLoaded", () => {
+          _MathTransforms.transform(document.body)
+      })
+    </script>
     <style>
       ol li {
         margin-top: 2ex;
