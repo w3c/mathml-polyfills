@@ -2,6 +2,8 @@
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
 /*
+  Copyright (c) 2020 Neil Soiffer, Talking Cat Software
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
@@ -999,50 +1001,6 @@ let transformElemMath = (el) => {
     math.appendChild(el);                                   // make el a child of math
 
     return mtext;
-
-    /*
-    // now its time to modify the light DOM
-    let elemMathParent = el.parentElement;
-    if (elemMathParent && elemMathParent.tagName.toLocaleLowerCase() === 'math') {
-        let math = elemMathParent;
-        math.parentElement.replaceChild(spanShadowHost, math);   // put span in place of 'math' -- math is now disconnected
-        spanShadowHost.appendChild(math);                        // make 'math' a child of span
-    } else {
-        // need to create <mtext> <span> <math> elem math </math> </span> </mtext>
-        let mtext = document.createElementNS(MATHML_NS, "mtext");
-        mtext.appendChild(spanShadowHost);                      // now have <mtext> <span> ...
-        let math = document.createElementNS(MATHML_NS, "math");
-        spanShadowHost.appendChild(math);                       // now have <mtext> <span> <math> ...
-        elemMathParent.replaceChild(mtext, el);                 // replace el with <mtext> -- el now disconnected
-        math.appendChild(el);                                   // make el a child of math
-   }
-
-   return null; // signal we did the replacement
-   */
-/*
-    // We need to make a clone of the math node so that one copy is in the regular DOM and the other (modified) is in the shadow
-    // there is probably a better way to do this, but because we know 'el' and want to change it in the shadow, I only thought of two ways:
-    //   1. change the original because we know 'el', put it in the shadow, and put the clone in the DOM.
-    //   2. temporarily add a class to 'el' so we can find it in the clone, then the remove the class in both
-    //      Note: can't use 'id' because can't find it unless the clone is in the doc, but then we are modifying a live DOM which is slow
-    // '2' seems like it would be faster because less DOM surgery happens, so that's what we do.
-    const newClassName = Date.now().toString(36).slice(-4) + Math.floor(Math.random() * 0x186a0).toString(36);
-    el.className += newClassName;
-    const mathClone = math.cloneNode(true);                  // FIX: should remove all 'id's from clone...
-    el.classList.remove(newClassName);
-    const clonedEl = mathClone.getElementsByClassName(newClassName)[0];
-    clonedEl.classList.remove(newClassName);
-
-
-    // modify the cloned math to use the table and add that to the shadowRoot
-    const mtext = document.createElement("mtext");
-    mtext.appendChild(table);
-    clonedEl.parentNode.replaceChild(mtext, clonedEl);
-    spanShadowHost.shadowRoot.appendChild(mathClone);
-    // finally create a span in the light DOM, replace the math element with it and put everything under it
-    elemMathParent.replaceChild(spanShadowHost, math);   
-    spanShadowHost.appendChild(math);        // removes 'math' from DOM
-    */
 }
 
 _MathTransforms.add('mstack', transformElemMath);
