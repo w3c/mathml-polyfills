@@ -22,13 +22,72 @@
 
 import { _MathTransforms } from '../common/math-transforms.js'
 
+const EmbellishedOpsElements = ["msub", "msup", "msubsup", "munder", "mover", "munderover", "mmultiscripts", "mfrac", "semantics"];
+const MRowLikeElements =["mrow", "mstyle", "mphantom", "mpadded"];
+
+/**
+ * 
+ * @param {HTMLElement} el
+ * @returns {boolean}
+ */
+function isSpaceLike(el) {
+  // FIX: doesn't check maction element whose selected sub-expression exists and is an embellished operator;
+  if (el.tagName === 'mtext'|| el.tagName === 'mspace'|| el.tagName === 'maligngroup'|| el.tagName === 'malignmark') {
+    return true;
+   }
+   if (MRowLikeElements.includes(el.tagName)) {
+    for (let i=0; i < el.children.length; i++) {
+      if (!isSpaceLike(el.children[i])) {
+        return false;
+      }
+    };
+    if (el.tagName === 'maction' && el.hasAttribute("selection") && isSpaceLike(el.children[el.elAttribute("selection")])) {
+      return true;
+    }
+    return true;
+  }
+
+  return false;
+ 
+}
+ 
+/**
+ * 
+ * @param {HTMLElement} el
+ * @returns {[HTMLElement|null]}
+ */
+function getEmbellishedOperator(el) {
+ if (el.tagName === 'mo') {
+   return el;
+  }
+  if (EmbellishedOpsElements.includes(el.tagName)) {
+    return getEmbellishedOperator(el.firstChild);
+  }
+
+  if (MRowLikeElements.includes(el.tagName)) {
+    for (let i=0; i < el.children.length; i++) {
+      if (!isSpaceLike(el.children[i])) {
+        return getEmbellishedOperator(el.children[i]);
+      }
+    };
+    return null;
+  }
+
+  return null;
+}
+
 /**
  * 
  * @param {HTMLElement} child 
  * @param {string} attrName 
  */
 function setAccentValue(child,attrName) {
-  let accentVal = child.getAttribute("accent");
+  const op = getEmbellishedOperator(child);
+  if (op === null) {
+    return;
+  }
+
+  let accentVal = op.getAttribute("accent");
   if (accentVal === null && child.tagName === 'mo') {
     accentVal = "true";
   };
