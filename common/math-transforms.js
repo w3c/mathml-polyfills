@@ -22,16 +22,20 @@
            Since these are in tree-order,
            if we process them
            in reverse order we should side-step
-           the gnarliest of potentialnesting
+           the gnarliest of potential nesting
            issues, I think
         */
           matches.reverse().forEach(el => {
-            el.setAttribute("data-math-transformed", "");
-            let copy = el.cloneNode(true);
-            let transformed = transformer(copy);
-  
-            recurse = true;
-            el.replaceWith(transformed || copy);
+            const nextChild = el.nextSibling;
+            const parent = el.parentElement;
+            let transformed = transformer(el);
+            if (transformed && transformed !== el) {
+              transformed.setAttribute("data-math-transformed", "");
+              if (el.parentElement === parent) {
+                parent.removeChild(el);
+              }
+              parent.insertBefore(transformed, nextChild);
+            }
           });
       }
 
