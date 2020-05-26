@@ -11,13 +11,46 @@
       import './mathsize/mathsize.js'
       import './linethickness/linethickness.js'
       import './ms/ms.js'
+      import './mlabeledtr/mlabeledtr.js'
       import './elem-math/elemMath.js'
 
-      window.addEventListener("DOMContentLoaded", () => {
-        apply.onclick = () => {
-          _MathTransforms.transform(document.body)
-        }
-      })
+      window.transform = function(elementId) {
+        _MathTransforms.transform(elementId);
+      }
+
+    function htmlContents(toc) {
+        //toc of contents - remove # if necessary
+        let TOC = document.getElementById(toc.replace(/\#/g, ''))
+
+        let headers = document.querySelectorAll('h2');
+        //keep track of ids
+        let ids = []
+        headers.forEach(function(el) {
+            // if it has an id already, just add that to the array
+            if (el.id) return ids.push(el.id)
+            //id will be the textcontent without non-letter characters in lower case
+            let id = el.textContent.replace(/[^a-zA-Z]/g, '').toLowerCase() + 'Header'
+            while(ids.indexOf(id) !== -1) {
+                //add zzz's to the end until we have a unique id
+                id = id + 'zzz'
+            }
+            //ready to be tracked
+            ids.push(id)
+            //okay we can set now
+            el.id = id
+        })
+
+        let html = '<ol>'
+        headers.forEach(function(h) {
+            html += `<li><a href="#${h.id}">${h.textContent}</a></li>`;
+        });
+        html += '</ol>';
+
+        TOC.insertAdjacentHTML('beforeend', html);
+    }
+    document.addEventListener("DOMContentLoaded", function(event) {
+        htmlContents('#toc')
+    })
     </script>
     <style>
         table {
@@ -33,18 +66,20 @@
     </style>
   </head>
   <body>
-      <h1>MathML transform tests</h1>
-      <p>The following table contains MathML that is not part of core.
-          The page loads transforms that will transform the full MathML into MathML core.
-          The transforms will <em>not</em> run until you click the button below.
-          This allows you to see the effects of the transform.
-      </p>
-      <label>
-          Click to see the effect of the transform <br>
-          <button id="apply">Apply transforms</button>
-        
-      </label>
-      <table>
+    <h1>MathML transform tests</h1>
+    <p>The following table contains MathML that is not part of core.
+        The page loads transforms that will transform the full MathML into MathML core.
+        The transforms will <em>not</em> run until you click the button below.
+        This allows you to see the effects of the transform.
+    </p>
+    <p>Examples:</p>
+    <div id="toc"></div> <!-- TOC auto built from h2's-->
+    <h2>General MathML Elements and Attributes</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(general)">Apply Transform</button>    
+    </label>
+    <table id="general">
           <tr>
               <th>Description</th>
               <th>Math example</th>
@@ -201,6 +236,119 @@
                 </math>
             </td>
         </tr>
+    </table>
+
+    <h2>MathML Table elements and Attributes</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(mtable)">Apply Transform</button>    
+    </label>
+    <table id="mtable">
+          <tr>
+            <td>
+                mlabeledtr  -- label should be on right of line 
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mtable width="100%" columnwidth="auto fit">
+                        <mlabeledtr id='e-is-m-c-square'>
+                          <mtd>
+                            <mtext> (2.1) </mtext>
+                          </mtd>
+                          <mtd>
+                           <mrow>
+                             <mi>E</mi>
+                             <mo>=</mo>
+                             <mrow>
+                              <mi>m</mi>
+                              <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+                              <msup>
+                               <mi>c</mi>
+                               <mn>2</mn>
+                              </msup>
+                             </mrow>
+                           </mrow>
+                          </mtd>
+                        </mlabeledtr>
+                    </mtable>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                mlabeledtr  -- label should be on left of rows 1 and 3 
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mtable side='left' width="100%" columnwidth="auto fit">
+                        <mtr><mtd><mtext>Famous Formulas</mtext></mtd></mtr>
+                        <mlabeledtr>
+                          <mtd>
+                            <mtext> (3.1) </mtext>
+                          </mtd>
+                          <mtd>
+                            <msup>
+                                <mi>e</mi>
+                                <mrow>
+                                    <mi>i</mi>
+                                    <mi mathvariant="normal">&#x3C0;</mi>
+                                </mrow>
+                            </msup>
+                            <mo>+</mo>
+                            <mn>1</mn>
+                            <mo>=</mo>
+                            <mn>0</mn>
+                          </mtd>
+                        </mlabeledtr>
+                        <mtr>
+                          <mtd>
+                            <msup>
+                                <mi>a</mi>
+                                <mn>2</mn>
+                            </msup>
+                            <mo>+</mo>
+                            <msup>
+                                <mi>b</mi>
+                                <mn>2</mn>
+                            </msup>
+                            <mo>=</mo>
+                            <msup>
+                                <mi>c</mi>
+                                <mn>2</mn>
+                            </msup>
+                          </mtd>
+                        </mtr>
+                        <mlabeledtr>
+                          <mtd>
+                            <mtext> (2.3) </mtext>
+                          </mtd>
+                          <mtd>
+                           <mrow>
+                             <mi>E</mi>
+                             <mo>=</mo>
+                             <mrow>
+                              <mi>m</mi>
+                              <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+                              <msup>
+                               <mi>c</mi>
+                               <mn>2</mn>
+                              </msup>
+                             </mrow>
+                           </mrow>
+                          </mtd>
+                        </mlabeledtr>
+                    </mtable>
+                </math>
+            </td>
+        </tr>
+    </table>
+
+    <h2>Elementary Math</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(elemMath)">Apply Transform</button>    
+    </label>
+    <table id='elemMath'>
         <tr>
             <td>Elementary math: 2D subtraction problem with borrows and carries</td>
             <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">

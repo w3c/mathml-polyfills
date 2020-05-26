@@ -26,31 +26,44 @@ const namespaceURI = "http://www.w3.org/1998/Math/MathML";
 
 /**
  * 
- * @param {HTMLElement} mlabeledtr 
+ * @param {HTMLElement} mtable 
  */
-const transformMlabeledtr = (mlabeledtr) => {
-  // Change the parent table by adding a column to it, with 'el' placed in it.
-  // el is replaced with a 'mtr', which is what is returned.
+function makeTableSquare(mtable) {
+  // FIX: implement -- need to handle spanning cols
+  return mtable;
+}
 
-  let newTable = mlabeledtr.parentElement.cloneNode(true);
-  const label = mlabeledtr.firstElementChild;
-  const side = newTable.getAttribute('side') || 'right';
+/**
+ * 
+ * @param {HTMLElement} mtable 
+ */
+function handleLabeledRows(mtable) {
+  // assumes table is square
 
-  // new row without label -- mlabeledtr is modified (all but label removed)
-  let newMtr = document.createElementNS(namespaceURI, "mtr");
-  for (let i=1; i < mlabeledtr.children.length; i++) { // skip first child which is label
-    newMtr.appendChild(mlabeledtr.children[i]);
+  // first check to see if there is a 'mlabeledtr'
+  if (mtable.getElementsByTagName('mlabeledtr').length === 0) {
+    return mtable;
   }
 
+  const side = mtable.getAttribute('side') || 'right';
   let emptyColumnEntry = document.createElementNS(namespaceURI, "mtd");
   emptyColumnEntry.appendChild(document.createTextNode(''));
-  for (let i=0; i < newTable.children.length; i++) {
-    let row = newTable.children[i];
+
+  for (let i=0; i < mtable.children.length; i++) {
+    let row = mtable.children[i];
     const foundLabel = row.tagName === 'mlabeledtr';
+    let label = null;
+
     if (foundLabel) {
-      row.replaceWith(newMtr);
-      row = newTable.children[i];
+      label = row.firstElementChild;
+      let newRow = document.createElementNS(namespaceURI, "mtr");
+      for (let c=1; c < row.children.length; c++) {
+        newRow.appendChild(row.children[c]);
+      }
+      row.replaceWith(newRow);
+      row = newRow;
     }
+
     const newColEntry = foundLabel ? label : emptyColumnEntry.cloneNode();
     if (side === 'right') {
       row.appendChild(newColEntry);
@@ -59,8 +72,22 @@ const transformMlabeledtr = (mlabeledtr) => {
     }
   }
 
-  mlabeledtr.parentElement.replaceWith(newTable);
-  return null;
+  return mtable;
 }
 
-_MathTransforms.add('mlabeledtr', transformMlabeledtr);
+/**
+ * 
+ * @param {HTMLElement} mtable 
+ */
+const transformMtable = (mtable) => {
+  // Change the table by adding a column to it, with 'el' placed in it.
+  // el is replaced with a 'mtr', which is what is returned.
+
+  let newTable = makeTableSquare(mtable.cloneNode(true))
+  handleLabeledRows(newTable);
+
+  // FIX: handle attrs
+  return newTable;
+}
+
+_MathTransforms.add('mtable', transformMtable);
