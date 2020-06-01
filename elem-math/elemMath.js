@@ -998,7 +998,7 @@ let transformElemMath = (el) => {
     mtext.appendChild(spanShadowHost);                      // now have <mtext> <span> ...
     let math = document.createElementNS(MATHML_NS, "math");
     spanShadowHost.appendChild(math);                       // now have <mtext> <span> <math> ...
-    math.appendChild(el);                                   // make el a child of math
+    math.appendChild(el.cloneNode(true));                   // make el a child of math -- clone because can't detach el from DOM
 
     return mtext;
 }
