@@ -1,4 +1,3 @@
-// @ts-check
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
 /*
@@ -20,39 +19,35 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-
-
 import { _MathTransforms } from '../common/math-transforms.js'
 
-const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
-
-
 /**
- * 
- * @param {string} text 
+ * @param {HTMLElement} el 
  */
-function collapseWhiteSpace(text) {
-    // Collapse the whitespace as specified by the MathML specification.
-    // https://mathml-refresh.github.io/mathml/chapter2.html#fund.collapse
-    return text.replace(/^[\s]+|[\s]+$/g, '').replace(/[\s]+/g, ' ');
+const transformSmall = (el) => {
+    // this should only be called when mathsize="small"
+    el.setAttribute("mathsize", "75%");
+    return el;
 }
 
 /**
- * @param {HTMLElement} ms
+ * @param {HTMLElement} el 
  */
-const transformMs = (ms) => {
-    // Ideally, we would attach a shadow root to <ms> and put the result in there, but that's not legal (now)
-    // Instead, we just move the lquote/rquote attrs into the ms and change the DOM.
-    // If lquote or rquote appear in the string contents, they should be escaped.
-    const lquote = ms.getAttribute('lquote') || '"';
-    const rquote = ms.getAttribute('rquote') || '"';
-    let content = collapseWhiteSpace(ms.textContent);
-    content = content.replace(lquote,'\\'+lquote);
-    if (rquote !== lquote) {
-        content = content.replace(rquote,'\\'+rquote);
-    }
-    ms.textContent = lquote + content + rquote;
-    return 
+const transformMedium = (el) => {
+    // this should only be called when mathsize="medium"
+    el.setAttribute("mathsize", "100%");
+    return el;
 }
 
-_MathTransforms.add('ms', transformMs);
+/**
+ * @param {HTMLElement} el 
+ */
+const transformBig = (el) => {
+    // this should only be called when mathsize="big"
+    el.setAttribute("mathsize", "150%");
+    return el;
+}
+
+_MathTransforms.add('[mathsize="small"]', transformSmall);
+_MathTransforms.add('[mathsize="medium"]', transformMedium);
+_MathTransforms.add('[mathsize="big"]', transformBig);
