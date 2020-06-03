@@ -7,7 +7,8 @@
       import { _MathTransforms } from './common/math-transforms.js'
       import './mfenced/mfenced.js'
       import './bevelled/bevelled.js'
-      import'./accent/accent.js'
+      import './accent/accent.js'
+      import './horiz-align/horiz-align.js'
       import './mathsize/mathsize.js'
       import './linethickness/linethickness.js'
       import './ms/ms.js'
@@ -99,32 +100,6 @@
           </tr>
           <tr>
               <td>
-                 bevelled fraction
-              </td>
-              <td>
-                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-                    <mi>f</mi>
-                    <mo>(</mo>
-                    <mfrac bevelled="true">
-                        <mrow>
-                            <mi>x</mi>
-                            <mo>+</mo>
-                            <mn>1</mn>    
-                        </mrow>
-                        <mrow>
-                            <mi>x</mi>
-                            <mo>-</mo>
-                            <mn>1</mn>    
-                        </mrow>
-                    </mfrac> 
-                    <mo>)</mo>
-                    <mo>+</mo>
-                    <mn>1</mn>
-                </math>
-              </td>
-          </tr>
-          <tr>
-              <td>
                  under/over scripts with an mo that should be displayed as an accent 
               </td>
               <td>
@@ -153,6 +128,275 @@
                     <mo>)</mo>
                 </math>
               </td>
+          </tr>
+          <tr>
+            <td>
+               munder alignment left/left/right<br>
+               first example is with stretchy operator
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <munder align="left" accent="true">
+                        <mrow>
+                            <mi>r</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                        </mrow>
+                        <mo>&#x21C0;</mo>
+                    </munder>
+                    <mo>,</mo>
+                    <munder align="left">
+                        <mrow>
+                            <mi>l</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                        </mrow>
+                        <mo accent="true">&#x25B3;</mo>
+                    </munder>
+                    <mo>,</mo>
+                    <munder align="right" accent="true">
+                        <mrow>
+                            <mi>r</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                        </mrow>
+                        <mo>&#x25A1;</mo>
+                    </munder>
+                </math>
+              </td>
+        </tr>
+        <tr>
+            <td>
+               mover alignment left/left/right<br>
+               first example is with stretchy operator
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <mover align="left" accent="true">
+                        <mrow>
+                            <mi>r</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                        </mrow>
+                        <mo>&#x21C0;</mo>
+                    </mover>
+                    <mo>,</mo>
+                    <mover align="left">
+                        <mrow>
+                            <mi>l</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                        </mrow>
+                        <mo accent="true">&#x25B3;</mo>
+                    </mover>
+                    <mo>,</mo>
+                    <mover align="right" accent="true">
+                        <mrow>
+                            <mi>r</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                        </mrow>
+                        <mo>&#x25A1;</mo>
+                    </mover>
+                </math>
+              </td>
+        </tr>
+        <tr>
+            <td>
+               munderover alignment left/left/right<br>
+               first example is with stretchy operator
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <munderover align="left" accent="true">
+                        <mrow>
+                            <mi>r</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                        </mrow>
+                        <mo>&#x21C0;</mo>
+                        <mo>&#x21C1;</mo>
+                    </munderover>
+                    <mo>,</mo>
+                    <munderover align="left">
+                        <mrow>
+                            <mi>l</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                        </mrow>
+                        <mi>left</mi>
+                        <mo accent="true">&#x25B3;</mo>
+                    </munderover>
+                    <mo>,</mo>
+                    <munderover align="right" accent="true">
+                        <mrow>
+                            <mi>r</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                        </mrow>
+                        <mo>&#x25A1;</mo>
+                        <mi>right</mi>
+                    </munderover>
+                </math>
+              </td>
+        </tr>
+        <tr>
+              <td>
+                 bevelled fraction
+              </td>
+              <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mi>f</mi>
+                    <mo>(</mo>
+                    <mfrac bevelled="true">
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>+</mo>
+                            <mn>1</mn>    
+                        </mrow>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>-</mo>
+                            <mn>1</mn>    
+                        </mrow>
+                    </mfrac> 
+                    <mo>)</mo>
+                    <mo>+</mo>
+                    <mn>1</mn>
+                </math>
+              </td>
+          </tr>
+          <tr>
+              <td>
+                 numerator alignment left/center/right  and nested with right/left
+              </td>
+              <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML"  display="block">
+                    <mfrac numalign="left">
+                        <mn>1</mn>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>-</mo>
+                            <mn>1</mn>
+                        </mrow>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac numalign="center">
+                        <mn>22</mn>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>-</mo>
+                            <mn>2</mn>
+                        </mrow>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac numalign="right">
+                        <mrow>
+                            <mn>333</mn>
+                        </mrow>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>-</mo>
+                            <mi>y</mi>
+                            <mo>-</mo>
+                            <mn>3</mn>
+                        </mrow>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac numalign="left" denomalign="right">
+                        <mrow>
+                            <mfrac numalign="right">
+                                <mn>4</mn>
+                                <mrow>
+                                    <mi>x</mi>
+                                    <mo>+</mo>
+                                    <mi>y</mi>
+                                </mrow>
+                            </mfrac>
+                        </mrow>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>-</mo>
+                            <mi>y</mi>
+                            <mo>-</mo>
+                            <mn>3</mn>
+                        </mrow>
+                    </mfrac>                            
+                </math>
+              </td>
+          </tr>
+          <tr>
+              <td>
+                 denominator alignment left/center/right and nested with left/right
+              </td>
+              <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mfrac denomalign="left">
+                        <mrow>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                            <mo>+</mo>
+                            <mi>c</mi>
+                        </mrow>
+                        <mn>3</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac denomalign="center">
+                        <mstyle displaystyle="true">
+                            <mi>x</mi>
+                            <mo>+</mo>
+                            <mi>y</mi>
+                            <mo>+</mo>
+                            <mn>1234</mn>
+                        </mstyle>
+                        <mstyle displaystyle="true">
+                            <mn>3</mn>
+                        </mstyle>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac denomalign="right">
+                        <mstyle displaystyle="true">
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                            <mo>+</mo>
+                            <mi>c</mi>
+                        </mstyle>
+                        <mstyle displaystyle="true">
+                            <mn>3</mn>
+                        </mstyle>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac denomalign="right">
+                        <mrow>
+                            <mfrac numalign="left" denomalign="right">
+                                <mn>4</mn>
+                                <mrow>
+                                    <mi>x</mi>
+                                    <mo>+</mo>
+                                    <mi>y</mi>
+                                </mrow>
+                            </mfrac>
+                        </mrow>
+                        <mrow>
+                            <mn>3</mn>
+                        </mrow>
+                    </mfrac>
+                </math>
+            </td>
           </tr>
           <tr>
               <td>
