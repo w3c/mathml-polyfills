@@ -26,8 +26,6 @@ const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
 
 /**
  * @param {HTMLElement} child
- * @param {number} iChild
- * @param {number} iOther
  * @returns {number}
  */
 function getChildWidth(child) {
@@ -50,7 +48,7 @@ function doAlignment(child, childWidth, align, maxWidth) {
         return child;
     }
 
-    // need to wrap child with mrow if it is not one aleady
+    // need to wrap child with mrow if it is not one already
     if (child.tagName !== 'mrow') {
         const sibling = child.nextElementSibling;
         const mrow = document.createElementNS(MATHML_NS, 'mrow');
@@ -59,7 +57,7 @@ function doAlignment(child, childWidth, align, maxWidth) {
         parent.insertBefore(mrow, sibling);
         child = mrow;
     }
-    
+
     let mspace = document.createElementNS(MATHML_NS, 'mspace');
     mspace.setAttribute('width', `${(maxWidth - childWidth).toPrecision(2)}px`);
     if (align === 'left') {
