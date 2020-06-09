@@ -12,6 +12,7 @@
       import './mathsize/mathsize.js'
       import './linethickness/linethickness.js'
       import './ms/ms.js'
+      import './mpadded/mpadded.js'
       import './mtable/mtable.js'
       import './elem-math/elemMath.js'
 
@@ -481,6 +482,74 @@
             </td>
         </tr>
     </table>
+
+    <h2>mpadded Attribute Pseudo Values</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(mpadded)">Apply Transform</button>    
+    </label>
+    <table id="mpadded">
+          <tr>
+              <th>Description</th>
+              <th>Math example</th>
+          </tr>
+          <tr style="vertical-align: top;">
+            <td>
+               mpadded -- pseudo units (width, depth, height) are not part of core
+               <br>
+               Yellow is space child, blue is mpadded dimensions.
+               'lspace'/'voffset' are set so that a yellow square should be centered inside a blue square,
+               with the blue square having twice the side length of the yellow square.
+               <h3>Before transform</h3>
+               <div id="beforeAttrValues"></div>
+               <h3>After transform</h3>
+               <div id="afterAttrValues"></div>
+            </td>
+            <td id='mpadded'>
+                <div style="width: 250px; text-align:left;">
+                    <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+                        <mn>1</mn>
+                        <mpadded lspace="0.5width" voffset="-.25height" width="2width" height="1.5height" depth="3depth" style="background: lightblue;">
+                            <mspace width="30px" height="20px" depth="10px" style="background: yellow;"></mspace>
+                        </mpadded>
+                        <mo>,</mo>
+                        <mn>2</mn>
+                        <mpadded lspace="15px" voffset="5px" width="6depth" height="1.0width" depth="1.5height" style="background: lightblue;">
+                            <mspace width="30px" height="20px" depth="10px" style="background: yellow;"></mspace>
+                        </mpadded>
+                        <mo>,</mo>
+                        <mn>3</mn>
+                        <mpadded lspace="50%width" voffset="-50%depth" width="600%depth" height="100%width" depth="150%height" style="background: lightblue;">
+                            <mspace width="30px" height="20px" depth="10px" style="background: yellow;"></mspace>
+                        </mpadded>
+                        <mn>4</mn>
+                    </math>
+                </div>
+            </td>
+            <script>
+                function showAttrs(el, displayEl) {
+                  const mpaddedEls = el.getElementsByTagName('mpadded');
+                  let attrStrings = '';
+                  for (let i = 0; i < mpaddedEls.length; i++) {
+                      if (i > 0) {
+                          attrStrings += '\n';
+                      }
+                      attrStrings += `mpadded ${i+1}: `;
+                      const attrs = mpaddedEls[i].attributes;
+                      for (let j = 0; j < attrs.length; j++) {
+                        attrStrings += ` ${attrs[j].name}="${attrs[j].value}"`;
+                      }
+                  }
+                  displayEl.innerText = attrStrings;
+                }
+                showAttrs(window.mpadded, window.beforeAttrValues);
+                new MutationObserver(
+                    (mutationsList, observer) => showAttrs(window.mpadded, window.afterAttrValues))
+                    .observe(window.mpadded, {attributes:true, subtree:true});
+            </script>
+        </tr>
+    </table>    
+
 
     <h2>MathML Table elements and Attributes</h2>
     <label>
