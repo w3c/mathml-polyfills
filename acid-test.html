@@ -505,7 +505,7 @@
                <h3>After transform</h3>
                <div id="afterAttrValues"></div>
             </td>
-            <td id='mpadded'>
+            <td id='mpaddedTest'>
                 <div style="width: 250px; text-align:left;">
                     <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
                         <mn>1</mn>
@@ -542,7 +542,7 @@
                   }
                   displayEl.innerText = attrStrings;
                 }
-                showAttrs(window.mpadded, window.beforeAttrValues);
+                showAttrs(window.mpaddedTest, window.beforeAttrValues);
                 new MutationObserver(
                     (mutationsList, observer) => showAttrs(window.mpadded, window.afterAttrValues))
                     .observe(window.mpadded, {attributes:true, subtree:true});
