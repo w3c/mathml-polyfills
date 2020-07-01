@@ -534,6 +534,7 @@ function getAllBreakPoints(element) {
  */
 function nestingDepth(mo) {
     // FIX: this assumes "proper" mrow structure. Maybe a parser like extension could infer it -- needs precedence info from the operator dictionary
+    //   It also needs the 'form' (infix, prefix, ...), although since most operators are infix, a small table of prefix, postfix, matchfix could be built)
     //   For a parser, probably want to start at math node and parse 'mrow's
     //   Figuring out multiplication/function call if not explicitly given is probably half the battle.
     let depth = 1;
@@ -723,6 +724,11 @@ function linebreakLine(element, maxLineWidth) {
  * 
  * On resize, we throw out the old shadow and start from fresh with a clone of the <math> element. 
  * 
+ * Since most math doesn't need to be linebroken, we start with a quick check to see if there are forced linebreaks or if it is wide.
+ * @param {HTMLElement} math 
+ */
+
+/*
  * Note: this is not efficient code due to making changes to the live DOM -- tons of reflow potentially happens,
  *   although most reflow is probably limited in scope except for when a new line is added.
  * It would be useful to measure whether reflow is a occupies a majority of the time used for linebreaking.
@@ -734,10 +740,12 @@ function linebreakLine(element, maxLineWidth) {
  *      this means siblings to both the left/right of a potential linebreak should get their left/right position stored
  * Using stored attrs offers a minor code simplification because the code doesn't need to query left/right as often because they don't change.
  * 
- * Since most math doesn't need to be linebroken, we start with a quick check to see if there are forced linebreaks or if it is wide.
- * @param {HTMLElement} math 
+ * Another efficiency idea:
+ * If we add parsing to get the correct depth of the <mo>s, that might be a little slow, especially for resizing.
+ * The mrow structure is important for knowing the depth for indentation alignment and linebreak penalties, but if we add parsing,
+ * the structure is not important. That means that we can avoid throwing out the shadow DOM 'math' and instead zip the lines back together.
+ * The structure is ruined, but depth computations wouldn't need to be done again.
  */
-
 const SHADOW_ELEMENT_NAME = "math-with-linebreaks";
 
 /**
