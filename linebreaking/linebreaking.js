@@ -819,19 +819,30 @@ function addCustomElement(math) {
 }
 
 _MathTransforms.add('math', addCustomElement);
-
-const resizeObserver = new ResizeObserver(elements => {
-    for (let mathWithLineBreaks of elements) {
-        if (mathWithLineBreaks.target.tagName === SHADOW_ELEMENT_NAME) {
-            const customElement = mathWithLineBreaks.target;
-            if (customElement.getBoundingClientRect().width > getLineBreakingWidth(customElement)) {
-                const mathClone = customElement.firstElementChild.cloneNode(true);
-                customElement.shadowRoot.firstElementChild.replaceWith(mathClone);
-                lineBreakDisplayMath(mathClone);
-            }
+ 
+const resizeObserver = new ResizeObserver(entries => {
+    for (let entry of entries) {
+        let actualMathBox = parseFloat(entry.target.shadowRoot.firstElementChild.getBoundingClientRect().width)
+        let delta = Math.abs(actualMathBox - entry.contentRect.width)
+        if (delta > 10) { 
+            const mathClone = entry.target.firstElementChild.cloneNode(true);
+            entry.target.shadowRoot.firstElementChild.replaceWith(mathClone);
+            lineBreakDisplayMath(mathClone);
         }
+       
+        entry.target.style.height = entry.target.shadowRoot.firstElementChild.getBoundingClientRect().height + "px";
     }
 });
+
+let UAStyle = document.createElement('style')
+UAStyle.innerHTML = `
+       math-with-linebreaks {
+            display: block;
+            overflow-x: hidden;
+        }
+`
+document.head.insertBefore(UAStyle, document.head.firstElementChild) 
+
 
 // define the custom element in case someone wants to use it directly -- it should have only 'math' as its child
 customElements.define(SHADOW_ELEMENT_NAME, class extends HTMLElement {
@@ -840,10 +851,14 @@ customElements.define(SHADOW_ELEMENT_NAME, class extends HTMLElement {
 
         const shadowRoot = this.attachShadow({ mode: 'open' });
         const math = this.firstElementChild;
+
         if (math) {
             /** @type {HTMLElement} */
             const mathClone = math.cloneNode(true);
             shadowRoot.appendChild(mathClone);
+            const style = document.createElement('style')
+            style.innerHTML = 'math { position: absolute; z-index: 2; }'
+            shadowRoot.appendChild(style)
             if (math.tagName === 'math') {
                 lineBreakDisplayMath(mathClone);
             }
