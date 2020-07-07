@@ -81,14 +81,26 @@ function convertToPx(length) {
 // Hack to close over the shadowRoot so it can be accessed deep down
 var shadowRoot = (function () {
     var root = null;
+    var emInPixels = 0;
+    var breakWidth = 0
 
     return {
-        set: function (shadow) {
+        set: function (shadow, em, width) {
             root = shadow;
+            emInPixels = em;
+            breakWidth = width;
         },
 
         get: function () {
             return root;
+        },
+
+        getEmInPixels: function () {
+            return emInPixels;
+        },
+
+        getBreakWidth: function () {
+            return breakWidth;
         }
     };
 })();
@@ -150,24 +162,6 @@ function getMathMLAttrValueAsString(element, attrName, defaultVal) {
 }
 
 /**
- * 
- * @param {Element} math 
- * @returns {number}
- */
-function getLineBreakingWidth(math) {
-    // probably should assume we are in a shadow DOM, but this is a bit more general
-    const parent = math.parentElement || math.parentNode.host;
-    let width = parseFloat(getComputedStyle(parent).width);      // FIX: this is wrong but getBoundingClientRect() and getComputedStye(parent) all return the width of the math element
-    if (isNaN(width)) {
-        width = parent.getBoundingClientRect().width;
-    }
-    if (math.hasAttribute('maxwidth')) {
-        width = Math.min(width, convertToPx(math.getAttribute('maxwidth')));
-    }
-    return width;
-}
-
-/**
  * @returns {Element}
  */
 function createLineBreakMTable() {
@@ -210,6 +204,12 @@ function createNewTableRowWithChild(child) {
 function computeIndentAttrObject(mo, firstMiddleOrLast) {
     const attrObject = {};
 
+    let linebreakstyle = getMathMLAttrValueAsString(mo, 'linebreakstyle', 'before');
+    if (linebreakstyle === 'infixLineBreakStyle') {
+        linebreakstyle = getMathMLAttrValueAsString(mo, 'infixLineBreakStyle', 'before');
+    }
+    attrObject.linebreakstyle = linebreakstyle;
+    
     attrObject.indentAlign = getMathMLAttrValueAsString(mo, 'indentalign', 'auto');
     attrObject.indentShift = getMathMLAttrValueAsString(mo, 'indentshift', '0px');
     if (firstMiddleOrLast == 'first') {
@@ -371,16 +371,37 @@ function leftMostChild(element) {
     return (element.tagName == 'mspace') ? element.nextElementSibling : element;
 }
 
+function isMatchLessThanHalfWay(xStart, indent, maxWidth) {
+    return (indent - xStart) <= 0.5 * maxWidth;
+}
+
 /**
- * 
+ * Return the operators that match 'char'. For the match, "+"/"-" match each other 
+ * @param {Element[]} operators 
+ * @param {string} char 
+ * @returns {Element[]}
+ */
+function filterOnCharMatch(operators, char) {
+    if (char === '-') {
+        char = '+';
+    }
+    return operators.filter( function(operator) {
+        let opChar = operator.textContent.trim();
+        if (opChar === '-') {
+            opChar = '+';
+        }
+        return char === opChar;
+    })
+}
+/**
+ * Look through all the previous lines and find a good indent 
+ * Potential breakpoints are those 'mo's at the same depth as the 'mo' that starts the current line
+ * Preference is given to an 'mo' with the same char (i.e, if we have a '+', find another '+' at the same depth).
+ * Of those 'mo' that match, the one with the minimum amount of indent is chosen so that more fits on that line.
  * @param {Element} mtd
  * @returns {number}
  */
 function computeAutoShiftAmount(mtd) {
-    function isMatchLessThanHalfWay(xStart, indent, maxWidth) {
-        return 2 * (indent - xStart) < maxWidth;
-    }
-
     if (isFirstRow(mtd.parentElement)) {
         return 0;
     }
@@ -395,13 +416,15 @@ function computeAutoShiftAmount(mtd) {
     const maxWidth = parseFloat(mtd.parentElement.parentElement.getAttribute(MTABLE_LINEBREAKS_ATTR));     // stored on mtable
     let previousLine = mtd.parentElement.previousElementSibling;
     while (previousLine) {
-        const previousLineOperators = Array.from(previousLine.firstElementChild.querySelectorAll('mo')).filter(
+        const previousLineOperators = getAllBreakPoints(previousLine.firstElementChild).filter(
             operator => moDepth === operator.getAttribute(ELEMENT_DEPTH)
         );
-        const previousLineMatches = previousLineOperators.filter(operator => moChar === operator.textContent.trim());
+          const prevChar = previousLineOperators.length === 0 ? 'none' : previousLineOperators[0].textContent.trim();
+        const previousLineMatches = filterOnCharMatch(previousLineOperators, moChar);
         let indent = previousLineMatches.length === 0 ? minIndentAmount : previousLineMatches[0].getBoundingClientRect().left;
         if (isMatchLessThanHalfWay(xStart, indent, maxWidth)) {
-            if (indent < minIndentAmount) {
+            // characters match
+            if (indent < minIndentAmount || !operatorMatched) {
                 operatorMatched = true;
                 minIndentAmount = indent;
             }
@@ -624,8 +647,8 @@ function substituteCharIfNeeded(potentialBreaks, index) {
             const replacementMO = newElement('mo');
             replacementMO.textContent = replaceChar;
             copyAttributes(replacementMO, mo);
-            potentialBreaks[index] = replacementMO;
             mo.replaceWith(replacementMO);
+            potentialBreaks[index] = replacementMO;
             return replacementMO;
         }
     }
@@ -638,7 +661,8 @@ function substituteCharIfNeeded(potentialBreaks, index) {
  */
 function linebreakLine(element, maxLineWidth) {
     // do we need to linebreak this element?
-    if (element.getBoundingClientRect().width <= maxLineWidth) {
+    //console.log(`    linebreakLine: full ${element.getAttribute(FULL_WIDTH)}, max ${maxLineWidth}`)
+    if (parseFloat(element.getAttribute(FULL_WIDTH))  <= maxLineWidth) {
         return;
     }
 
@@ -654,23 +678,26 @@ function linebreakLine(element, maxLineWidth) {
 
     // the leftSide can change as linebreaks cause reflow of ancestors
     //    'element' might center/right align mrow inside, so use child's position
-    let leftSide = element.firstElementChild.getBoundingClientRect().left;
 
     let lineBreakMO;                // the 'mo' used for linebreaking (might be changed if invisible times)
-    let lastRow;                    // when a line is split, there are now two of them (actually rows in mtable); this is the last one
+    let lastRow = (element.tagName === 'mtd') ?
+                        element.parentElement :
+                        element.parentNode;
+                          // when a line is split, there are now two of them (actually rows in mtable); this is the last one
     let nLines = 0;                 // really only care if first line, but useful for debugging to know # of lines
     let iOperator = 1;              // start of each line (want at least one element on the first line)
     while (iOperator < potentialBreaks.length) {
         let iLine = iOperator;      // index into current line of breakpoints
-
         // the amount of room we have is reduced by the indentation if we break here.
-        const lineBreakWidth = maxLineWidth -
-            computeIndentAmount(
-                potentialBreaks[iLine],
-                leftSide,
-                computeIndentAttrObject(potentialBreaks[iLine], nLines === 0 ? 'first' : 'middle')
-            );
-
+        const indentAttrs = JSON.parse(lastRow.firstElementChild.getAttribute(INDENT_ATTRS));
+        const leftSide = indentAttrs.linebreakstyle === 'before' ?
+                             potentialBreaks[iOperator-1].getBoundingClientRect().left :
+                             lastRow.firstElementChild.firstElementChild.getBoundingClientRect().left;
+        const indentAmount = computeIndentAmount(
+                                potentialBreaks[iOperator-1],   // where we broke
+                                lastRow.firstElementChild.getBoundingClientRect().left,
+                                indentAttrs);
+        const lineBreakWidth = maxLineWidth - indentAmount;
         let minPenalty = 100000.0;  // in practice, the numbers don't get over 2
         let iMinPenalty = -1;
 
@@ -700,16 +727,22 @@ function linebreakLine(element, maxLineWidth) {
             lastRow = splitLine(potentialBreaks[iMinPenalty]);
             // only needs to be set once, but the value is needed to compute the indent amount as soon as we aren't on the first line
             lastRow.parentElement.setAttribute(MTABLE_LINEBREAKS_ATTR, maxLineWidth.toString());
+            storeLineBreakAttrsOnMtd(lastRow.firstElementChild, lineBreakMO);
+
             const previousRow = lastRow.previousElementSibling;
-            storeLineBreakAttrsOnMtd(previousRow.firstElementChild, lineBreakMO);
+            if (!previousRow.firstElementChild.hasAttribute(INDENT_ATTRS)) {
+                // created a new mtable -- the indent attrs were on the math element.
+                previousRow.firstElementChild.setAttribute(INDENT_ATTRS, element.getAttribute(INDENT_ATTRS));
+            }
             indentLine(previousRow.firstElementChild);
+        } else if (nLines === 1) {
+            // should get here, but happens if entire expr fits on one line
+            return;
         }
 
         // set value for start of next line
-        leftSide = leftMostChild(lastRow.firstElementChild).getBoundingClientRect().left;
     }
     // all done with linebreaking -- indent the last row
-    storeLineBreakAttrsOnMtd(lastRow.firstElementChild, lineBreakMO);
     indentLine(lastRow.firstElementChild);
     return;
 }
@@ -750,16 +783,21 @@ const SHADOW_ELEMENT_NAME = "math-with-linebreaks";
 
 /**
  * The main starting point
- * @param {Element} math        // <math> (likely inside a shadow DOM)
+ * @param {Element} customElement        // <math> (likely inside a shadow DOM)
+ * @param {number} maxLineWidth
  */
-function lineBreakDisplayMath(math) {
-    const hasForcedLineBreaks = math.querySelector('mo[linebreak="newline"]');
-    const maxLineWidth = getLineBreakingWidth(math);
-    if (!hasForcedLineBreaks && math.getBoundingClientRect().width <= maxLineWidth) {
-        return math;
-    }
+function lineBreakDisplayMath(customElement, maxLineWidth) {
+    maxLineWidth = Math.min(maxLineWidth, parseFloat(customElement.getAttribute(FULL_WIDTH)));
+    const math = customElement.shadowRoot.firstElementChild;
+    //console.log(`  lineBreakDisplayMath: full ${customElement.getAttribute(FULL_WIDTH)}, max ${maxLineWidth}`);
 
-    shadowRoot.set(math.parentNode.host.shadowRoot);
+    // only handle display math -- inline math requires being able to have a reflow observer, and that doesn't exist
+    // FIX: determining that 'display' ends up being inline "like" is much more complicated.
+    // if ( /*getComputedStyle(math).getPropertyValue('display') === 'inline' ||*/   // in table, always inline
+    //      (math.hasAttribute('display') && math.getAttribute('display') === 'inline') ) {
+    //     return;
+    // }
+    shadowRoot.set(customElement.shadowRoot);
 
     // pre-compute depth info since it will be used many times in linebreaking and (auto) indentation
     addDepthInfo(math.querySelectorAll('mo:not([linebreak="nobreak"])'));
@@ -768,11 +806,8 @@ function lineBreakDisplayMath(math) {
 
     // gather up all the parts with forced linebreaks (turned into an array because don't want them live (linebreaking augments them later)
     let linebreakGroups = Array.from(math.querySelectorAll(`mtable[${MTABLE_HAS_LINEBREAKS}]`));
-    if (linebreakGroups.length == 0) {
-        // no forced breaks, but still need to check for auto breaks
-        // they may create some breaks (mtable), and those breaks need indenting
-        linebreakLine(math, maxLineWidth);
-    } else {
+    if (linebreakGroups.length > 0) {
+        //console.log(`    ${linebreakGroups.length} forced linebreaks`);
         linebreakGroups.forEach(table => {
             table.setAttribute(MTABLE_LINEBREAKS_ATTR, maxLineWidth.toString());
             const lines = Array.from(table.children);     // don't want a live collection -- messes up with linebreaks adding rows
@@ -785,50 +820,98 @@ function lineBreakDisplayMath(math) {
                 }
             })
         })
+    } else if (parseInt(customElement.getAttribute(FULL_WIDTH)) >= maxLineWidth) {
+        // no forced breaks, but still need to check for auto breaks
+        // they may create some breaks (mtable), and those breaks need indenting
+        math.setAttribute(INDENT_ATTRS, JSON.stringify(computeIndentAttrObject(math , 'first')));
+        linebreakLine(math, maxLineWidth);
     }
+}
+// the width before linebreaking *not* taking into account forced linebreaks (set on original math element)
+const FULL_WIDTH = 'data-full-width';
+
+// the width to use for linebreaking (set on shadow host)
+const LINE_BREAK_WIDTH = 'data-linebreak-width'
+
+// hack to get 'em' width (set on shadow host)
+const EM_WIDTH = 'data-em-in-pixels'
+
+/**
+ * 
+ * @param {Element} customElement 
+ * @param {Element} math 
+ */
+function setShadowRootContents(customElement, math) {
+    // create the custom element, replace the math with it, and then linebreak a clone of the math in the shadow DOM 
+    const tempDiv = document.createElement("div");
+    tempDiv.style.width = '1em';
+    customElement.shadowRoot.appendChild(tempDiv);
+    customElement.setAttribute(EM_WIDTH, tempDiv.clientWidth.toString());
+
+    /** @type {HTMLElement} */
+    const mathClone = math.cloneNode(true);
+    tempDiv.replaceWith(mathClone);
+    // keep track of the width before linebreaking
+    let fullWidth = mathClone.lastElementChild.getBoundingClientRect().right - mathClone.firstElementChild.getBoundingClientRect().left;
+    if (mathClone.hasAttribute('maxwidth')) {
+        fullWidth = Math.min(fullWidth, convertToPx(mathClone.getAttribute('maxwidth')));
+    }
+    customElement.setAttribute(FULL_WIDTH, fullWidth.toString());
+    lineBreakDisplayMath(customElement, fullWidth);
+    customElement.setAttribute(LINE_BREAK_WIDTH, (2*fullWidth).toString());
+
+    //console.log(`Set... y: ${customElement.getBoundingClientRect().y}; FULL_WIDTH: ${customElement.getAttribute(FULL_WIDTH)}`)
 }
 
 function addCustomElement(math) {
-    // put the math with mtable for linebreaking into a shadow DOM
-    // create an element to host the shadow DOM if one isn't present
-    const hasForcedLineBreaks = math.querySelector('mo[linebreak="newline"]');
-    const maxLineWidth = getLineBreakingWidth(math);
-    if (!hasForcedLineBreaks && math.getBoundingClientRect().width <= maxLineWidth) {
-        return math;
+    // only handle display math -- inline math requires being able to have a reflow observer, and that doesn't exist
+    // FIX: determining that 'display' ends up being inline "like" is much more complicated.
+    if ( /*getComputedStyle(math).getPropertyValue('display') === 'inline' ||*/   // in table, always inline
+         (math.hasAttribute('display') && math.getAttribute('display') === 'inline') ) {
+        return;
     }
 
     if (math.tagName.toLowerCase() === SHADOW_ELEMENT_NAME) {
         return math;        // already is a custom element
-    } else if (math.parentElement.tagName === SHADOW_ELEMENT_NAME) {
+    } else if (math.parentElement.tagName.toLowerCase() === SHADOW_ELEMENT_NAME) {
         return math;        // already inside a custom element
     } else {
-        // create the custom element, replace the math with it, and then linebreak a clone of the math in the shadow DOM 
+        //console.log(`addCustomElement... math width ${math.getBoundingClientRect().width}`);
         let mathParent = math.parentElement;
         let nextSibling = math.nextElementSibling;
         const shadowHost = document.createElement(SHADOW_ELEMENT_NAME);
         shadowHost.appendChild(math);
         mathParent.insertBefore(shadowHost, nextSibling);
-
-        /** @type {HTMLElement} */
-        const mathClone = math.cloneNode(true);
-        shadowHost.shadowRoot.appendChild(mathClone);
-
-        lineBreakDisplayMath(mathClone);
+        setShadowRootContents(shadowHost, math);
         return null;
     }
 }
 
 _MathTransforms.add('math', addCustomElement);
 
-const resizeObserver = new ResizeObserver(elements => {
-    for (let mathWithLineBreaks of elements) {
-        if (mathWithLineBreaks.target.tagName === SHADOW_ELEMENT_NAME) {
-            const customElement = mathWithLineBreaks.target;
-            if (customElement.getBoundingClientRect().width > getLineBreakingWidth(customElement)) {
+const resizeObserver = new ResizeObserver(entries => {
+    for (let entry of entries) {
+        if (entry.target.tagName.toLowerCase() === SHADOW_ELEMENT_NAME) {
+            const customElement = entry.target;
+            //console.log(`In resize...entry width: ${entry.contentRect.width}; prev width: ${customElement.getAttribute(LINE_BREAK_WIDTH)}; \
+            //            FULL ${customElement.getAttribute(FULL_WIDTH)}; $y: ${customElement.getBoundingClientRect().y}`);
+            if (entry.contentRect.width < parseInt(customElement.getAttribute(FULL_WIDTH))) {  // room to break is less than full width
                 const mathClone = customElement.firstElementChild.cloneNode(true);
-                customElement.shadowRoot.firstElementChild.replaceWith(mathClone);
-                lineBreakDisplayMath(mathClone);
+                const oldDisplayedMath = customElement.shadowRoot.firstElementChild;
+                oldDisplayedMath.replaceWith(mathClone);
+                customElement.setAttribute(LINE_BREAK_WIDTH, entry.contentRect.width.toString());
+                //console.log("   linebreaking...")
+                lineBreakDisplayMath(customElement, entry.contentRect.width.toString());
+            } else if (!customElement.hasAttribute(LINE_BREAK_WIDTH) ||
+                        parseInt(customElement.getAttribute(LINE_BREAK_WIDTH)) <= parseInt(customElement.getAttribute(FULL_WIDTH))) {
+                // enough room for line but previous one was linebroken -- don't linebreak
+                const mathClone = customElement.firstElementChild.cloneNode(true);
+                const oldDisplayedMath = customElement.shadowRoot.firstElementChild;
+                oldDisplayedMath.replaceWith(mathClone);
+                customElement.setAttribute(LINE_BREAK_WIDTH, (2*entry.contentRect.width).toString()); // 2*width to make sure no linebreaking
+                lineBreakDisplayMath(customElement, 2*entry.contentRect.width.toString());
             }
+            // else enough room and wasn't linebroken
         }
     }
 });
@@ -840,14 +923,21 @@ customElements.define(SHADOW_ELEMENT_NAME, class extends HTMLElement {
 
         const shadowRoot = this.attachShadow({ mode: 'open' });
         const math = this.firstElementChild;
+        //console.log(`in constructor...math width ${math ? math.getBoundingClientRect().width : 'set elsewhere'}`);
         if (math) {
-            /** @type {HTMLElement} */
-            const mathClone = math.cloneNode(true);
-            shadowRoot.appendChild(mathClone);
-            if (math.tagName === 'math') {
-                lineBreakDisplayMath(mathClone);
-            }
+            // SHADOW_ELEMENT_NAME is in doc as opposed to being wrapped around 'math' programmatically 
+            setShadowRootContents(this, math);
         }
-        resizeObserver.observe(this);       // FIX: this doesn't trigger observer
+        resizeObserver.observe(this);
     }
 });
+
+{
+    let UAStyle = document.createElement('style')
+    UAStyle.innerHTML = `
+           math-with-linebreaks {
+                display: block;
+            }
+    `
+    document.head.insertBefore(UAStyle, document.head.firstElementChild)     
+}

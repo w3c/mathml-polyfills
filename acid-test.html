@@ -578,7 +578,7 @@
     <p>Custom element -- should break to the width of a line</p>
     <hr>
     <math-with-linebreaks>
-        <math xmlns="http://www.w3.org/1998/Math/MathML" overflow="linebreak" display="block">
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
             <mrow>
             <msub><mi>a</mi><mn>1</mn></msub><mo>+</mo><msub><mi>a</mi><mn>2</mn></msub><mo>+</mo><msub><mi>a</mi><mn>3</mn></msub><mo>+</mo><msub><mi>a</mi><mn>4</mn></msub><mo>+</mo><msub><mi>a</mi><mn>5</mn></msub><mo>+</mo><msub><mi>a</mi><mn>6</mn></msub><mo>+</mo><msub><mi>a</mi><mn>7</mn></msub><mo>+</mo><msub><mi>a</mi><mn>8</mn></msub><mo>+</mo><msub><mi>a</mi><mn>9</mn></msub><mo>+</mo><msub><mi>a</mi><mn>10</mn></msub>
             <mo>+</mo><msub><mi>a</mi><mn>11</mn></msub><mo>+</mo><msub><mi>a</mi><mn>12</mn></msub><mo>+</mo><msub><mi>a</mi><mn>13</mn></msub><mo>+</mo><msub><mi>a</mi><mn>14</mn></msub><mo>+</mo><msub><mi>a</mi><mn>15</mn></msub><mo>+</mo><msub><mi>a</mi><mn>16</mn></msub><mo>+</mo><msub><mi>a</mi><mn>17</mn></msub><mo>+</mo><msub><mi>a</mi><mn>18</mn></msub><mo>+</mo><msub><mi>a</mi><mn>19</mn></msub><mo>+</mo><msub><mi>a</mi><mn>20</mn></msub>
@@ -588,7 +588,8 @@
         </math>    
     </math-with-linebreaks>
     <hr>
-    <table id="linebreaking" style="width: 100%">
+    <table id="linebreaking" style="table-layout: fixed; width: 100vw;">
+        <colgroup> <col style="width: 40%;">  <col style="width: 60%;"> </colgroup>
         <tr>
             <td>
                 Linebreaks: Forced linebreak before second '=' and another before "+4x+1".
@@ -662,7 +663,7 @@
         </tr>
         <tr>
             <td>
-                Linebreaks: Forced linebreak before second '=' and another before "+4x+1".
+                Linebreaks: automatic. maxwidth = 200px
                 <br>
                 Indents: automatic
             <td> 
@@ -697,7 +698,7 @@
                                 <mi>x</mi>
                                 <mn>4</mn>
                             </msup>
-                            <mo id='eq1-plus'>+</mo>
+                            <mo>+</mo>
                             <mrow>
                                 <mn>4</mn>
                                 <mo>&#x2062;</mo>
@@ -728,12 +729,12 @@
         </tr
         <tr>
             <td>
-                Automatic linebreak (200px break width)<br>
+                Automatic linebreak (210px break width)<br>
                 Should be four lines: linebreak between the parens and also on '+'s<br>
                 Indentation: automatic
             </td>
             <td>
-                <math xmlns=' http://www.w3.org/1998/Math/MathML' maxwidth='200px' indentalign="auto">
+                <math xmlns=' http://www.w3.org/1998/Math/MathML' maxwidth='210px' indentalign="auto">
                                 <mrow>
                                     <mrow>
                                         <mo id='lparen'>(</mo>
@@ -1091,7 +1092,7 @@
                 Indentation: automatic
             </td>
             <td>
-                <math xmlns="http://www.w3.org/1998/Math/MathML" overflow="linebreak" display="block" maxwidth="500px">
+                <math xmlns="http://www.w3.org/1998/Math/MathML" overflow="linebreak" display="block" >
                     <mrow>
                     <msub><mi>a</mi><mn>1</mn></msub><mo>+</mo><msub><mi>a</mi><mn>2</mn></msub><mo>+</mo><msub><mi>a</mi><mn>3</mn></msub><mo>+</mo><msub><mi>a</mi><mn>4</mn></msub><mo>+</mo><msub><mi>a</mi><mn>5</mn></msub><mo>+</mo><msub><mi>a</mi><mn>6</mn></msub><mo>+</mo><msub><mi>a</mi><mn>7</mn></msub><mo>+</mo><msub><mi>a</mi><mn>8</mn></msub><mo>+</mo><msub><mi>a</mi><mn>9</mn></msub><mo>+</mo><msub><mi>a</mi><mn>10</mn></msub>
                     <mo>+</mo><msub><mi>a</mi><mn>11</mn></msub><mo>+</mo><msub><mi>a</mi><mn>12</mn></msub><mo>+</mo><msub><mi>a</mi><mn>13</mn></msub><mo>+</mo><msub><mi>a</mi><mn>14</mn></msub><mo>+</mo><msub><mi>a</mi><mn>15</mn></msub><mo>+</mo><msub><mi>a</mi><mn>16</mn></msub><mo>+</mo><msub><mi>a</mi><mn>17</mn></msub><mo>+</mo><msub><mi>a</mi><mn>18</mn></msub><mo>+</mo><msub><mi>a</mi><mn>19</mn></msub><mo>+</mo><msub><mi>a</mi><mn>20</mn></msub>
