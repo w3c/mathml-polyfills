@@ -1102,6 +1102,22 @@
                 </math>
             </td>
         </tr>
+        <tr>
+            <td>
+                This is inline math and should not linebreak due to the linebreaking transforms because there is no reflow observer on which to hang some code.
+            </td>
+            <td>
+                <p> Some text in a paragraph that contains math:
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <mrow>
+                            <msub><mi>a</mi><mn>1</mn></msub><mo>+</mo><msub><mi>a</mi><mn>2</mn></msub><mo>+</mo><msub><mi>a</mi><mn>3</mn></msub><mo>+</mo><msub><mi>a</mi><mn>4</mn></msub><mo>+</mo><msub><mi>a</mi><mn>5</mn></msub><mo>+</mo><msub><mi>a</mi><mn>6</mn></msub><mo>+</mo><msub><mi>a</mi><mn>7</mn></msub><mo>+</mo><msub><mi>a</mi><mn>8</mn></msub><mo>+</mo><msub><mi>a</mi><mn>9</mn></msub><mo>+</mo><msub><mi>a</mi><mn>10</mn></msub>
+                        </mrow>
+                    </math>
+                This text ends the paragraph.
+                </p>
+            
+            </td>
+        </tr>
     </table>
 
     <h2>MathML Table elements and Attributes</h2>

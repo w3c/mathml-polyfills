@@ -300,7 +300,7 @@ function splitLine(mo) {
     let breakElement = mo;          // the element we break on as we move to the root
 
     // FIX: should check operator dictionary to see if 'mo' is infix or if 'form' is set here or on an ancestor
-    // FIX: in leu of that, this test to see if there is something on left/right is not a correct infix test (e.g, 2nd '-' in "--a") if not well structured
+    //      in leu of that, this test to see if there is something on left/right is not a correct infix test (e.g, 2nd '-' in "--a") if not well structured
     if (mo.previousElementSibling !== null && mo.nextElementSibling !== null) {
         mo.setAttribute('form', 'infix');
     }
@@ -808,12 +808,6 @@ function lineBreakDisplayMath(customElement, maxLineWidth) {
     const math = customElement.shadowRoot.firstElementChild;
     //console.log(`  lineBreakDisplayMath: full ${customElement.getAttribute(FULL_WIDTH)}, max ${maxLineWidth}`);
 
-    // only handle display math -- inline math requires being able to have a reflow observer, and that doesn't exist
-    // FIX: determining that 'display' ends up being inline "like" is much more complicated.
-    // if ( /*getComputedStyle(math).getPropertyValue('display') === 'inline' ||*/   // in table, always inline
-    //      (math.hasAttribute('display') && math.getAttribute('display') === 'inline') ) {
-    //     return;
-    // }
     shadowRoot.set(customElement.shadowRoot);
 
     // pre-compute depth info since it will be used many times in linebreaking and (auto) indentation
@@ -876,9 +870,7 @@ function setShadowRootContents(customElement, math) {
 
 function addCustomElement(math) {
     // only handle display math -- inline math requires being able to have a reflow observer, and that doesn't exist
-    // FIX: determining that 'display' ends up being inline "like" is much more complicated.
-    if ( /*getComputedStyle(math).getPropertyValue('display') === 'inline' ||*/   // in table, always inline
-         (math.hasAttribute('display') && math.getAttribute('display') === 'inline') ) {
+    if (!math.hasAttribute('display') || math.getAttribute('display') === 'inline') {
         return;
     }
 
