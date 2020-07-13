@@ -743,7 +743,9 @@ function linebreakLine(element, maxLineWidth) {
         // set value for start of next line
     }
     // all done with linebreaking -- indent the last row
-    indentLine(lastRow.firstElementChild);
+    if (nLines > 0) {
+        indentLine(lastRow.firstElementChild);
+    }
     return;
 }
 
