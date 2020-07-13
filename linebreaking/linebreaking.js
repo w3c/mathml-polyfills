@@ -45,7 +45,7 @@ const ELEMENT_DEPTH = 'data-nesting-depth'
 /******* Values used for indenting  *******/
 
 // Value used if it can't find a good alignment char on previous line
-const FALLBACK_INDENT_AMOUNT = 40;          // FIX: in 'px', should be font relative)
+const FALLBACK_INDENT_AMOUNT = '3em';
 
 
 /******* Values used for linebreaking  *******/
@@ -454,7 +454,7 @@ function computeAutoShiftAmount(mtd) {
 
     // if there were no matches, do a fixed amount of indents
     if (minIndentAmount == 10e20) {
-        return FALLBACK_INDENT_AMOUNT;
+        return convertToPx(mo, FALLBACK_INDENT_AMOUNT);
     }
     return minIndentAmount - xStart;
 }
