@@ -68,12 +68,26 @@ const LINE_FILL_TARGET = 0.9
 
 /**
  * Converts a CSS length unit to pixels and returns that as a number
+ * @param{Element} element
  * @param {string} length 
  * @returns {number}
  */
-function convertToPx(length) {
-    // FIX: implement this -- currently only 'px
-    return parseInt(length);
+function convertToPx(element, length) {
+    // quick check to see if we have common case of 'px'
+    if (/px/.test(length)) {
+        return parseFloat(length);
+    }
+
+    // add a temp element with desired length; set it as the width; record the width, then delete the temp element.
+    const temp = document.createElement("div");  // create temporary element
+    temp.style.overflow = "hidden";
+    temp.style.visibility = "hidden";
+    temp.style.width = length;
+    element.appendChild(temp);
+    const result = temp.getBoundingClientRect().width;
+    temp.remove();
+
+    return result;
 }
 
 
@@ -219,6 +233,7 @@ function computeIndentAttrObject(mo, firstMiddleOrLast) {
         attrObject.indentAlign = getMathMLAttrValueAsString(mo, 'indentalignlast', attrObject.indentAlign);
         attrObject.indentShift = getMathMLAttrValueAsString(mo, 'indentshiftlast', attrObject.indentShift);
     }
+    attrObject.indentShift = convertToPx(mo, attrObject.indentShift);   // do conversion at most once
     attrObject.target = getMathMLAttrValueAsString(mo, 'indenttarget', '');
     attrObject.firstMiddleOrLast = firstMiddleOrLast;
     return attrObject;
@@ -482,7 +497,7 @@ function setupLineShifts(mtd, alignment, shiftAmount) {
  * @returns {number}
  */
 function computeIndentAmount(mo, xLineStart, indentAttrs) {
-    let indentShiftAsPx = convertToPx(indentAttrs.indentShift);
+    let indentShiftAsPx = parseFloat(indentAttrs.indentShift);
     let indentAlign = indentAttrs.indentAlign;
     if (indentAlign === 'id') {
         const elementWithID = getElementByIdEverywhere(indentAttrs.target);
@@ -844,19 +859,13 @@ const EM_WIDTH = 'data-em-in-pixels'
  * @param {Element} math 
  */
 function setShadowRootContents(customElement, math) {
-    // create the custom element, replace the math with it, and then linebreak a clone of the math in the shadow DOM 
-    const tempDiv = document.createElement("div");
-    tempDiv.style.width = '1em';
-    customElement.shadowRoot.appendChild(tempDiv);
-    customElement.setAttribute(EM_WIDTH, tempDiv.clientWidth.toString());
-
     /** @type {HTMLElement} */
     const mathClone = math.cloneNode(true);
-    tempDiv.replaceWith(mathClone);
+    customElement.shadowRoot.appendChild(mathClone);
     // keep track of the width before linebreaking
     let fullWidth = mathClone.lastElementChild.getBoundingClientRect().right - mathClone.firstElementChild.getBoundingClientRect().left;
     if (mathClone.hasAttribute('maxwidth')) {
-        fullWidth = Math.min(fullWidth, convertToPx(mathClone.getAttribute('maxwidth')));
+        fullWidth = Math.min(fullWidth, convertToPx(mathClone, mathClone.getAttribute('maxwidth')));
     }
     customElement.setAttribute(FULL_WIDTH, fullWidth.toString());
     lineBreakDisplayMath(customElement, fullWidth);
