@@ -870,7 +870,9 @@ function setShadowRootContents(customElement, math) {
 
 function addCustomElement(math) {
     // only handle display math -- inline math requires being able to have a reflow observer, and that doesn't exist
-    if (!math.hasAttribute('display') || math.getAttribute('display') === 'inline') {
+    const computedStyle = getComputedStyle(math).getPropertyValue('display');
+    const displayValue = math.hasAttribute('display') ? math.getAttribute('display') : 'inline';
+    if (!(computedStyle === 'block' || computedStyle === 'math' || displayValue === 'block' || displayValue === 'math')) {
         return;
     }
 
