@@ -65,6 +65,9 @@ const BAD_PENALTY_SCALE_FACTOR = 3.0;
 // Ideal amount to fill a line -- typically display equations don't fill a line to "balance" being indented
 const LINE_FILL_TARGET = 0.9
 
+const EMBELLISHED_ELEMENT_NAMES = [
+    'msub', 'msub', 'msubsup', 'mover', 'munder', 'munderover', 'mfrac', 'mmultiscripts'
+]
 
 /**
  * Converts a CSS length unit to pixels and returns that as a number
@@ -79,7 +82,7 @@ function convertToPx(element, length) {
     }
 
     // add a temp element with desired length; set it as the width; record the width, then delete the temp element.
-    const temp = document.createElement("div");  // create temporary element
+    let temp = document.createElement("div");  // create temporary element
     temp.style.overflow = "hidden";
     temp.style.visibility = "hidden";
     temp.style.width = length;
@@ -223,7 +226,7 @@ function computeIndentAttrObject(mo, firstMiddleOrLast) {
         linebreakstyle = getMathMLAttrValueAsString(mo, 'infixLineBreakStyle', 'before');
     }
     attrObject.linebreakstyle = linebreakstyle;
-    
+
     attrObject.indentAlign = getMathMLAttrValueAsString(mo, 'indentalign', 'auto');
     attrObject.indentShift = getMathMLAttrValueAsString(mo, 'indentshift', '0px');
     if (firstMiddleOrLast == 'first') {
@@ -341,12 +344,29 @@ function splitLine(mo) {
 }
 
 /**
+ * 
+ * @param {Element} mo 
+ * @returns {Element}
+ */
+function computeLineBreakRoot(mo) {
+    let mrow = mo;
+    let parent = mo.parentElement;
+    while (parent.tagName === 'mrow' || parent.tagName === 'mstyle' || parent.tagName === 'mpadded') {
+        mrow = parent;
+        parent = parent.parentElement;
+    }
+    return mrow;
+}
+
+/**
  * Finds all the forced linebreaks, splits the lines, and stores the indent info on the 'mtd'
  * @param {Element} math 
  */
 function splitIntoLinesAtForcedBreaks(math, maxLineWidth) {
     const forcedBreakElements = math.querySelectorAll('mo[linebreak="newline"]');
     if (forcedBreakElements.length === 0) {
+        // pre-compute depth info since it will be used many times in linebreaking and (auto) indentation
+        // do before splitting line because that ruins depth computation for indentation
         return;
     }
 
@@ -400,7 +420,7 @@ function filterOnCharMatch(operators, char) {
     if (char === '-') {
         char = '+';
     }
-    return operators.filter( function(operator) {
+    return operators.filter(function (operator) {
         let opChar = operator.textContent.trim();
         if (opChar === '-') {
             opChar = '+';
@@ -422,6 +442,9 @@ function computeAutoShiftAmount(mtd) {
     }
 
     const mo = leftMostChild(mtd);
+    if (!mo.hasAttribute(ELEMENT_DEPTH)) {
+        console.log(`Linebreaking error: depth not set on ${mo.tagName} with content '${mo.textContent.trim()}'`);
+    }
     const moDepth = mo.getAttribute(ELEMENT_DEPTH);
     const moChar = mo.textContent.trim();
 
@@ -434,7 +457,7 @@ function computeAutoShiftAmount(mtd) {
         const previousLineOperators = getAllBreakPoints(previousLine.firstElementChild).filter(
             operator => moDepth === operator.getAttribute(ELEMENT_DEPTH)
         );
-          const prevChar = previousLineOperators.length === 0 ? 'none' : previousLineOperators[0].textContent.trim();
+        const prevChar = previousLineOperators.length === 0 ? 'none' : previousLineOperators[0].textContent.trim();
         const previousLineMatches = filterOnCharMatch(previousLineOperators, moChar);
         let indent = previousLineMatches.length === 0 ? minIndentAmount : previousLineMatches[0].getBoundingClientRect().left;
         if (isMatchLessThanHalfWay(xStart, indent, maxWidth)) {
@@ -549,6 +572,31 @@ function indentLine(mtd) {
 }
 
 /**
+ * Returns the outermost embellishment of an 'mo'
+ * @param {Element} mo 
+ * @returns {Element}
+ */
+function expandToEmbellishedElement(mo) {
+    let el = mo;
+    let parent = mo.parentElement;
+    do {
+        if (parent.firstElementChild !== mo || !EMBELLISHED_ELEMENT_NAMES.includes(parent.tagName)) {
+            if (el !== mo) {
+                if (!mo.hasAttribute(ELEMENT_DEPTH)) {
+                    console.log(`Linebreaking error: depth not set on ${mo.tagName} with content '${mo.textContent.trim()}'`);
+                }
+                el.setAttribute(ELEMENT_DEPTH, mo.getAttribute(ELEMENT_DEPTH));  // lift depth setting
+            }
+            return el;
+        }
+        el = parent;
+        parent = parent.parentElement;
+    } while (parent);
+    console.log(`In linebreaking in expandToEmbellishedElement: unexpected loop termination. mo = '${mo.tagName}'`)
+    return mo;      // shouldn't get here
+}
+
+/**
  * Return all the potential break points inside 'element' (math or mtd)
  * @param {Element} element 
  * @returns {Element[]}
@@ -556,42 +604,193 @@ function indentLine(mtd) {
 function getAllBreakPoints(element) {
     // FIX: only want <mo> not in 2-d elements -- grabbing all and trying to cleanup seems wasteful
     const allMos = Array.from(element.querySelectorAll('mo:not([linebreak="nobreak"])'));
-    return allMos.filter(mo => {
+    const linebreakMos = allMos.filter(mo => {
         do {
             mo = mo.parentElement;
         } while (mo.tagName === 'mrow' || mo.tagName === 'mstyle' || mo.tagName === 'mpadded'); // assumes mfenced has been polyfilled already
         return mo.tagName === 'math' || isInLineBreakTable(mo);
-    });
+    })
+    return linebreakMos.map(mo => expandToEmbellishedElement(mo));
 }
 
+// FIX: the precedence table needs to be imported from the spec. This trivial one is for testing.
+const PrecedenceTable = {
+    '(': 0,
+    ')': 0,
+    '=': 10,
+    '+': 30,
+    '±': 30,
+    '-': 30,
+    '*': 40,
+    '×': 40,
+    '\u2062': 40,        // invisible times
+    '\u2061': 50        // invisible function application
+}
+
+//FIX: the list of open chars needs to come from the spec
+const OpenList = [
+    '(', '[', '{'
+]
+
+//FIX: the list of close chars needs to come from the spec
+const CloseList = [
+    ')', ']', '}'
+]
 
 /**
- * Returns the nesting depth (inside 'mrow's)
- * @param {Element} mo 
- * @returns {number}
+ * 
+ * @param {string} ch 
+ * @returns number
  */
-function nestingDepth(mo) {
-    // FIX: this assumes "proper" mrow structure. Maybe a parser like extension could infer it -- needs precedence info from the operator dictionary
-    //   It also needs the 'form' (infix, prefix, ...), although since most operators are infix, a small table of prefix, postfix, matchfix could be built)
-    //   For a parser, probably want to start at math node and parse 'mrow's
-    //   Figuring out multiplication/function call if not explicitly given is probably half the battle.
-    let depth = 1;
-    mo = mo.parentElement;
-    while (mo.tagName === 'mrow') {
-        depth++;
-        mo = mo.parentElement;
+function operatorPrecedence(ch) {
+    // FIX: replace with real lookup
+    const precedence = PrecedenceTable[ch];
+    if (precedence === undefined) {
+        return 40;      // FIX: not sure what value should be used
     }
-    return depth;
+    return precedence;
+}
+
+/**
+ * 
+ * @param {Element} el 
+ * @returns {Element}
+ */
+function getEmbellishedOperator(el) {
+    if (el.tagName === 'mo') {
+        return el;
+    }
+
+    let firstChild = el;
+    while (EMBELLISHED_ELEMENT_NAMES.includes(firstChild.tagName)) {
+        firstChild = firstChild.firstElementChild;
+        if (!firstChild) {
+            return el;
+        }
+    }
+    return firstChild.tagName === 'mo' ? firstChild : el;
+}
+
+/**
+ * The "reduce" step of parsing.
+ * @param {[number]} opStack
+ * @param {[Element | [Element]]} elementStack
+ * @param {number} childPrecedence
+ * @returns {[[number], [Element | [Element]]}
+
+ */
+function parseReduce(opStack, elementStack, childPrecedence) {
+    // FIX: really need to include prefix/postfix info
+    let stackPrecedence = opStack[opStack.length - 1];
+    let previousStackPrecedence = stackPrecedence +1;          // needs to start with different value
+    while (childPrecedence < stackPrecedence) {                // stack never reaches length zero due to initial value
+        let iPopTo = elementStack.length - 1;                  // we need to pop at least one element
+        while (Array.isArray(elementStack[iPopTo])) {          // pop any "operands" (items already reduced to an "mrow") 
+            iPopTo--;
+        }
+        // iPopTo now points to operator corresponding to top of opStack. Pop that from elementStack and any more operands
+        iPopTo--;
+        opStack.pop();
+        while (Array.isArray(elementStack[iPopTo])) {          // pop any "operands" (items already reduced to an "mrow") 
+            iPopTo--;
+        }
+        // iPopTo now points to the operator that should be on top of the elementStack
+        const elementsPopped = elementStack.splice(iPopTo + 1);
+        if (stackPrecedence === previousStackPrecedence &&                      // n-ary
+            Array.isArray(elementsPopped[elementsPopped.length - 1])) {         // not first reduction
+            const lastElement = elementsPopped.pop();
+            elementStack.push(elementsPopped.concat(lastElement));
+        } else {
+            elementStack.push(elementsPopped);
+        }
+        previousStackPrecedence = stackPrecedence;
+        stackPrecedence = opStack[opStack.length - 1];
+    }
+    return [opStack, elementStack];
+}
+/**
+ * U
+ * @param {Element} treeRoot 
+ * @param {[number]} opStack
+ * @param {[Element | [Element]]} elementStack
+ * @returns {[[number], [Element | [Element]]}
+ */
+function buildParseTree(treeRoot, opStack, elementStack) {
+    // Act like a operator precedence parser, where operator precedences are shifted on or "reduced" based on their precedence
+    // Arrays are treated as operands/something already reduced.
+    for (let i = 0; i < treeRoot.children.length; i++) {
+        // FIX: might be adorned mrow, so just checking for <mo> is not enough
+        const child = getEmbellishedOperator(treeRoot.children[i]);
+        if (child.tagName === 'mo') {
+            const childCh = child.textContent.trim();
+            if (OpenList.includes(childCh)) {
+                opStack.push(0);
+                elementStack.push(child);        // push onto the last element (not the stack)
+            } else if (CloseList.includes(childCh)) {
+                [opStack, elementStack] = parseReduce(opStack, elementStack, 0);
+                elementStack.push(child);
+                if (opStack[opStack.length-1] !== 0) {
+                    console.log(`In linebreaking, parsing error with close char -- top of op stack is ${opStack[opStack.length-1]}`);
+                }
+                opStack.pop();
+                const elementsPopped = elementStack.splice(elementStack.length - 3);
+                elementStack.push(elementsPopped);
+            } else {
+                // reduce if need be, then push
+                const childPrecedence = operatorPrecedence(childCh);
+                [opStack, elementStack] = parseReduce(opStack, elementStack, childPrecedence);
+                opStack.push(childPrecedence);
+                elementStack.push(child);
+            }
+        } else if (child.tagName === 'mrow' || child.tagName === 'mpadded' || child.tagName === 'mstyle') {
+            [opStack, elementStack] = buildParseTree(child, opStack, elementStack);
+        } else {
+            elementStack.push([child]);       // treat as operand/reduced (hence push array)
+        }
+    }
+    return [opStack, elementStack];
+}
+
+/**
+ * Store nesting depth info for each 'mo' as an attr. Depth is based on depth in tree of arrays
+ * @param {[Element | [Element]]} elementStack
+ * @param {number} depth
+ */
+function setDepthAttr(elementStack, depth) {
+    elementStack.forEach(child => {
+        if (Array.isArray(child)) {
+            setDepthAttr(child, depth + 1);
+        } else if (child.tagName === 'mo') {
+            child.setAttribute(ELEMENT_DEPTH, depth.toString());
+        }
+    })
 }
 
 /**
  * Store nesting depth info for each 'mo' as an attr
- * @param {NodeListOf<Element>} potentialLineBreaks 
+ * @param {Element} linebreakRoot 
  */
-function addDepthInfo(potentialLineBreaks) {
-    potentialLineBreaks.forEach(mo => {
-        mo.setAttribute(ELEMENT_DEPTH, nestingDepth(mo).toString());
-    });
+function addDepthInfo(linebreakRoot) {
+    // This works in two passes:
+    // 1. For each potential linebreak (include treeRoot), parse tree (array whose children are )
+    // 2. Set the depth of the operators in the parse tree
+
+    /** @type {Element[]} */
+    let linebreakRoots = [];        // keep track of the things we have already linebroken
+    const linebreakElements = Array.from(linebreakRoot.querySelectorAll('mo[linebreak="newline"]'));
+    linebreakElements.push(linebreakRoot);                                // add non forced 
+    // for each forced linebreak, add a new row to the table
+    linebreakElements.forEach(mo => {
+        const linebreakRoot = computeLineBreakRoot(mo);
+        if ( !linebreakRoots.includes(linebreakRoot) ) {
+            linebreakRoots.push(linebreakRoot);
+            let [opStack, elementStack] = buildParseTree(linebreakRoot, [-1], [null]);         // '-1' guarantees stack never gets empty
+            if (elementStack.length != 2) {
+                [opStack, elementStack] = parseReduce(opStack, elementStack, -1);
+            }
+            setDepthAttr(elementStack[1], 0);
+        }
+    })        
 }
 
 /********* linebreaking penalty computation *******/
@@ -624,7 +823,10 @@ function computeDepthPenalty(mo) {
         0.681369, 0.710336, 0.736669, 0.760608
     ];
 
-    let depth = nestingDepth(mo);
+    if (!mo.hasAttribute(ELEMENT_DEPTH)) {
+        console.log(`Linebreaking error: depth not set on ${mo.tagName} with content '${mo.textContent.trim()}'`);
+    }
+    let depth = parseInt(mo.getAttribute(ELEMENT_DEPTH));
     return depth >= depthTable.length ? 1 - 3.482066 / depth : depthTable[depth]; // always less than one
 }
 
@@ -677,7 +879,7 @@ function substituteCharIfNeeded(potentialBreaks, index) {
 function linebreakLine(element, maxLineWidth) {
     // do we need to linebreak this element?
     //console.log(`    linebreakLine: full ${element.getAttribute(FULL_WIDTH)}, max ${maxLineWidth}`)
-    if (parseFloat(element.getAttribute(FULL_WIDTH))  <= maxLineWidth) {
+    if (parseFloat(element.getAttribute(FULL_WIDTH)) <= maxLineWidth) {
         return;
     }
 
@@ -695,10 +897,12 @@ function linebreakLine(element, maxLineWidth) {
     //    'element' might center/right align mrow inside, so use child's position
 
     let lineBreakMO;                // the 'mo' used for linebreaking (might be changed if invisible times)
+    /** @type {Element} */
+    // @ts-ignore
     let lastRow = (element.tagName === 'mtd') ?
-                        element.parentElement :
-                        element.parentNode;
-                          // when a line is split, there are now two of them (actually rows in mtable); this is the last one
+        element.parentElement :
+        element.parentNode;
+    // when a line is split, there are now two of them (actually rows in mtable); this is the last one
     let nLines = 0;                 // really only care if first line, but useful for debugging to know # of lines
     let iOperator = 1;              // start of each line (want at least one element on the first line)
     while (iOperator < potentialBreaks.length) {
@@ -706,12 +910,12 @@ function linebreakLine(element, maxLineWidth) {
         // the amount of room we have is reduced by the indentation if we break here.
         const indentAttrs = JSON.parse(lastRow.firstElementChild.getAttribute(INDENT_ATTRS));
         const leftSide = indentAttrs.linebreakstyle === 'before' ?
-                             potentialBreaks[iOperator-1].getBoundingClientRect().left :
-                             lastRow.firstElementChild.firstElementChild.getBoundingClientRect().left;
+            potentialBreaks[iOperator - 1].getBoundingClientRect().left :
+            lastRow.firstElementChild.firstElementChild.getBoundingClientRect().left;
         const indentAmount = computeIndentAmount(
-                                potentialBreaks[iOperator-1],   // where we broke
-                                lastRow.firstElementChild.getBoundingClientRect().left,
-                                indentAttrs);
+            potentialBreaks[iOperator - 1],   // where we broke
+            lastRow.firstElementChild.getBoundingClientRect().left,
+            indentAttrs);
         const lineBreakWidth = maxLineWidth - indentAmount;
         let minPenalty = 100000.0;  // in practice, the numbers don't get over 2
         let iMinPenalty = -1;
@@ -810,9 +1014,6 @@ function lineBreakDisplayMath(customElement, maxLineWidth) {
 
     shadowRoot.set(customElement.shadowRoot);
 
-    // pre-compute depth info since it will be used many times in linebreaking and (auto) indentation
-    addDepthInfo(math.querySelectorAll('mo:not([linebreak="nobreak"])'));
-
     splitIntoLinesAtForcedBreaks(math, maxLineWidth);
 
     // gather up all the parts with forced linebreaks (turned into an array because don't want them live (linebreaking augments them later)
@@ -834,7 +1035,7 @@ function lineBreakDisplayMath(customElement, maxLineWidth) {
     } else if (parseInt(customElement.getAttribute(FULL_WIDTH)) >= maxLineWidth) {
         // no forced breaks, but still need to check for auto breaks
         // they may create some breaks (mtable), and those breaks need indenting
-        math.setAttribute(INDENT_ATTRS, JSON.stringify(computeIndentAttrObject(math , 'first')));
+        math.setAttribute(INDENT_ATTRS, JSON.stringify(computeIndentAttrObject(math, 'first')));
         linebreakLine(math, maxLineWidth);
     }
 }
@@ -854,6 +1055,7 @@ const EM_WIDTH = 'data-em-in-pixels'
  */
 function setShadowRootContents(customElement, math) {
     /** @type {HTMLElement} */
+    // @ts-ignore
     const mathClone = math.cloneNode(true);
     customElement.shadowRoot.appendChild(mathClone);
     // keep track of the width before linebreaking
@@ -863,7 +1065,7 @@ function setShadowRootContents(customElement, math) {
     }
     customElement.setAttribute(FULL_WIDTH, fullWidth.toString());
     lineBreakDisplayMath(customElement, fullWidth);
-    customElement.setAttribute(LINE_BREAK_WIDTH, (2*fullWidth).toString());
+    customElement.setAttribute(LINE_BREAK_WIDTH, (2 * fullWidth).toString());
 
     //console.log(`Set... y: ${customElement.getBoundingClientRect().y}; FULL_WIDTH: ${customElement.getAttribute(FULL_WIDTH)}`)
 }
@@ -887,6 +1089,7 @@ function addCustomElement(math) {
         const shadowHost = document.createElement(SHADOW_ELEMENT_NAME);
         shadowHost.appendChild(math);
         mathParent.insertBefore(shadowHost, nextSibling);
+        addDepthInfo(math);
         setShadowRootContents(shadowHost, math);
         return null;
     }
@@ -894,6 +1097,7 @@ function addCustomElement(math) {
 
 _MathTransforms.add('math', addCustomElement);
 
+// @ts-ignore
 const resizeObserver = new ResizeObserver(entries => {
     for (let entry of entries) {
         if (entry.target.tagName.toLowerCase() === SHADOW_ELEMENT_NAME) {
@@ -908,13 +1112,13 @@ const resizeObserver = new ResizeObserver(entries => {
                 //console.log("   linebreaking...")
                 lineBreakDisplayMath(customElement, entry.contentRect.width.toString());
             } else if (!customElement.hasAttribute(LINE_BREAK_WIDTH) ||
-                        parseInt(customElement.getAttribute(LINE_BREAK_WIDTH)) <= parseInt(customElement.getAttribute(FULL_WIDTH))) {
+                parseInt(customElement.getAttribute(LINE_BREAK_WIDTH)) <= parseInt(customElement.getAttribute(FULL_WIDTH))) {
                 // enough room for line but previous one was linebroken -- don't linebreak
                 const mathClone = customElement.firstElementChild.cloneNode(true);
                 const oldDisplayedMath = customElement.shadowRoot.firstElementChild;
                 oldDisplayedMath.replaceWith(mathClone);
-                customElement.setAttribute(LINE_BREAK_WIDTH, (2*entry.contentRect.width).toString()); // 2*width to make sure no linebreaking
-                lineBreakDisplayMath(customElement, 2*entry.contentRect.width.toString());
+                customElement.setAttribute(LINE_BREAK_WIDTH, (2 * entry.contentRect.width).toString()); // 2*width to make sure no linebreaking
+                lineBreakDisplayMath(customElement, 2 * entry.contentRect.width.toString());
             }
             // else enough room and wasn't linebroken
         }
@@ -931,6 +1135,7 @@ customElements.define(SHADOW_ELEMENT_NAME, class extends HTMLElement {
         //console.log(`in constructor...math width ${math ? math.getBoundingClientRect().width : 'set elsewhere'}`);
         if (math) {
             // SHADOW_ELEMENT_NAME is in doc as opposed to being wrapped around 'math' programmatically 
+            addDepthInfo(math);
             setShadowRootContents(this, math);
         }
         resizeObserver.observe(this);
@@ -944,5 +1149,5 @@ customElements.define(SHADOW_ELEMENT_NAME, class extends HTMLElement {
                 display: block;
             }
     `
-    document.head.insertBefore(UAStyle, document.head.firstElementChild)     
+    document.head.insertBefore(UAStyle, document.head.firstElementChild)
 }
