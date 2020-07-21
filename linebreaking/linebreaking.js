@@ -1010,6 +1010,14 @@ const SHADOW_ELEMENT_NAME = "math-with-linebreaks";
 function lineBreakDisplayMath(customElement, maxLineWidth) {
     maxLineWidth = Math.min(maxLineWidth, parseFloat(customElement.getAttribute(FULL_WIDTH)));
     const math = customElement.shadowRoot.firstElementChild;
+    if (math.childElementCount > 1) {
+        // add an mrow underneath 'math' -- having an mrow makes the rest of the code work more cleanly
+        const mrow = newElement('mrow');
+        while (math.firstElementChild) {
+            mrow.appendChild(math.firstElementChild);
+        }
+        math.appendChild(mrow);
+    }
     //console.log(`  lineBreakDisplayMath: full ${customElement.getAttribute(FULL_WIDTH)}, max ${maxLineWidth}`);
 
     shadowRoot.set(customElement.shadowRoot);
