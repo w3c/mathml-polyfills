@@ -990,7 +990,9 @@ let transformElemMath = (el) => {
     addStyleSheetToShadowRoot(spanShadowHost.shadowRoot);
 
     // create the table equivalent and put it into the shadow DOM
-    const  table = new ElemMath(el).expandMStackElement(el);
+    const elParent = el.parentElement;
+    const nextSibling = el.nextElementSibling;
+    const table = new ElemMath(el).expandMStackElement(el);
     spanShadowHost.shadowRoot.appendChild(table);
 
     // need to create <mtext> <span> <math> elem math </math> </span> </mtext>
@@ -998,9 +1000,10 @@ let transformElemMath = (el) => {
     mtext.appendChild(spanShadowHost);                      // now have <mtext> <span> ...
     let math = document.createElementNS(MATHML_NS, "math");
     spanShadowHost.appendChild(math);                       // now have <mtext> <span> <math> ...
-    math.appendChild(el.cloneNode(true));                   // make el a child of math -- clone because can't detach el from DOM
+    math.appendChild(el);                   // make el a child of math -- clone because can't detach el from DOM
+    elParent.insertBefore(mtext, nextSibling);
 
-    return mtext;
+    return null;
 }
 
 _MathTransforms.add('mstack', transformElemMath);

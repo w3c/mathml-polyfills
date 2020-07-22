@@ -23,7 +23,7 @@
   THE SOFTWARE.
 */
 
-import { _MathTransforms } from '../common/math-transforms.js'
+import { _MathTransforms, cloneElementWithShadowRoot } from '../common/math-transforms.js'
 const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
 
 /**
@@ -37,7 +37,7 @@ function getDimensions(mpadded) {
     // Note: the mspace should not cause reflow, so the change/undo hopefully is somewhat efficient
     const mrow = document.createElementNS(MATHML_NS, 'mrow');
     mrow.appendChild( document.createElementNS(MATHML_NS, 'mspace') );
-    const cloneMpadded = mpadded.cloneNode(true);
+    const cloneMpadded = cloneElementWithShadowRoot(mpadded);
     for (let i = 0; i < cloneMpadded.children.length; i++) {
         mrow.appendChild(cloneMpadded.children[i]);    // removed from clone and added to mrow
     }

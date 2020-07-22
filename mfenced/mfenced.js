@@ -22,7 +22,7 @@
   THE SOFTWARE.
 */
 
-import { _MathTransforms } from '../common/math-transforms.js'
+import { _MathTransforms, cloneElementWithShadowRoot } from '../common/math-transforms.js'
 
 const namespaceURI = "http://www.w3.org/1998/Math/MathML";
 
@@ -81,13 +81,13 @@ const expandFencedElement = (mfenced) => {
     let outerMrow = newMrow();
     outerMrow.appendChild(newOperator(collapseWhiteSpace(mfenced.getAttribute("open") || "(")));
     if (mfenced.childElementCount === 1) {
-        outerMrow.appendChild(mfenced.firstElementChild.cloneNode(true));
+        outerMrow.appendChild(cloneElementWithShadowRoot(mfenced.firstElementChild));
     } else if (mfenced.childElementCount > 1) {
         let separatorList = getSeparatorList(mfenced.getAttribute("separators")),
             innerMrow = newMrow(),
             child = mfenced.firstElementChild;
         while (child) {
-            innerMrow.appendChild(child.cloneNode(true));
+            innerMrow.appendChild(cloneElementWithShadowRoot(child));
             child = child.nextElementSibling;
             if (child && separatorList.length) {
                 innerMrow.appendChild(newOperator(separatorList.length >  1 ? separatorList.shift() : separatorList[0]));

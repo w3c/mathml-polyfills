@@ -20,7 +20,7 @@
   THE SOFTWARE.
 */
 
-import { _MathTransforms } from '../common/math-transforms.js'
+import { _MathTransforms, cloneElementWithShadowRoot } from '../common/math-transforms.js'
 
 const namespaceURI = "http://www.w3.org/1998/Math/MathML";
 
@@ -83,7 +83,7 @@ const transformMtable = (mtable) => {
   // Change the table by adding a column to it, with 'el' placed in it.
   // el is replaced with a 'mtr', which is what is returned.
 
-  let newTable = makeTableSquare(mtable.cloneNode(true))
+  let newTable = makeTableSquare(cloneElementWithShadowRoot(mtable))
   handleLabeledRows(newTable);
 
   // FIX: handle attrs

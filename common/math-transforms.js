@@ -26,3 +26,33 @@
       _MathTransforms._plugins.set(selector, cb);
     }
   };
+
+
+/**
+ * Same as cloneNode(true) except that shadow roots are copied
+ * If you are using the transforms and you need to clone a node that potentially has a shadowRoot, use this so the shadowRoot is copied
+ * As of July, 2020, Elementary Math and Linebreaking transforms both have shadowRoots. 
+ * @param {Element} el 
+ * @param {Element} [clone] 
+ * @returns {Element} -- the clone (only useful if function is called with one arg)
+ */
+export function cloneElementWithShadowRoot(el, clone) {
+  if (clone === undefined) {
+      clone = el.cloneNode(true);
+  }
+
+  // rather than clone each element and then the children, we're assuming cloning the whole tree is most efficient
+  // however, we still need to search 'el' to check for a shadowRoot.
+  if (el.shadowRoot) {
+      clone.attachShadow({ mode: "open" });
+      for (let i = 0; i < el.shadowRoot.childElementCount; i++) {
+        clone.shadowRoot.appendChild( cloneElementWithShadowRoot(el.shadowRoot.children[i]) )
+      }
+  }
+
+  for (let i = 0; i < el.childElementCount; i++) {
+      cloneElementWithShadowRoot(el.children[i], clone.children[i]);
+  }
+
+  return clone;
+}

@@ -28,7 +28,7 @@
  * lineBreakDisplayMath() is the starting point
  */
 
-import { _MathTransforms } from '../common/math-transforms.js'
+import { _MathTransforms, cloneElementWithShadowRoot } from '../common/math-transforms.js'
 
 const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
 
@@ -92,8 +92,6 @@ function convertToPx(element, length) {
 
     return result;
 }
-
-
 
 // Hack to close over the shadowRoot so it can be accessed deep down
 var shadowRoot = (function () {
@@ -1064,7 +1062,7 @@ const EM_WIDTH = 'data-em-in-pixels'
 function setShadowRootContents(customElement, math) {
     /** @type {HTMLElement} */
     // @ts-ignore
-    const mathClone = math.cloneNode(true);
+    const mathClone = cloneElementWithShadowRoot(math);
     customElement.shadowRoot.appendChild(mathClone);
     // keep track of the width before linebreaking
     let fullWidth = mathClone.lastElementChild.getBoundingClientRect().right - mathClone.firstElementChild.getBoundingClientRect().left;
@@ -1092,8 +1090,8 @@ function addCustomElement(math) {
         return math;        // already inside a custom element
     } else {
         //console.log(`addCustomElement... math width ${math.getBoundingClientRect().width}`);
-        let mathParent = math.parentElement;
-        let nextSibling = math.nextElementSibling;
+        const mathParent = math.parentElement;
+        const nextSibling = math.nextElementSibling;
         const shadowHost = document.createElement(SHADOW_ELEMENT_NAME);
         shadowHost.appendChild(math);
         mathParent.insertBefore(shadowHost, nextSibling);
@@ -1113,7 +1111,7 @@ const resizeObserver = new ResizeObserver(entries => {
             //console.log(`In resize...entry width: ${entry.contentRect.width}; prev width: ${customElement.getAttribute(LINE_BREAK_WIDTH)}; \
             //            FULL ${customElement.getAttribute(FULL_WIDTH)}; $y: ${customElement.getBoundingClientRect().y}`);
             if (entry.contentRect.width < parseInt(customElement.getAttribute(FULL_WIDTH))) {  // room to break is less than full width
-                const mathClone = customElement.firstElementChild.cloneNode(true);
+                const mathClone = cloneElementWithShadowRoot(customElement.firstElementChild);
                 const oldDisplayedMath = customElement.shadowRoot.firstElementChild;
                 oldDisplayedMath.replaceWith(mathClone);
                 customElement.setAttribute(LINE_BREAK_WIDTH, entry.contentRect.width.toString());
@@ -1122,7 +1120,7 @@ const resizeObserver = new ResizeObserver(entries => {
             } else if (!customElement.hasAttribute(LINE_BREAK_WIDTH) ||
                 parseInt(customElement.getAttribute(LINE_BREAK_WIDTH)) <= parseInt(customElement.getAttribute(FULL_WIDTH))) {
                 // enough room for line but previous one was linebroken -- don't linebreak
-                const mathClone = customElement.firstElementChild.cloneNode(true);
+                const mathClone = cloneElementWithShadowRoot(customElement.firstElementChild);
                 const oldDisplayedMath = customElement.shadowRoot.firstElementChild;
                 oldDisplayedMath.replaceWith(mathClone);
                 customElement.setAttribute(LINE_BREAK_WIDTH, (2 * entry.contentRect.width).toString()); // 2*width to make sure no linebreaking
