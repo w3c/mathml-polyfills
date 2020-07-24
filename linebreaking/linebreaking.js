@@ -765,6 +765,79 @@ function setDepthAttr(elementStack, depth) {
 }
 
 /**
+ * Tries to determine if there is good mrow structure. If so returns true.
+ * @param {Element} mrow
+ * @returns {boolean}
+ */
+function isMRowWellStructured(mrow) {
+    if (mrow.childElementCount <= 3) {
+        return true;
+    }
+    // only n-ary with same operator precedence and alternating operand/operator/operand are valid
+    if (mrow.childElementCount % 2 === 0) {
+        return false;
+    }
+
+    const precedence = operatorPrecedence(mrow.children[1].textContent.trim());
+    for (let i=0; i < mrow.childElementCount - 1; i += 2) {
+        if ( mrow.children[i].tagName === 'mo' ||
+             mrow.children[i+1].tagName !== 'mo' ||
+             operatorPrecedence(mrow.children[i+1].textContent.trim()) !== precedence ) {
+                 return false;
+             }
+    }
+    return true;
+}
+
+/**
+ * Tries to determine if there is good mrow structure. If so returns true.
+ * @param {Element} treeRoot
+ * @returns {boolean}
+ */
+function isWellStructured(treeRoot) {
+    // True if there are 3 children or less because this is infix prefix or postfix, and also covers fences but should have just one child.
+    // N-ary functions should alternate between operand/operator/operand and the operators all have the same precedence.
+    //   this allows for +/-, multiple forms of times, or multiple relations to exist.
+    // Especially for n-ary functions, we can't easily tell if this good structure or "luck".
+    // We check up to three mrows and if all seem well structured, we say this is well structured.
+    const mrows = Array.from( treeRoot.querySelectorAll('mrow') );
+    if (treeRoot.tagName === 'mrow' || treeRoot.tagName === 'math') { // could be 'math' with no mrows
+        mrows.push(treeRoot);
+    }
+    switch (mrows.length) {
+        case 0:
+            return true;
+        case 1:
+            return isMRowWellStructured(mrows[0]);
+        case 2:
+            return isMRowWellStructured(mrows[0]) && isMRowWellStructured(mrows[1]);
+        default:
+            return isMRowWellStructured(mrows[0]) &&
+                   isMRowWellStructured(mrows[Math.floor(mrows.length/2)]) &&
+                   isMRowWellStructured(mrows[mrows.length-1]);
+    }
+}
+
+
+/**
+ * Store nesting depth info for each 'mo' as an attr. Depth is based on depth in tree
+ * @param {Element} el
+ * @param {number} depth
+ */
+function setDepthAttrBasedOnOriginalTree(el, depth) {
+    const embellishedOp = getEmbellishedOperator(el);
+    if (embellishedOp.tagName === 'mo') {
+        embellishedOp.setAttribute(ELEMENT_DEPTH, depth.toString());
+        return;
+    }
+    if (el.tagName === 'mrow' || el.tagName === 'mstyle' || el.tagName === 'mpadded' || el.tagName === 'math') {
+        for (let i = 0; i < el.childElementCount; i++) {
+            setDepthAttrBasedOnOriginalTree(el.children[i], depth + (el.tagName === 'mrow' ? 1 : 0));
+        }
+    }
+}
+
+/**
  * Store nesting depth info for each 'mo' as an attr
  * @param {Element} linebreakRoot 
  */
@@ -782,11 +855,16 @@ function addDepthInfo(linebreakRoot) {
         const linebreakRoot = computeLineBreakRoot(mo);
         if ( !linebreakRoots.includes(linebreakRoot) ) {
             linebreakRoots.push(linebreakRoot);
-            let [opStack, elementStack] = buildParseTree(linebreakRoot, [-1], [null]);         // '-1' guarantees stack never gets empty
-            if (elementStack.length != 2) {
-                [opStack, elementStack] = parseReduce(opStack, elementStack, -1);
+            // if it looks to be well structured, don't second guess the structure (and save time)
+            if (isWellStructured(linebreakRoot)) {
+                setDepthAttrBasedOnOriginalTree(linebreakRoot, 0);
+            } else {
+                let [opStack, elementStack] = buildParseTree(linebreakRoot, [-1], [null]);         // '-1' guarantees stack never gets empty
+                if (elementStack.length != 2) {
+                    [opStack, elementStack] = parseReduce(opStack, elementStack, -1);
+                }
+                setDepthAttr(elementStack[1], 0);    
             }
-            setDepthAttr(elementStack[1], 0);
         }
     })        
 }
