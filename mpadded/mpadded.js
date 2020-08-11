@@ -82,14 +82,6 @@ function handleAttr(el, attr, dimensions) {
         return false;
     }
 
-    const attrValue = el.getAttribute(attr).toLowerCase();
-    if (attrValue.includes(attr)) {
-        const floatVal = parseFloat(attrValue); // only parses number part
-        // replace the name is basically a no-op -- add '%' is not present
-        el.setAttribute(attr, `${floatVal.toFixed(2) * (attrValue.includes('%') ? 1 : 100)}%`);
-        return;
-    }
-
     if (replacePseudoAttr(el, attr, 'width', dimensions)) {
         return true;
     }
@@ -108,7 +100,7 @@ function handleAttr(el, attr, dimensions) {
  */
 const transformMpadded = (el) => {
     // if the attr value contains a pseudo-unit (width, height, depth),
-    // these are converted to pixels unless it mentions itself, and then it is just '%' (part of core)
+    // these are converted to pixels
     const dimensions = getDimensions(el);       // do this before changing the attr values
 
     handleAttr(el, 'width', dimensions);
