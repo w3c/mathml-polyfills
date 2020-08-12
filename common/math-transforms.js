@@ -1,3 +1,7 @@
+// @ts-check
+/* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
+/* vim: set ts=4 et sw=4 tw=80: */
+
 /*
     A really basic implementation, this will be a module.
  */
@@ -56,3 +60,28 @@ export function cloneElementWithShadowRoot(el, clone) {
 
   return clone;
 }
+
+/**
+ * Converts a CSS length unit to pixels and returns that as a number
+ * @param{Element} element
+ * @param {string} length 
+ * @returns {number}
+ */
+export function convertToPx(element, length) {
+  // quick check to see if we have common case of 'px'
+  if (/px/.test(length)) {
+      return parseFloat(length);
+  }
+
+  // add a temp element with desired length; set it as the width; record the width, then delete the temp element.
+  let temp = document.createElement("div");  // create temporary element
+  temp.style.overflow = "hidden";
+  temp.style.visibility = "hidden";
+  temp.style.width = length;
+  element.appendChild(temp);
+  const result = temp.getBoundingClientRect().width;
+  temp.remove();
+
+  return result;
+}
+
