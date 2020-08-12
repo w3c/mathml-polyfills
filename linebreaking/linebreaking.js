@@ -28,7 +28,7 @@
  * lineBreakDisplayMath() is the starting point
  */
 
-import { _MathTransforms, cloneElementWithShadowRoot } from '../common/math-transforms.js'
+import { _MathTransforms, cloneElementWithShadowRoot, convertToPx } from '../common/math-transforms.js'
 
 const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
 
@@ -68,30 +68,6 @@ const LINE_FILL_TARGET = 0.9
 const EMBELLISHED_ELEMENT_NAMES = [
     'msub', 'msub', 'msubsup', 'mover', 'munder', 'munderover', 'mfrac', 'mmultiscripts'
 ]
-
-/**
- * Converts a CSS length unit to pixels and returns that as a number
- * @param{Element} element
- * @param {string} length 
- * @returns {number}
- */
-function convertToPx(element, length) {
-    // quick check to see if we have common case of 'px'
-    if (/px/.test(length)) {
-        return parseFloat(length);
-    }
-
-    // add a temp element with desired length; set it as the width; record the width, then delete the temp element.
-    let temp = document.createElement("div");  // create temporary element
-    temp.style.overflow = "hidden";
-    temp.style.visibility = "hidden";
-    temp.style.width = length;
-    element.appendChild(temp);
-    const result = temp.getBoundingClientRect().width;
-    temp.remove();
-
-    return result;
-}
 
 // Hack to close over the shadowRoot so it can be accessed deep down
 var shadowRoot = (function () {
@@ -612,6 +588,8 @@ function getAllBreakPoints(element) {
 }
 
 // FIX: the precedence table needs to be imported from the spec. This trivial one is for testing.
+const InvisibleTimes = '\u2062';
+const InvisibleFunctionApply = '\u2061';
 const PrecedenceTable = {
     '(': 0,
     ')': 0,
@@ -621,8 +599,8 @@ const PrecedenceTable = {
     '-': 30,
     '*': 40,
     '×': 40,
-    '\u2062': 40,        // invisible times
-    '\u2061': 50        // invisible function application
+    InvisibleTimes: 40,
+    InvisibleFunctionApply: 50
 }
 
 //FIX: the list of open chars needs to come from the spec
@@ -670,6 +648,34 @@ function getEmbellishedOperator(el) {
 }
 
 /**
+ * 
+ * @param {[any]} stack
+ * @returns {any}
+ */
+function top(stack) {
+    return stack[stack.length - 1];
+}
+
+/**
+ * 
+ * @param {[] | Element} elementStackEntry 
+ * @returns {boolean}
+ */
+function isOperand(elementStackEntry) {
+    return Array.isArray(elementStackEntry);
+}
+
+/**
+ * 
+ * @param {string} mo
+ * @returns {boolean}
+ */
+function isPrefix(mo) {
+    // FIX: include prefix ops in this; might need to pass in whether char before is operand
+    return OpenList.includes(mo);
+}
+
+/**
  * The "reduce" step of parsing.
  * @param {[number]} opStack
  * @param {[Element | [Element]]} elementStack
@@ -679,8 +685,8 @@ function getEmbellishedOperator(el) {
  */
 function parseReduce(opStack, elementStack, childPrecedence) {
     // FIX: really need to include prefix/postfix info
-    let stackPrecedence = opStack[opStack.length - 1];
-    let previousStackPrecedence = stackPrecedence +1;          // needs to start with different value
+    let stackPrecedence = top(opStack);
+    let previousStackPrecedence = stackPrecedence + 1;          // needs to start with different value
     while (childPrecedence < stackPrecedence) {                // stack never reaches length zero due to initial value
         let iPopTo = elementStack.length - 1;                  // we need to pop at least one element
         while (Array.isArray(elementStack[iPopTo])) {          // pop any "operands" (items already reduced to an "mrow") 
@@ -695,19 +701,33 @@ function parseReduce(opStack, elementStack, childPrecedence) {
         // iPopTo now points to the operator that should be on top of the elementStack
         const elementsPopped = elementStack.splice(iPopTo + 1);
         if (stackPrecedence === previousStackPrecedence &&                      // n-ary
-            Array.isArray(elementsPopped[elementsPopped.length - 1])) {         // not first reduction
+            Array.isArray(top(elementsPopped))) {         // not first reduction
             const lastElement = elementsPopped.pop();
             elementStack.push(elementsPopped.concat(lastElement));
         } else {
             elementStack.push(elementsPopped);
         }
         previousStackPrecedence = stackPrecedence;
-        stackPrecedence = opStack[opStack.length - 1];
+        stackPrecedence = top(opStack);
     }
     return [opStack, elementStack];
 }
+
+const InvisibleFunctionApplyMo = ( function() {
+    const mo = document.createElementNS(MATHML_NS, 'mo');
+    mo.textContent = InvisibleFunctionApply;
+    return mo;
+});
+
+function addInvisibleFunctionApply(opStack, elementStack) {
+    // reduce if need be, then push
+    const childPrecedence = operatorPrecedence(InvisibleFunctionApply);
+    [opStack, elementStack] = parseReduce(opStack, elementStack, childPrecedence);
+    opStack.push(childPrecedence);
+    elementStack.push(InvisibleFunctionApplyMo);
+}
+
 /**
- * U
  * @param {Element} treeRoot 
  * @param {[number]} opStack
  * @param {[Element | [Element]]} elementStack
@@ -721,16 +741,23 @@ function buildParseTree(treeRoot, opStack, elementStack) {
         const child = getEmbellishedOperator(treeRoot.children[i]);
         if (child.tagName === 'mo') {
             const childCh = child.textContent.trim();
-            if (OpenList.includes(childCh)) {
+            if (isOperand(top(elementStack)) && isPrefix(childCh)) {
+                // operand/operand -- need to add either invisible times or function apply, using function apply
+                addInvisibleFunctionApply(opStack, elementStack);
+            }
+
+            if (isPrefix(childCh)) {
                 opStack.push(0);
                 elementStack.push(child);        // push onto the last element (not the stack)
             } else if (CloseList.includes(childCh)) {
                 [opStack, elementStack] = parseReduce(opStack, elementStack, 0);
                 elementStack.push(child);
-                if (opStack[opStack.length-1] !== 0) {
-                    console.log(`In linebreaking, parsing error with close char -- top of op stack is ${opStack[opStack.length-1]}`);
+                if (top(opStack) !== 0) {
+                    console.log(`In linebreaking, parsing error with close char -- top of op stack is ${top(opStack)}`);
                 }
                 opStack.pop();
+
+                // FIX: need to figure out implicit mult/function call (function call pops more)
                 const elementsPopped = elementStack.splice(elementStack.length - 3);
                 elementStack.push(elementsPopped);
             } else {
@@ -743,6 +770,10 @@ function buildParseTree(treeRoot, opStack, elementStack) {
         } else if (child.tagName === 'mrow' || child.tagName === 'mpadded' || child.tagName === 'mstyle') {
             [opStack, elementStack] = buildParseTree(child, opStack, elementStack);
         } else {
+            if (isOperand(top(elementStack))) {
+                // operand/operand -- need to add either invisible times or function apply, using function apply
+                addInvisibleFunctionApply(opStack, elementStack);
+            }
             elementStack.push([child]);       // treat as operand/reduced (hence push array)
         }
     }
@@ -779,12 +810,12 @@ function isMRowWellStructured(mrow) {
     }
 
     const precedence = operatorPrecedence(mrow.children[1].textContent.trim());
-    for (let i=0; i < mrow.childElementCount - 1; i += 2) {
-        if ( mrow.children[i].tagName === 'mo' ||
-             mrow.children[i+1].tagName !== 'mo' ||
-             operatorPrecedence(mrow.children[i+1].textContent.trim()) !== precedence ) {
-                 return false;
-             }
+    for (let i = 0; i < mrow.childElementCount - 1; i += 2) {
+        if (mrow.children[i].tagName === 'mo' ||
+            mrow.children[i + 1].tagName !== 'mo' ||
+            operatorPrecedence(mrow.children[i + 1].textContent.trim()) !== precedence) {
+            return false;
+        }
     }
     return true;
 }
@@ -800,7 +831,7 @@ function isWellStructured(treeRoot) {
     //   this allows for +/-, multiple forms of times, or multiple relations to exist.
     // Especially for n-ary functions, we can't easily tell if this good structure or "luck".
     // We check up to three mrows and if all seem well structured, we say this is well structured.
-    const mrows = Array.from( treeRoot.querySelectorAll('mrow') );
+    const mrows = Array.from(treeRoot.querySelectorAll('mrow'));
     if (treeRoot.tagName === 'mrow' || treeRoot.tagName === 'math') { // could be 'math' with no mrows
         mrows.push(treeRoot);
     }
@@ -813,8 +844,8 @@ function isWellStructured(treeRoot) {
             return isMRowWellStructured(mrows[0]) && isMRowWellStructured(mrows[1]);
         default:
             return isMRowWellStructured(mrows[0]) &&
-                   isMRowWellStructured(mrows[Math.floor(mrows.length/2)]) &&
-                   isMRowWellStructured(mrows[mrows.length-1]);
+                isMRowWellStructured(mrows[Math.floor(mrows.length / 2)]) &&
+                isMRowWellStructured(mrows[mrows.length - 1]);
     }
 }
 
@@ -853,7 +884,7 @@ function addDepthInfo(linebreakRoot) {
     // for each forced linebreak, add a new row to the table
     linebreakElements.forEach(mo => {
         const linebreakRoot = computeLineBreakRoot(mo);
-        if ( !linebreakRoots.includes(linebreakRoot) ) {
+        if (!linebreakRoots.includes(linebreakRoot)) {
             linebreakRoots.push(linebreakRoot);
             // if it looks to be well structured, don't second guess the structure (and save time)
             if (isWellStructured(linebreakRoot)) {
@@ -863,10 +894,10 @@ function addDepthInfo(linebreakRoot) {
                 if (elementStack.length != 2) {
                     [opStack, elementStack] = parseReduce(opStack, elementStack, -1);
                 }
-                setDepthAttr(elementStack[1], 0);    
+                setDepthAttr(elementStack[1], 0);
             }
         }
-    })        
+    })
 }
 
 /********* linebreaking penalty computation *******/
@@ -1011,6 +1042,11 @@ function linebreakLine(element, maxLineWidth) {
             }
             iLine++
         }
+
+        if (iMinPenalty === -1) {
+            console.log(`Linebreaking error: no breakpoint found on line ${nLines + 1}`);
+            iMinPenalty = iOperator;    // for count to advance
+        }
         nLines++;
         iOperator = iMinPenalty + 1;                    // move on to next line
 
@@ -1031,7 +1067,7 @@ function linebreakLine(element, maxLineWidth) {
             }
             indentLine(previousRow.firstElementChild);
         } else if (nLines === 1) {
-            // should get here, but happens if entire expr fits on one line
+            // shouldn't get here, but happens if entire expr fits on one line
             return;
         }
 
