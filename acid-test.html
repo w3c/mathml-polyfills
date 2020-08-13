@@ -618,8 +618,10 @@
                 Linebreaks: Forced linebreak before second '=' and another before "+4x+1".
                 <br>
                 Indents: 2nd line on "=" 3rd line on "+" after "="
+                <br>
+                maxwidth = 30em -- shouldn't affect linebreaks (tests non-px value)
             <td>
-                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                <math xmlns="http://www.w3.org/1998/Math/MathML" maxwidth="30em" display="block">
                     <mrow>
                         <mrow>
                             <mi>f</mi>
@@ -1088,8 +1090,8 @@
         </tr>
         <tr>
             <td>
-                Automatic linebreak (200px break width)<br>
-                Should be four lines: linebreak between the parens and also on '+'s<br>
+                Automatic linebreaking with width changing with table width <br>
+                Should break before '+'s<br>
                 Indentation: automatic
             </td>
             <td>
