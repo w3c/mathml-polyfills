@@ -74,7 +74,8 @@ export function convertToPx(element, length) {
   }
 
   // add a temp element with desired length; set it as the width; record the width, then delete the temp element.
-  let temp = document.createElement("div");  // create temporary element
+  // In Safari (Aug 2020), unknown elements in MathML are thrown out, so adding a 'div' results in 0 width. For some reason, 'img' is ok.
+  let temp = document.createElement("img");  // create temporary element
   temp.style.overflow = "hidden";
   temp.style.visibility = "hidden";
   temp.style.width = length;
