@@ -43,7 +43,7 @@ const transformMglyph = (el) => {
                 break;
             case 'width':
             case 'height':
-                img.setAttribute(attrs[i].name, convertToPx(el, attrs[i].value).toString());
+                img.setAttribute(attrs[i].name, convertToPx(el.parentElement, attrs[i].value).toString());
                 break;
             default:
                 img.setAttribute(attrs[i].name, attrs[i].value);
