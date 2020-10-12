@@ -1,0 +1,159 @@
+mrow.menclose {
+    display: inline-block;
+    text-align: left;
+    position: relative;
+}
+
+/* the following class names should be of the form 'menclose-[notation name]' */
+
+mrow.menclose-longdiv {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -0.3em;
+    width: 0.6em;
+    border: 0.067em solid;
+    border-radius: 50%;
+    clip-path: inset(0 0 0 0.3em);
+    box-sizing: border-box;
+}
+
+mrow.menclose-actuarial {
+    position: absolute;
+    display: inline-block;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-top: 0.067em solid;
+    border-right: 0.067em solid;
+}
+
+mrow.menclose-phasorangle {
+    display: inline-block;
+    left: 0;
+    bottom: 0;
+    position: absolute;
+    border-top: 0.067em solid;
+    transform-origin: bottom left;
+}
+
+mrow.menclose-box {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0.067em solid;
+}
+
+mrow.menclose-roundedbox {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0.067em solid;
+    border-radius: 0.267em;
+}
+
+mrow.menclose-circle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0.067em solid;
+    border-radius: 50%;
+}
+
+mrow.menclose-box {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0.067em solid;
+}
+
+mrow.menclose-left {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-left: 0.067em solid;
+}
+
+mrow.menclose-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-right: 0.067em solid;
+}
+
+mrow.menclose-top {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-top: 0.067em solid;
+}
+
+mrow.menclose-bottom {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-bottom: 0.067em solid;
+}
+
+mrow.menclose-updiagonalstrike {
+    position: absolute;
+    display: inline-block;
+    left: 0;
+    bottom: 0;
+    border-top: 0.067em solid;
+    transform-origin: bottom left;
+}
+
+mrow.menclose-downdiagonalstrike {
+    position: absolute;
+    display: inline-block;
+    left: 0;
+    top: 0;
+    border-top: 0.067em solid;
+    transform-origin: top left;
+}
+
+mrow.menclose-verticalstrike {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 50%;
+    transform: translateX(0.034em);
+    border-left: 0.067em solid;
+}
+
+mrow.menclose-horizontalstrike {
+    position: absolute;
+    border-top: 0.067em solid;
+    left: 0;
+    right: 0;
+    bottom: 50%;
+    transform: translateY(0.034em);
+}
+
+mrow.menclose-madruwb {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-right: 0.067em solid;
+    border-bottom: 0.067em solid;
+}
