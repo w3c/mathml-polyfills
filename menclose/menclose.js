@@ -39,7 +39,7 @@ const MENCLOSE_STYLE = {
   'downdiagonalstrike': 'padding: 0.267em;',
   'verticalstrike': 'padding-top: 0.2em; padding-bottom: 0.2em;',
   'horizontalstrike': 'padding-left: 0.2em; padding-right: 0.2em;',
-  'phasorangle': 'border-bottom: 0.067em solid; padding: 0.1em 0.1em 0.1em 0.7em;',
+  'phasorangle': 'border-bottom: 0.067em solid; padding: 0.2em 0.2em 0.0em 0.7em;',
   'madruwb': 'padding-bottom: 0.2em; padding-right: 0.2em;',
 }
 
@@ -116,11 +116,7 @@ const transformMEnclose = (el) => {
       const rectHeight = rect.height;
       wordMRow.style.width = `${Math.sqrt(rectWidth * rectWidth + rectHeight * rectHeight)}px`;    // hypotenuse
       wordMRow.style.transform = `rotate(${-Math.atan(rectHeight / rectWidth)}rad)` +
-                                 `translate(-0.067em, 0.0335em)`;
-      /*
-        width: 2.338em;
-        transform: translateX(0.06em) rotate(-1.421rad);
-      */
+                                 `translate(-0.067em, 0.0335em)`;  // FIX: don't hardcode -- get from MENCLOSE_STYLE (not complete why x,y aren't the same)
     }
 
     if (MENCLOSE_STYLE[word] !== null) {
