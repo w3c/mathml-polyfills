@@ -2,6 +2,9 @@
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
 
+
+export const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
+
 /*
     A really basic implementation, this will be a module.
  */
@@ -75,13 +78,15 @@ export function convertToPx(element, length) {
 
   // add a temp element with desired length; set it as the width; record the width, then delete the temp element.
   // In Safari (Aug 2020), unknown elements in MathML are thrown out, so adding a 'div' results in 0 width. For some reason, 'img' is ok.
-  let temp = document.createElement("img");  // create temporary element
-  temp.style.overflow = "hidden";
-  temp.style.visibility = "hidden";
-  temp.style.width = length;
-  element.appendChild(temp);
-  const result = temp.getBoundingClientRect().width;
-  temp.remove();
+  let img = document.createElement("img");  // create temporary element
+  let leafWrapper = document.createElementNS(MATHML_NS, 'mtext'); // mtext is integration point for HTML
+  leafWrapper.appendChild(img);
+  leafWrapper.style.overflow = "hidden";
+  leafWrapper.style.visibility = "hidden";
+  img.style.width = length;
+  element.appendChild(leafWrapper);
+  const result = leafWrapper.getBoundingClientRect().width;
+  leafWrapper.remove();
 
   return result;
 }
