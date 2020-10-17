@@ -23,8 +23,7 @@
   THE SOFTWARE.
 */
 
-import { _MathTransforms, cloneElementWithShadowRoot } from '../common/math-transforms.js'
-const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
+import { _MathTransforms, cloneElementWithShadowRoot, MATHML_NS } from '../common/math-transforms.js'
 
 /**
  * @param {HTMLElement} mpadded

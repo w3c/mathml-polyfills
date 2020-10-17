@@ -28,9 +28,7 @@
  * lineBreakDisplayMath() is the starting point
  */
 
-import { _MathTransforms, cloneElementWithShadowRoot, convertToPx } from '../common/math-transforms.js'
-
-const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
+import { _MathTransforms, cloneElementWithShadowRoot, convertToPx, MATHML_NS } from '../common/math-transforms.js'
 
 const ORIGINAL_MATH_ATTR = 'data-math-no-linebreaking';
 const MTABLE_HAS_LINEBREAKS = 'data-has-linebreaks'

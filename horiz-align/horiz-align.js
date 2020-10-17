@@ -20,9 +20,7 @@
   THE SOFTWARE.
 */
 
-import { _MathTransforms } from '../common/math-transforms.js'
-
-const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
+import { _MathTransforms, MATHML_NS } from '../common/math-transforms.js'
 
 /**
  * @param {HTMLElement} child
