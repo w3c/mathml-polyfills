@@ -15,7 +15,7 @@
   </script>
   <style>
     math {
-      font-family: 'Stix Two Math';
+      font-family: "Stix Two Math", "Cambria Math", "Asana";
     }
 
     ol li {
@@ -100,23 +100,6 @@
 
 <body>
   <h1>menclose</h1>
-  
-
-  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-    <mrow class="menclose">
-      <mrow>
-        <mfrac>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-          <mn>2</mn>
-        </mfrac>
-      </mrow>
-      <mrow class="menclose-downdiagonalstrike" style="width: 4.094em; transform: rotate(0.65rad) translateY(0.0335em);"></mrow>
-    </mrow>
-  </math>
 
   <p>This page contains some tests for the <a href=https://mathml-refresh.github.io/mathml/#menclose>menclose
       element</a>.
@@ -247,14 +230,11 @@
     <li>menclose phasorangle:
       <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
         <menclose notation="phasorangle">
-          <mfrac>
             <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
+              <mi>π</mi>
+              <mo>/</mo>
+              <mn>8</mn>
             </mrow>
-            <mn>2</mn>
-          </mfrac>
         </menclose>
       </math>
     </li>
@@ -500,12 +480,6 @@
             </mrow>
             <mn>2</mn>
           </mfrac>
-          <mo>+</mo>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
         </menclose>
       </math>
     </li>

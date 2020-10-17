@@ -20,15 +20,13 @@
   THE SOFTWARE.
 */
 
-import { _MathTransforms, cloneElementWithShadowRoot, convertToPx } from '../common/math-transforms.js'
-
-const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
+import { _MathTransforms, cloneElementWithShadowRoot, convertToPx, MATHML_NS } from '../common/math-transforms.js'
 
 const BORDER_NOTATIONS = ['left', 'right', 'top', 'bottom', 'actuarial'];
 
 const MENCLOSE_STYLE = {
-  'longdiv': 'padding: 0.267em 0.2em 0.2em 0.433em; border-top: 0.067em solid;',  // top/bottom tweaked smaller than MathJax (was .267/0.2)
-  'actuarial': 'padding-top: 0.2em; padding-right: 0.2em;',
+  'longdiv': 'padding: 0.05em 0.2em 0.0em 0.433em; border-top: 0.067em solid;',  // top/bottom tweaked smaller than MathJax (was .267/0.2)
+  'actuarial': 'padding-top: 0.01em; padding-right: 0.1em;',
   'radical': 'padding-top: 0.403em; padding-bottom: 0.112em; padding-left: 1.02em;',
   'box': 'padding: 0.2em;',
   'roundedbox': 'padding: 0.267em;',
@@ -41,7 +39,7 @@ const MENCLOSE_STYLE = {
   'downdiagonalstrike': 'padding: 0.267em;',
   'verticalstrike': 'padding-top: 0.2em; padding-bottom: 0.2em;',
   'horizontalstrike': 'padding-left: 0.2em; padding-right: 0.2em;',
-  'phasorangle': 'border-bottom: 0.067em solid; padding: 0.2em 0.1em 0.1em 0.367em;',
+  'phasorangle': 'border-bottom: 0.067em solid; padding: 0.1em 0.1em 0.1em 0.7em;',
   'madruwb': 'padding-bottom: 0.2em; padding-right: 0.2em;',
 }
 
@@ -59,7 +57,6 @@ const transformMEnclose = (el) => {
   //   the contents of the menclose.
   // Subsequent mrows inherit their size from the parent so that their border is the right size.
   // Exceptions are 'radical' and 'longdiv' notations.
-  const padding = convertToPx(el, '.4em');   // FIX: don't hardcode
   if (window.chrome === null || typeof window.chrome === "undefined") {
     return el;    // Safari and Firefox handle menclose and at least Firefox doesn't deal with the CSS properly
   }
@@ -104,19 +101,22 @@ const transformMEnclose = (el) => {
   notationArray.forEach(word => {
     const wordMRow = document.createElementNS(MATHML_NS, 'mrow');
     if (word === 'updiagonalstrike' || word === 'downdiagonalstrike') {
-      const padding = convertToPx(el, '.4em');   // FIX: don't hardcode
+      const padding = convertToPx(el, '.467em');   // FIX: don't hardcode (2em + 2em + 0.067em) -- get from MENCLOSE_STYLE
       const rect = el.getBoundingClientRect();
       const rectWidth = rect.width + padding;
       const rectHeight = rect.height + padding;
-      wordMRow.style.width = `${Math.sqrt(rectWidth * rectWidth + rectHeight * rectHeight)}px`;    // hypotenuse
-      wordMRow.style.transform = `rotate(${(word === 'updiagonalstrike' ? -1 : 1) * Math.atan(rectHeight / rectWidth)}rad)`;
+      const hypotenuse = Math.sqrt(rectWidth * rectWidth + rectHeight * rectHeight)
+      wordMRow.style.width = `${hypotenuse}px`;    // hypotenuse
+      wordMRow.style.transform = 
+        `rotate(${(word === 'updiagonalstrike' ? -1 : 1) * Math.atan(rectHeight / rectWidth)}rad) ` +
+        `translate(0.0335em, ${word === 'updiagonalstrike' ? '': '-'}0.0335em)`;  // FIX: don't hardcode (0.067/2em) -- get from MENCLOSE_STYLE
     } else if (word === 'phasorangle') {
-      const padding = convertToPx(el, '.4em');   // FIX: don't hardcode
       const rect = el.getBoundingClientRect();
-      const rectWidth = 10;   // 0.5em???
-      const rectHeight = rect.height + padding;
-      wordMRow.style.width = `${Math.sqrt(10 * 10 + rectHeight * rectHeight)}px`;    // hypotenuse
-      wordMRow.style.transform = `rotate(${-Math.atan(rectHeight / rectWidth)}rad) translateX(0.06em)`;
+      const rectWidth = convertToPx(el, '.7em');
+      const rectHeight = rect.height;
+      wordMRow.style.width = `${Math.sqrt(rectWidth * rectWidth + rectHeight * rectHeight)}px`;    // hypotenuse
+      wordMRow.style.transform = `rotate(${-Math.atan(rectHeight / rectWidth)}rad)` +
+                                 `translate(-0.067em, 0.0335em)`;
       /*
         width: 2.338em;
         transform: translateX(0.06em) rotate(-1.421rad);

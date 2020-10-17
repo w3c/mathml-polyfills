@@ -9,12 +9,13 @@ mrow.menclose {
 mrow.menclose-longdiv {
     position: absolute;
     top: 0;
-    bottom: 0;
-    left: -0.3em;
-    width: 0.6em;
+    bottom: 0.1em;
+    left: -0.4em;
+    width: 0.7em;
     border: 0.067em solid;
-    border-radius: 50%;
-    clip-path: inset(0 0 0 0.3em);
+    transform: translateY(-0.067em);
+    border-radius: 70%;
+    clip-path: inset(0 0 0 0.4em);
     box-sizing: border-box;
 }
 
