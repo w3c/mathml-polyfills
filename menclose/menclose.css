@@ -158,3 +158,45 @@ mrow.menclose-madruwb {
     border-right: 0.067em solid;
     border-bottom: 0.067em solid;
 }
+
+mrow.menclose-arrow {
+    position: absolute;
+    left: 0;
+    bottom: 50%;
+    height: 0;
+    width: 0;
+    transform-origin: bottom;
+}
+
+mrow.menclose-arrow  > mrow.line{
+    position: absolute;
+    display:block;
+    left: 0;
+    top: -0.034em;
+    right: 0.201em;
+    height: 0;
+    border-top: 0.067em solid;
+    border-left: 0;
+    transform-origin: bottom;
+}
+
+mrow.menclose-arrow > mrow.rthead {
+    position: absolute;
+    transform: skewX(0.464rad);
+    right: 0;
+    bottom: -1px;
+    border-bottom: 1px solid transparent;
+    border-top: 0.134em solid transparent;
+    transform-origin: bottom;
+}
+
+mrow.menclose-arrow > mrow.rbhead {
+    position: absolute;
+    transform: skewX(-0.464rad);
+    transform-origin: top;
+    right: 0;
+    top: -1px;
+    border-top: 1px solid transparent;
+    border-bottom: 0.134em solid transparent;
+    transform-origin: bottom;
+}

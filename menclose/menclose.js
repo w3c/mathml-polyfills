@@ -117,12 +117,35 @@ const transformMEnclose = (el) => {
       wordMRow.style.width = `${Math.sqrt(rectWidth * rectWidth + rectHeight * rectHeight)}px`;    // hypotenuse
       wordMRow.style.transform = `rotate(${-Math.atan(rectHeight / rectWidth)}rad)` +
                                  `translate(-0.067em, 0.0335em)`;  // FIX: don't hardcode -- get from MENCLOSE_STYLE (not complete why x,y aren't the same)
+    } else if (word === 'northeastarrow') {
+      const rect = el.getBoundingClientRect();
+      const padding = 0; // FIX
+      const rectWidth = rect.width + padding;
+      const rectHeight = rect.height + padding;
+      const hypotenuse = Math.sqrt(rectWidth * rectWidth + rectHeight * rectHeight)
+      wordMRow.style.width = `${hypotenuse}px`;    // hypotenuse
+      wordMRow.left = '-0.377em';
+      wordMRow.style.transform =
+        `rotate(${(word === 'northeastarrow' ? -1 : 1) * Math.atan(rectHeight / rectWidth)}rad)`;
+    
+      const line = document.createElementNS(MATHML_NS, 'mrow');
+      line.className = 'line';
+      wordMRow.appendChild(line);
+
+      const rthead = document.createElementNS(MATHML_NS, 'mrow');
+      rthead.className = 'rthead';
+      wordMRow.appendChild(rthead);
+
+      const rbhead = document.createElementNS(MATHML_NS, 'mrow');
+      rbhead.className = 'rbhead';
+      wordMRow.appendChild(rbhead);
+      
     }
 
     if (MENCLOSE_STYLE[word] !== null) {
       mencloseStyle += MENCLOSE_STYLE[word];
     }
-    wordMRow.className = `menclose-${word}`;
+    wordMRow.className = `menclose-${/arrow/.test(word) ? 'arrow' : word}`;
     mencloseMRow.appendChild(wordMRow);
   });
 
