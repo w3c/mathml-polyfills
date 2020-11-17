@@ -1,3 +1,5 @@
+/* most of these values are derived from what MathJax uses */
+
 mrow.menclose {
     display: inline-block;
     text-align: left;
@@ -5,7 +7,6 @@ mrow.menclose {
 }
 
 /* the following class names should be of the form 'menclose-[notation name]' */
-
 mrow.menclose-longdiv {
     position: absolute;
     top: 0;
@@ -113,42 +114,6 @@ mrow.menclose-bottom {
     border-bottom: 0.067em solid;
 }
 
-mrow.menclose-updiagonalstrike {
-    position: absolute;
-    display: inline-block;
-    left: 0;
-    bottom: 0;
-    border-top: 0.067em solid;
-    transform-origin: bottom left;
-}
-
-mrow.menclose-downdiagonalstrike {
-    position: absolute;
-    display: inline-block;
-    left: 0;
-    top: 0;
-    border-top: 0.067em solid;
-    transform-origin: top left;
-}
-
-mrow.menclose-verticalstrike {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 50%;
-    transform: translateX(0.034em);
-    border-left: 0.067em solid;
-}
-
-mrow.menclose-horizontalstrike {
-    position: absolute;
-    border-top: 0.067em solid;
-    left: 0;
-    right: 0;
-    bottom: 50%;
-    transform: translateY(0.034em);
-}
-
 mrow.menclose-madruwb {
     position: absolute;
     top: 0;
@@ -159,44 +124,72 @@ mrow.menclose-madruwb {
     border-bottom: 0.067em solid;
 }
 
+/*
+ * Arrows and 'strikes' are composed of an 'menclose-arrow' wrapper and one, three or five children
+ * Strikes just have class 'line'
+ * Single-headed arrows have the children with classes 'line', 'rthead' (right top arrow head), and 'rbhead'
+ * Double-headed arrows add lthead' (left top arrow head), and 'lbhead'
+ */
 mrow.menclose-arrow {
     position: absolute;
     left: 0;
     bottom: 50%;
     height: 0;
     width: 0;
-    transform-origin: bottom;
 }
 
-mrow.menclose-arrow  > mrow.line{
+mrow.menclose > mrow.menclose-arrow > * {
+    display: block;
     position: absolute;
-    display:block;
+    transform-origin: bottom;
+    border-left: 0.268em solid;
+    border-right: 0;
+    box-sizing: border-box;
+  }
+
+mrow.menclose-arrow  > mrow.line{
     left: 0;
-    top: -0.034em;
+    top: -0.0335em;
     right: 0.201em;
     height: 0;
     border-top: 0.067em solid;
     border-left: 0;
-    transform-origin: bottom;
 }
 
 mrow.menclose-arrow > mrow.rthead {
-    position: absolute;
     transform: skewX(0.464rad);
-    right: 0;
+    right: 1px;
     bottom: -1px;
     border-bottom: 1px solid transparent;
     border-top: 0.134em solid transparent;
-    transform-origin: bottom;
 }
 
 mrow.menclose-arrow > mrow.rbhead {
-    position: absolute;
     transform: skewX(-0.464rad);
     transform-origin: top;
-    right: 0;
+    right: 1px;
     top: -1px;
     border-top: 1px solid transparent;
     border-bottom: 0.134em solid transparent;
-    transform-origin: bottom;
+}
+
+mrow.menclose-arrow > mrow.lthead {
+    transform: skewX(-0.464rad);
+    left: 0;
+    bottom: -1px;
+    border-left: 0;
+    border-right: 0.268em solid;
+    border-bottom: 1px solid transparent;
+    border-top: 0.134em solid transparent;
+}
+
+mrow.menclose-arrow > mrow.lbhead {
+    transform: skewX(0.464rad);
+    transform-origin: top;
+    left: 0;
+    top: -1px;
+    border-left: 0;
+    border-right: 0.268em solid;
+    border-top: 1px solid transparent;
+    border-bottom: 0.134em solid transparent;
 }
