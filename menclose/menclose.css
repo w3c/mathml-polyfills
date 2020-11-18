@@ -40,6 +40,15 @@ mrow.menclose-phasorangle {
     transform-origin: bottom left;
 }
 
+mrow.menclose-phasoranglertl {
+    display: inline-block;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+    border-top: 0.067em solid;
+    transform-origin: bottom right;
+}
+
 mrow.menclose-box {
     position: absolute;
     top: 0;

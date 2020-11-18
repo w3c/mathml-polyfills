@@ -34,6 +34,7 @@ const MENCLOSE_STYLE = {
   'roundedbox': 'padding: 0.267em;',
   'circle': 'padding: 0.267em;',
   'phasorangle': 'border-bottom: 0.067em solid; padding: 0.2em 0.2em 0.0em 0.7em;',
+  'phasoranglertl': 'border-bottom: 0.067em solid; padding: 0.2em 0.7em 0.0em 0.2em;',
   'madruwb': 'padding-bottom: 0.2em; padding-right: 0.2em;',
 }
 
@@ -86,6 +87,24 @@ function removeRedundantNotations(notationArray) {
   }
   return notationArray;
 }
+
+/**
+ * 
+ * @param {HTMLElement} element 
+ * @returns {boolean}
+ */
+function isDirLTR(element) {
+  let lookingForMathElement = true;
+  do {
+      if (element.hasAttribute('dir')) {
+          return element.getAttribute('dir') === 'ltr';
+      }
+      lookingForMathElement = (element.tagName !== 'math')
+      element = element.parentElement;
+  } while (lookingForMathElement);
+  return true;
+}
+
 /**
  * 
  * @param {HTMLElement} el 
@@ -130,6 +149,13 @@ const transformMEnclose = (el) => {
 
   // drawing optimizations
   notationArray = removeRedundantNotations(notationArray);
+
+  // handle rtl -- affects only 'radical' (which relies on msqrt) and 'phasorangle'
+  // if rtl, we change phasorangle to parosoranglertl and use the css rule
+  if (notationArray.includes('phasorangle') && !isDirLTR(el)) {
+    const i = notationArray.indexOf('phasorangle');
+    notationArray[i] = 'phasoranglertl';
+  }
 
   // create the mrow that contains the children of the menclose
   const childrenMRow = document.createElementNS(MATHML_NS, 'mrow');
@@ -204,12 +230,11 @@ const transformMEnclose = (el) => {
           wordMRow.appendChild(lbhead);
         }
       }
-    } else if (word === 'phasorangle') {
-      const rect = el.getBoundingClientRect();
+    } else if (word === 'phasorangle' || word === 'phasoranglertl') {
       const rectWidth = convertToPx(el, '.7em');
       const rectHeight = rect.height;
       wordMRow.style.width = `${Math.sqrt(rectWidth * rectWidth + rectHeight * rectHeight)}px`;    // hypotenuse
-      wordMRow.style.transform = `rotate(${-Math.atan(rectHeight / rectWidth)}rad)`;
+      wordMRow.style.transform = `rotate(${word === 'phasoranglertl' ? '' : '-'}${Math.atan(rectHeight / rectWidth)}rad) translateY(0.067em)`;
     }
 
     let paddingStyle = MENCLOSE_STYLE[word] || '';
