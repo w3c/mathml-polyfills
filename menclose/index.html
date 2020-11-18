@@ -938,6 +938,81 @@
       </math>
     </li>
   </ol>
+
+  <h2>menclose rtl dir tests</h2>
+  <p>'dir' is set on 'math' element unless otherwise specified.</p>
+  <ol>
+    <li>menclose phasorangle (should reverse):
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+        <menclose notation="phasorangle">
+          <mrow>
+            <mi>π</mi>
+            <mo>/</mo>
+            <mn>8</mn>
+          </mrow>
+        </menclose>
+      </math>
+    </li>
+    <li>menclose phasorangle (dir set on 'mrow', should reverse):
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mrow  dir="rtl">
+          <menclose notation="phasorangle">
+            <mrow>
+              <mi>π</mi>
+              <mo>/</mo>
+              <mn>8</mn>
+            </mrow>
+          </menclose>
+          </mrow>
+      </math>
+        </li>
+    <li>menclose radical (should reverse, relies on underlying implementation of msqrt):
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+        <menclose notation="radical">
+          <mrow>
+            <mi>π</mi>
+            <mo>/</mo>
+            <mn>8</mn>
+          </mrow>
+        </menclose>
+      </math>
+    </li>
+    <li>menclose left (should stay on left):
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+        <menclose notation="left">
+          <mrow>
+            <mi>π</mi>
+            <mo>/</mo>
+            <mn>8</mn>
+          </mrow>
+        </menclose>
+      </math>
+    </li>
+    <li>menclose longdiv (should stay on left):
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+        <menclose notation="longdiv">
+          <mrow>
+            <mi>π</mi>
+            <mo>/</mo>
+            <mn>8</mn>
+          </mrow>
+        </menclose>
+      </math>
+    </li>
+    <li>menclose rightarrow (should still point to right):
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+        <menclose notation="rightarrow">
+          <mrow>
+            <mi>π</mi>
+            <mo>/</mo>
+            <mn>8</mn>
+          </mrow>
+        </menclose>
+      </math>
+    </li>
+
+    </ol>
+
 </body>
 
 </html>
