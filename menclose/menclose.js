@@ -174,11 +174,11 @@ const transformMEnclose = (el) => {
         adjustedHeight--;
       }
       const lineLength = (c === 0) ? (isHorizontal ? adjustedWidth : adjustedHeight) :
-        Math.sqrt(adjustedWidth * adjustedWidth + adjustedHeight * adjustedHeight)
+                                     Math.sqrt(adjustedWidth * adjustedWidth + adjustedHeight * adjustedHeight)
       wordMRow.style.width = `${lineLength}px`;
       wordMRow.style.transform =
-        (rotate ? `rotate(${rotate}rad) ` : '') +
-        'translate(0.067em, 0.0em';  // FIX: don't hardcode (0.067/2em) -- get from MENCLOSE_STYLE;
+          (rotate ? `rotate(${rotate}rad) ` : '') +
+          'translate(0.067em, 0.0em';  // FIX: don't hardcode (0.067/2em) -- get from MENCLOSE_STYLE;
       wordMRow.style.left = `${(adjustedWidth - lineLength) / 2}px`
 
       const line = document.createElementNS(MATHML_NS, 'mrow');
