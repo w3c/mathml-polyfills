@@ -42,38 +42,50 @@ const MENCLOSE_STYLE = {
  *   [c, angle, double, remove]
  */
 const ARROW_INFO = {
-  'horizontalstrike':        [0,  0,           false, ''],
-  'verticalstrike':          [0,  Math.PI / 2, false, ''],
-  'updiagonalstrike':        [-1, 0,           false, ''],
-  'downdiagonalstrike':      [ 1, 0,           false, ''],
-  'uparrow':                 [0,  -Math.PI / 2,false, 'verticalstrike'],
-  'downarrow':               [0,  Math.PI / 2, false, 'verticakstrike'],
-  'rightarrow':              [0,  0,           false, 'horizontalstrike'],
-  'leftarrow':               [0,  Math.PI,     false, 'horizontalstrike'],
-  'updownarrow':             [0,  Math.PI / 2, true,  'verticalstrike uparrow downarrow'],
-  'leftrightarrow':          [0,  0,           true,  'horizontalstrike leftarrow rightarrow'],
-  'northeastarrow':          [-1, 0,           false, 'updiagonalstrike updiagonalarrow'],
-  'southeastarrow':          [ 1, 0,           false, 'downdiagonalstrike'],
-  'northwestarrow':          [ 1, Math.PI,     false, 'downdiagonalstrike'],
-  'southwestarrow':          [-1, Math.PI,     false, 'updiagonalstrike'],
-  'northeastsouthwestarrow': [-1, 0,           true,  'updiagonalstrike northeastarrow updiagonalarrow southwestarrow'],
-  'northwestsoutheastarrow': [ 1, 0,           true,  'downdiagonalstrike northwestarrow southeastarrow']
+  'horizontalstrike':        [0,  0,           false, ['']],
+  'verticalstrike':          [0,  Math.PI / 2, false, ['']],
+  'updiagonalstrike':        [-1, 0,           false, ['']],
+  'downdiagonalstrike':      [ 1, 0,           false, ['']],
+  'uparrow':                 [0,  -Math.PI / 2,false, ['verticalstrike']],
+  'downarrow':               [0,  Math.PI / 2, false, ['verticakstrike']],
+  'rightarrow':              [0,  0,           false, ['horizontalstrike']],
+  'leftarrow':               [0,  Math.PI,     false, ['horizontalstrike']],
+  'updownarrow':             [0,  Math.PI / 2, true,  ['verticalstrike', 'uparrow', 'downarrow']],
+  'leftrightarrow':          [0,  0,           true,  ['horizontalstrike', 'leftarrow', 'rightarrow']],
+  'northeastarrow':          [-1, 0,           false, ['updiagonalstrike', 'updiagonalarrow']],
+  'southeastarrow':          [ 1, 0,           false, ['downdiagonalstrike']],
+  'northwestarrow':          [ 1, Math.PI,     false, ['downdiagonalstrike']],
+  'southwestarrow':          [-1, Math.PI,     false, ['updiagonalstrike']],
+  'northeastsouthwestarrow': [-1, 0,           true,  ['updiagonalstrike', 'northeastarrow', 'updiagonalarrow', 'southwestarrow']],
+  'northwestsoutheastarrow': [ 1, 0,           true,  ['downdiagonalstrike', 'northwestarrow', 'southeastarrow']]
 };
 
 const ALL_NOTATIONS = Array.from( new Set(BORDER_NOTATIONS.concat(Object.keys(MENCLOSE_STYLE), Object.keys(ARROW_INFO))) );
 
-/** FIX: from MJ -- make work here */
-function removeRedundantNotations() {
-  for (const name of Object.keys(this.notations)) {
-    if (this.notations[name]) {
-      const remove = this.notations[name].remove || '';
-      for (const notation of remove.split(/ /)) {
-        delete this.notations[notation];
-      }
+/**
+ * 
+ * @param {string[]} notationArray 
+ * @returns {string[]} notationArray
+ */
+function removeRedundantNotations(notationArray) {
+  // remove repeated names
+  notationArray = Array.from( new Set(notationArray) );
+
+  if (notationArray.includes('box')) {
+    // since all borders are drawn, remove the individual borders
+    notationArray = notationArray.filter( notation => !BORDER_NOTATIONS.includes(notation));
+  }
+
+  // some more drawing optimizations -- this time using ARROW_INFO
+  for (const [notation, values] of Object.entries(ARROW_INFO)) {
+    const removeArray = values[3];
+    if (removeArray !== [''] && notationArray.includes(notation)) {
+      // if there is a 'remove' list and the entry key is a notation to draw...
+      notationArray = notationArray.filter( notation => !removeArray.includes(notation) );
     }
   }
+  return notationArray;
 }
-
 /**
  * 
  * @param {HTMLElement} el 
@@ -111,15 +123,13 @@ const transformMEnclose = (el) => {
   // get rid of unknown names
   notationArray = notationArray.filter( notation => ALL_NOTATIONS.includes(notation) );
 
+  // if nothing, use the default
   if (notationArray.length === 0) {
     notationArray.push('longdiv');
   }
 
-
-  if (notationArray.includes('box')) {
-    // some optimization -- since all borders are drawn, remove the individual borders
-    notationArray = notationArray.filter( notation => !BORDER_NOTATIONS.includes(notation));
-  }
+  // drawing optimizations
+  notationArray = removeRedundantNotations(notationArray);
 
   // create the mrow that contains the children of the menclose
   const childrenMRow = document.createElementNS(MATHML_NS, 'mrow');
@@ -139,8 +149,7 @@ const transformMEnclose = (el) => {
     const msqrt = document.createElementNS(MATHML_NS, 'msqrt');
     msqrt.appendChild(mencloseMRow.firstElementChild);
     mencloseMRow.appendChild(msqrt);
-    notationArray = notationArray.filter( notation => !notationArray.includes('radical'));
-
+    notationArray = notationArray.filter( notation => notation !== 'radical');
   }
 
   let mencloseStyle = '';
@@ -164,40 +173,35 @@ const transformMEnclose = (el) => {
         adjustedWidth--;
         adjustedHeight--;
       }
-      const lineLength = (c === 0) ? ( isHorizontal ? adjustedWidth : adjustedHeight ) :
-                                     Math.sqrt(adjustedWidth * adjustedWidth + adjustedHeight * adjustedHeight)
+      const lineLength = (c === 0) ? (isHorizontal ? adjustedWidth : adjustedHeight) :
+        Math.sqrt(adjustedWidth * adjustedWidth + adjustedHeight * adjustedHeight)
       wordMRow.style.width = `${lineLength}px`;
-      wordMRow.style.transform = 
-          (rotate ? `rotate(${rotate}rad) ` : '') +
-          'translate(0.067em, 0.0em';  // FIX: don't hardcode (0.067/2em) -- get from MENCLOSE_STYLE;
-      wordMRow.style.left = `${(adjustedWidth - lineLength)/2}px`
-    
+      wordMRow.style.transform =
+        (rotate ? `rotate(${rotate}rad) ` : '') +
+        'translate(0.067em, 0.0em';  // FIX: don't hardcode (0.067/2em) -- get from MENCLOSE_STYLE;
+      wordMRow.style.left = `${(adjustedWidth - lineLength) / 2}px`
+
       const line = document.createElementNS(MATHML_NS, 'mrow');
       line.className = 'line';
-      // set border-top-color
       wordMRow.appendChild(line);
-  
+
       if (/arrow/.test(word)) {
         const rthead = document.createElementNS(MATHML_NS, 'mrow');
         rthead.className = 'rthead';
-      // set border-left-color
-      wordMRow.appendChild(rthead);
-  
+        wordMRow.appendChild(rthead);
+
         const rbhead = document.createElementNS(MATHML_NS, 'mrow');
         rbhead.className = 'rbhead';
-      // set border-left-color
-      wordMRow.appendChild(rbhead);
+        wordMRow.appendChild(rbhead);
 
         if (both) {     // add other arrowhead
           const lthead = document.createElementNS(MATHML_NS, 'mrow');
           lthead.className = 'lthead';
-          // set border-right-color
           wordMRow.appendChild(lthead);
-    
+
           const lbhead = document.createElementNS(MATHML_NS, 'mrow');
           lbhead.className = 'lbhead';
-          // set border-right-color
-          wordMRow.appendChild(lbhead);  
+          wordMRow.appendChild(lbhead);
         }
       }
     } else if (word === 'phasorangle') {
