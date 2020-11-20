@@ -4,6 +4,7 @@
 <head>
     <title>Browser transform MathML tests</title>
     <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="./menclose/menclose.css">
     <script type="module">
         import { _MathTransforms } from './common/math-transforms.js'
         import './mglyph/mglyph.js'
@@ -12,6 +13,7 @@
         import './accent/accent.js'
         import './horiz-align/horiz-align.js'
         import './mathsize/mathsize.js'
+        import './menclose/menclose.js'
         import './linethickness/linethickness.js'
         import './ms/ms.js'
         import './mpadded/mpadded.js'
@@ -86,7 +88,7 @@
 
 <body>
     <h1>MathML transform tests</h1>
-    <p>The following table contains MathML that is not part of core.
+    <p>The following tables contain MathML that is not part of core.
         The page loads transforms that will transform the full MathML into MathML core.
         The transforms will <em>not</em> run until you click the button below.
         This allows you to see the effects of the transform.
@@ -592,6 +594,69 @@
         </tr>
     </table>
 
+    <h2>menclose</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(menclose)">Apply Transform</button>
+    </label>
+    <table id="menclose">
+        <tr>
+            <th>Description</th>
+            <th>Math example</th>
+        </tr>
+        <tr style="vertical-align: top;">
+            <td> Box with 'strikes' in all directions</td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='horizontalstrike updiagonalstrike downdiagonalstrike verticalstrike box'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+            </td>
+        </tr>
+        <tr style="vertical-align: top;">
+            <td> Box with double-ended arrows in all directions</td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='updownarrow leftrightarrow northeastsouthwestarrow northwestsoutheastarrow box'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+            </td>
+        </tr>
+        <tr style="vertical-align: top;">
+            <td>Circle and rounded box with horizontal/vertical strikes</td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='circle roundedbox horizontalstrike verticalstrike'>
+                        <msqrt>
+                            <mrow>
+                                <mi>x</mi>
+                                <mo>+</mo>
+                                <mi>y</mi>
+                            </mrow>
+                        </msqrt>
+                        <mo>+</mo>
+                        <mi>z</mi>
+                    </menclose>
+                </math>
+            </td>
+        </tr>
+     </table>
 
     <h2>Linebreaks in Display MathML</h2>
     <label>
