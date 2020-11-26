@@ -10,6 +10,22 @@ export const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
  */
   export const _MathTransforms = {
     _plugins: new Map(),
+    _css: '',
+    _createStyleSheet: str => {
+      if (str.length !== _MathTransforms.cssKey) {    // always true the first time because _MathTransforms.cssKey is undefined
+        _MathTransforms.cssKey = str.length;
+        const style = document.createElement ( 'style' );
+        style.textContent = str;
+        document.head.appendChild ( style );
+        _MathTransforms.styleSheet = style      // cached stylesheet
+        document.head.removeChild ( style );
+      }
+      return _MathTransforms.styleSheet
+    },
+
+    getCSSStyleSheet: () => {const foo = _MathTransforms._createStyleSheet(_MathTransforms._css).cloneNode(true); 
+    return foo; },
+
     transform: root => {
       for (const selector of _MathTransforms._plugins.keys()) {
         let transformer = _MathTransforms._plugins.get(selector);
@@ -28,9 +44,10 @@ export const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
         });
       }
     },
-
-    add: (selector, cb) => {
+  
+    add: (selector, cb, css='') => {
       _MathTransforms._plugins.set(selector, cb);
+      _MathTransforms._css += css;
     }
   };
 
@@ -38,7 +55,7 @@ export const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
 /**
  * Same as cloneNode(true) except that shadow roots are copied
  * If you are using the transforms and you need to clone a node that potentially has a shadowRoot, use this so the shadowRoot is copied
- * As of July, 2020, Elementary Math and Linebreaking transforms both have shadowRoots. 
+ * As of November, 2020, Elementary Math and Linebreaking transforms are the only transforms that have shadowRoots. 
  * @param {Element} el 
  * @param {Element} [clone] 
  * @returns {Element} -- the clone (only useful if function is called with one arg)
