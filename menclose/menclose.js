@@ -1,6 +1,8 @@
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
 /*
+  Copyright (c) 2020 Neil Soiffer, Talking Cat Software
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
