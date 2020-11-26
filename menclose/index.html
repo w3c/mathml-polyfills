@@ -4,10 +4,10 @@
 <head>
   <title>menclose tests</title>
   <meta charset="utf-8" />
-  <link rel="stylesheet" type="text/css" href="menclose.css">
   <script type="module">
     import { _MathTransforms } from '../common/math-transforms.js'
     import './menclose.js'
+    document.head.appendChild ( _MathTransforms.getCSSStyleSheet() );
 
     window.addEventListener("DOMContentLoaded", () => {
       _MathTransforms.transform(document.body)

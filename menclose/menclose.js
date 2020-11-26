@@ -22,6 +22,215 @@
 
 import { _MathTransforms, cloneElementWithShadowRoot, convertToPx, MATHML_NS } from '../common/math-transforms.js'
 
+
+/* most of these values are derived from what MathJax uses */
+export const MENCLOSE_CSS = `
+mrow.menclose {
+    display: inline-block;
+    text-align: left;
+    position: relative;
+}
+
+/* the following class names should be of the form 'menclose-[notation name]' */
+mrow.menclose-longdiv {
+    position: absolute;
+    top: 0;
+    bottom: 0.1em;
+    left: -0.4em;
+    width: 0.7em;
+    border: 0.067em solid;
+    transform: translateY(-0.067em);
+    border-radius: 70%;
+    clip-path: inset(0 0 0 0.4em);
+    box-sizing: border-box;
+}
+
+mrow.menclose-actuarial {
+    position: absolute;
+    display: inline-block;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-top: 0.067em solid;
+    border-right: 0.067em solid;
+}
+
+mrow.menclose-phasorangle {
+    display: inline-block;
+    left: 0;
+    bottom: 0;
+    position: absolute;
+    border-top: 0.067em solid;
+    transform-origin: bottom left;
+}
+
+mrow.menclose-phasoranglertl {
+    display: inline-block;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+    border-top: 0.067em solid;
+    transform-origin: bottom right;
+}
+
+mrow.menclose-box {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0.067em solid;
+}
+
+mrow.menclose-roundedbox {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0.067em solid;
+    border-radius: 0.267em;
+}
+
+mrow.menclose-circle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0.067em solid;
+    border-radius: 50%;
+}
+
+mrow.menclose-box {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0.067em solid;
+}
+
+mrow.menclose-left {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-left: 0.067em solid;
+}
+
+mrow.menclose-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-right: 0.067em solid;
+}
+
+mrow.menclose-top {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-top: 0.067em solid;
+}
+
+mrow.menclose-bottom {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-bottom: 0.067em solid;
+}
+
+mrow.menclose-madruwb {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-right: 0.067em solid;
+    border-bottom: 0.067em solid;
+}
+
+/*
+ * Arrows and 'strikes' are composed of an 'menclose-arrow' wrapper and one, three or five children
+ * Strikes just have class 'line'
+ * Single-headed arrows have the children with classes 'line', 'rthead' (right top arrow head), and 'rbhead'
+ * Double-headed arrows add lthead' (left top arrow head), and 'lbhead'
+ */
+mrow.menclose-arrow {
+    position: absolute;
+    left: 0;
+    bottom: 50%;
+    height: 0;
+    width: 0;
+}
+
+mrow.menclose > mrow.menclose-arrow > * {
+    display: block;
+    position: absolute;
+    transform-origin: bottom;
+    border-left: 0.268em solid;
+    border-right: 0;
+    box-sizing: border-box;
+  }
+
+mrow.menclose-arrow  > mrow.line{
+    left: 0;
+    top: -0.0335em;
+    right: 0.201em;
+    height: 0;
+    border-top: 0.067em solid;
+    border-left: 0;
+}
+
+mrow.menclose-arrow > mrow.rthead {
+    transform: skewX(0.464rad);
+    right: 1px;
+    bottom: -1px;
+    border-bottom: 1px solid transparent;
+    border-top: 0.134em solid transparent;
+}
+
+mrow.menclose-arrow > mrow.rbhead {
+    transform: skewX(-0.464rad);
+    transform-origin: top;
+    right: 1px;
+    top: -1px;
+    border-top: 1px solid transparent;
+    border-bottom: 0.134em solid transparent;
+}
+
+mrow.menclose-arrow > mrow.lthead {
+    transform: skewX(-0.464rad);
+    left: 0;
+    bottom: -1px;
+    border-left: 0;
+    border-right: 0.268em solid;
+    border-bottom: 1px solid transparent;
+    border-top: 0.134em solid transparent;
+}
+
+mrow.menclose-arrow > mrow.lbhead {
+    transform: skewX(0.464rad);
+    transform-origin: top;
+    left: 0;
+    top: -1px;
+    border-left: 0;
+    border-right: 0.268em solid;
+    border-top: 1px solid transparent;
+    border-bottom: 0.134em solid transparent;
+}
+`
+
+
+
 // Between BORDER_NOTATIONS, MENCLOSE_STYLE, and ARROW_INFO, all valid notation values should be listed
 const BORDER_NOTATIONS = ['left', 'right', 'top', 'bottom', 'actuarial', 'madruwb'];
 
@@ -62,6 +271,52 @@ const ARROW_INFO = {
 };
 
 const ALL_NOTATIONS = Array.from( new Set(BORDER_NOTATIONS.concat(Object.keys(MENCLOSE_STYLE), Object.keys(ARROW_INFO))) );
+
+function getWidthOf(mathmlStr) {
+  const math = document.createElementNS(MATHML_NS, 'math');
+  math.innerHTML = mathmlStr;
+  document.body.appendChild(math);
+  const width = math.getBoundingClientRect().width;
+  document.body.lastElementChild.remove();
+  return width;
+}
+
+/**
+ * 
+ * @param {string} notationAttrValue
+ * @returns {boolean} -- true if the transform should be used
+ */
+function useMencloseTransform(notationAttrValue) {
+  // Could use browser detection, but that's frowned on/not reliable over time
+  // As of 11/2020, the situation is:
+  //  chrome/edge -- no menclose support but MathML support if experimental features is on
+  //  firefox -- doesn't support arrows, CSS on MathML (hence this code won't work in Firefox), and problems with defaults
+  //  safari -- doesn't support radical, phasorangle, arrows (has problems with defaults)
+
+  // Start by seeing if CSS on MathML elements works (try it on mrow since that's what the this transform uses)
+  if (getWidthOf('<mrow><mi>x</mi></mrow>') === getWidthOf('<mrow style="width: 101px;"><mi>x</mi></mrow>')) {
+    return false;   // CSS not supported -- transform won't work
+  }
+
+  // Test if basic support of menclose
+  if (getWidthOf('<mi>x</mi>') === getWidthOf('<menclose notation="box"><mi>x</mi></menclose>')) {
+    return true;    // doesn't have even basic support
+  }
+
+  // Could test all cases, but in practice it is phasorangle and arrows that are not implemented in Safari and Firefox
+  //  (actually there are also RTL dir problems, but hopefully they will fix those)
+  if (/arrow/.test(notationAttrValue)) {
+    if (getWidthOf('<mi>x</mi>') === getWidthOf('<menclose notation="rightarrow"><mi>x</mi></menclose>')) {
+      return true;    // uses an arrow and not supported
+    }
+  }
+  if (/phasorangle/.test(notationAttrValue)) {
+    if (getWidthOf('<mi>x</mi>') === getWidthOf('<menclose notation="phasorangle"><mi>x</mi></menclose>')) {
+      return true;    // uses an phasorangle and not supported
+    }   
+  }
+  return false;   // looks like all the notations are supported.
+}
 
 /**
  * 
@@ -132,11 +387,17 @@ const transformMEnclose = (el) => {
   //   the contents of the menclose.
   // Subsequent mrows inherit their size from the parent so that their border is the right size.
   // Exceptions are 'radical' and 'longdiv' notations.
-  if (window.chrome === null || typeof window.chrome === "undefined") {
-    return el;    // Safari and Firefox handle menclose and at least Firefox doesn't deal with the CSS properly
-  }
   
+  // Firefox (as of 11/2020) handles menclose (except arrows) and doesn't deal with the CSS properly on MathML elements
+  if (!useMencloseTransform()) {
+    return el;
+  }
+
   let notationAttrValue = el.getAttribute('notation') || '';
+  if (!useMencloseTransform(notationAttrValue)) {
+    return el;
+  }
+
   let notationArray = notationAttrValue.split(' ');
 
   // get rid of unknown names
@@ -252,4 +513,4 @@ const transformMEnclose = (el) => {
   return mencloseMRow;
 }
 
-_MathTransforms.add('menclose', transformMEnclose);
+_MathTransforms.add('menclose', transformMEnclose, MENCLOSE_CSS);
