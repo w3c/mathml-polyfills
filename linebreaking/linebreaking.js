@@ -156,6 +156,7 @@ function getMathMLAttrValueAsString(element, attrName, defaultVal) {
 function createLineBreakMTable() {
     const mtable = newElement('mtable')
     mtable.setAttribute(MTABLE_HAS_LINEBREAKS, "true");
+    mtable.setAttribute('displaystyle', "true");        // currently ok because only display math is linebroken
     return mtable;
 }
 
@@ -1013,13 +1014,14 @@ function linebreakLine(element, maxLineWidth) {
     while (iOperator < potentialBreaks.length) {
         let iLine = iOperator;      // index into current line of breakpoints
         // the amount of room we have is reduced by the indentation if we break here.
-        const indentAttrs = JSON.parse(lastRow.firstElementChild.getAttribute(INDENT_ATTRS));
+        const firstMTD = element.tagName === 'mtd' ? lastRow.firstElementChild : lastRow.lastElementChild;
+        const indentAttrs = JSON.parse(firstMTD.getAttribute(INDENT_ATTRS));
         const leftSide = indentAttrs.linebreakstyle === 'before' ?
             potentialBreaks[iOperator - 1].getBoundingClientRect().left :
-            lastRow.firstElementChild.firstElementChild.getBoundingClientRect().left;
+            firstMTD.firstElementChild.getBoundingClientRect().left;
         const indentAmount = computeIndentAmount(
             potentialBreaks[iOperator - 1],   // where we broke
-            lastRow.firstElementChild.getBoundingClientRect().left,
+            firstMTD.getBoundingClientRect().left,
             indentAttrs);
         const lineBreakWidth = maxLineWidth - indentAmount;
         let minPenalty = 100000.0;  // in practice, the numbers don't get over 2
@@ -1095,7 +1097,7 @@ function linebreakLine(element, maxLineWidth) {
 /*
  * Note: this is not efficient code due to making changes to the live DOM -- tons of reflow potentially happens,
  *   although most reflow is probably limited in scope except for when a new line is added.
- * It would be useful to measure whether reflow is a occupies a majority of the time used for linebreaking.
+ * It would be useful to measure whether reflow is a majority of the time used for linebreaking.
  * An alternative would be to copy the left/right position of the potential break points to attrs on the corresponding clone's break points.
  * That covers the majority of what needs to be measured. The other cases are:
  *    - the left most child at the start of a line. That is either an operator (hence already marked) for linebreakstyle != 'right'
@@ -1119,7 +1121,7 @@ const SHADOW_ELEMENT_NAME = "math-with-linebreaks";
  */
 function lineBreakDisplayMath(customElement, maxLineWidth) {
     maxLineWidth = Math.min(maxLineWidth, parseFloat(customElement.getAttribute(FULL_WIDTH)));
-    const math = customElement.shadowRoot.firstElementChild;
+    const math = customElement.shadowRoot.lastElementChild;
     if (math.childElementCount > 1) {
         // add an mrow underneath 'math' -- having an mrow makes the rest of the code work more cleanly
         const mrow = newElement('mrow');
@@ -1190,10 +1192,12 @@ function setShadowRootContents(customElement, math) {
 
 function addCustomElement(math) {
     // only handle display math -- inline math requires being able to have a reflow observer, and that doesn't exist
+    // even if the display math fit on the current line, if the width shrinks, it might not fit.
+    //   we add the custom element with the resize observer so we can tell when that happens.
     const computedStyle = getComputedStyle(math).getPropertyValue('display');
     const displayValue = math.hasAttribute('display') ? math.getAttribute('display') : 'inline';
-    if (!(computedStyle === 'block' || computedStyle === 'math' || displayValue === 'block' || displayValue === 'math')) {
-        return;
+    if (computedStyle === 'inline' || displayValue === 'inline') {
+        return null;
     }
 
     if (math.tagName.toLowerCase() === SHADOW_ELEMENT_NAME) {
@@ -1224,7 +1228,7 @@ const resizeObserver = new ResizeObserver(entries => {
             //            FULL ${customElement.getAttribute(FULL_WIDTH)}; $y: ${customElement.getBoundingClientRect().y}`);
             if (entry.contentRect.width < parseInt(customElement.getAttribute(FULL_WIDTH))) {  // room to break is less than full width
                 const mathClone = cloneElementWithShadowRoot(customElement.firstElementChild);
-                const oldDisplayedMath = customElement.shadowRoot.firstElementChild;
+                const oldDisplayedMath = customElement.shadowRoot.lastElementChild;
                 oldDisplayedMath.replaceWith(mathClone);
                 customElement.setAttribute(LINE_BREAK_WIDTH, entry.contentRect.width.toString());
                 //console.log("   linebreaking...")
@@ -1233,7 +1237,7 @@ const resizeObserver = new ResizeObserver(entries => {
                 parseInt(customElement.getAttribute(LINE_BREAK_WIDTH)) <= parseInt(customElement.getAttribute(FULL_WIDTH))) {
                 // enough room for line but previous one was linebroken -- don't linebreak
                 const mathClone = cloneElementWithShadowRoot(customElement.firstElementChild);
-                const oldDisplayedMath = customElement.shadowRoot.firstElementChild;
+                const oldDisplayedMath = customElement.shadowRoot.lastElementChild;
                 oldDisplayedMath.replaceWith(mathClone);
                 customElement.setAttribute(LINE_BREAK_WIDTH, (2 * entry.contentRect.width).toString()); // 2*width to make sure no linebreaking
                 lineBreakDisplayMath(customElement, 2 * entry.contentRect.width.toString());
@@ -1249,6 +1253,7 @@ customElements.define(SHADOW_ELEMENT_NAME, class extends HTMLElement {
         super();
 
         const shadowRoot = this.attachShadow({ mode: 'open' });
+        shadowRoot.appendChild(_MathTransforms.getCSSStyleSheet());
         const math = this.firstElementChild;
         //console.log(`in constructor...math width ${math ? math.getBoundingClientRect().width : 'set elsewhere'}`);
         if (math) {
