@@ -293,7 +293,7 @@ function useMencloseTransform(notationAttrValue) {
   // As of 11/2020, the situation is:
   //  chrome/edge -- no menclose support but MathML support if experimental features is on
   //  firefox -- doesn't support arrows, CSS on MathML (hence this code won't work in Firefox), and problems with defaults
-  //  safari -- doesn't support radical, phasorangle, arrows (has problems with defaults)
+  //  safari -- doesn't support radical, phasorangle, arrows CSS on MathML (hence this code won't work in Safari), and problems with defaults
 
   // Start by seeing if CSS on MathML elements works (try it on mrow since that's what the this transform uses)
   if (getWidthOf('<mrow><mi>x</mi></mrow>') === getWidthOf('<mrow style="width: 101px;"><mi>x</mi></mrow>')) {
