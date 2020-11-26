@@ -21,6 +21,7 @@
         import './elem-math/elemMath.js'
         import './linebreaking/linebreaking.js'
 
+        document.head.appendChild ( _MathTransforms.getCSSStyleSheet() );
         window.transform = function (elementId) {
             _MathTransforms.transform(elementId);
         }
@@ -607,7 +608,7 @@
         <tr style="vertical-align: top;">
             <td> Box with 'strikes' in all directions</td>
             <td>
-                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
                     <menclose notation='horizontalstrike updiagonalstrike downdiagonalstrike verticalstrike box'>
                       <mfrac>
                         <mrow>
@@ -624,7 +625,7 @@
         <tr style="vertical-align: top;">
             <td> Box with double-ended arrows in all directions</td>
             <td>
-                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
                     <menclose notation='updownarrow leftrightarrow northeastsouthwestarrow northwestsoutheastarrow box'>
                       <mfrac>
                         <mrow>
@@ -641,7 +642,7 @@
         <tr style="vertical-align: top;">
             <td>Circle and rounded box with horizontal/vertical strikes</td>
             <td>
-                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
                     <menclose notation='circle roundedbox horizontalstrike verticalstrike'>
                         <msqrt>
                             <mrow>
