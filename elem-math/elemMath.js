@@ -962,7 +962,7 @@ function addStyleSheetToShadowRoot(shadowRoot) {
     const link = document.createElement("link");
     link.rel = 'stylesheet';
     link.type = 'text/css';
-    link.href = 'https://mathml-refresh.github.io/mathml-polyfills/elem-math/elemMath.css';
+    link.href = './elem-math/elemMath.css';
     style.appendChild(link);
     shadowRoot.appendChild(style); 
 }
