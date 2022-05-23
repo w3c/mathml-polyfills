@@ -32,9 +32,7 @@
  * Once all the rows are processed, that data structure is turned into an HTML table.
  */
 
-import { _MathTransforms } from '../common/math-transforms.js'
-
-const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
+import { _MathTransforms, MATHML_NS } from '../common/math-transforms.js'
 
 // msline defined values
 const MSLINETHICKNESS_THIN = '.1ex'
@@ -706,6 +704,7 @@ class ElemMath {
         /** @type{TableRow[]} */
         let divisorRows = divisor ? this.processChild(divisor, [], 0) : [new TableRow( [new TableCell(NON_BREAKING_SPACE)], 0, 0 )];
         let divisorRow = divisorRows[0];        // FIX: currently can only handle one row
+        let iLastDivisorDigit = divisorRow.data.length-1;
 
         let resultRows = result ? this.processChild(result, [], 0) : [new TableRow( [new TableCell(NON_BREAKING_SPACE)], 0, 0 )];
         let resultRow = resultRows[0];          // FIX: currently can only handle one row
@@ -870,17 +869,27 @@ class ElemMath {
                 let mergedRows = resultRows.concat(stackRows);
                 stackRows = this.processShifts(mergedRows, this.stackAlign);
 
-                // FIX: this just adds a straight line. It should really look a bit like ")"
-                divisorRow.data[divisorRow.data.length-1].style += `border-right: ${MSLINETHICKNESS_MEDIUM} solid ${mathcolor};`;
-                divisorRow.data[divisorRow.data.length-1].style += `border-right: ${MSLINETHICKNESS_MEDIUM} solid ${mathcolor};`;
                 if (this.longdivstyle === 'stackedleftlinetop') {
+                    divisorRow.data[divisorRow.data.length-1].style += `border-right: ${MSLINETHICKNESS_MEDIUM} solid ${mathcolor};`;
+                    divisorRow.data[divisorRow.data.length-1].style += `border-right: ${MSLINETHICKNESS_MEDIUM} solid ${mathcolor};`;divisorRow.data[divisorRow.data.length-1].data.style += 'position:relative';
                     divisorRow.addUnderlineToCells(-divisorRow.nRight, divisorRow.data.length, MSLINETHICKNESS_MEDIUM, mathcolor);
+                } else {
+                    // add the ")" to the element (handled like a curved border with css)
+                    divisorRow.data = divisorRow.padOnRight(divisorRow.data, 1)
+                    iLastDivisorDigit += 1;
+                    divisorRow.data[iLastDivisorDigit].class = 'curved-line';
+                    divisorRow.data[iLastDivisorDigit].style = '';       // let CSS deal with it
                 }
                 stackRows[1].data = divisorRow.data.concat(stackRows[1].data);
                 break;
             }
         }
-        return this.processShifts(stackRows, this.stackAlign);
+        let answer = this.processShifts(stackRows, this.stackAlign);
+        if (this.longdivstyle === 'lefttop') {
+            // extend the line to the left one cell to be above the added ')'
+            stackRows[0].data[iLastDivisorDigit].style += `border-bottom: ${MSLINETHICKNESS_MEDIUM} solid ${mathcolor};`;
+        }
+        return answer;
     }
 	
     /**
@@ -891,9 +900,10 @@ class ElemMath {
         // Return a <table> element representing the expanded <mstack>.
 
         // Compute spacing and split it between the left and right side
-        // Note: this pattern works for scientifc notation (e.g., '-3.4e-2') because we only care about numeric part in front of 'e'
+        // Note: this pattern works for scientific notation (e.g., '-3.4e-2') because we only care about numeric part in front of 'e'
         let numberRegEx = /[-+]?\d*\.?\d*/g;
         const charSpacing = parseFloat(numberRegEx.exec(this.charSpacing)[0])/2.0 + this.charSpacing.slice(numberRegEx.lastIndex);
+        this.charSpacing.slice(numberRegEx.lastIndex);
         const cellStyle = `padding: .1ex ${charSpacing} 0 ${charSpacing}; text-align: ${this.charAlign};`;
 
         /** @type {TableRow[]} */
@@ -926,7 +936,12 @@ class ElemMath {
                 }
 
                 htmlTD.appendChild(cellData.data);
-                htmlTD.setAttribute('style', cellStyle + cellData.style);    // cellData.style so it overrides
+                if (cellData.class != 'curved-line') {
+                    htmlTD.setAttribute('style', cellStyle + cellData.style);    // cellData.style so it overrides
+                }
+                if (cellData.class) {
+                    htmlTD.setAttribute('class', cellData.class);                           // could be undefined
+                }
                 htmlRow.appendChild(htmlTD);
             }
             table.appendChild(htmlRow);
