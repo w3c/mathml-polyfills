@@ -3,22 +3,22 @@
   <head>
     <title>The mfenced element</title>
     <meta charset="utf-8"/>
-    <script type="text/javascript">
-      window.addEventListener("load", function() {
-         var mfenced_js = document.createElement("script");
-         mfenced_js.setAttribute("type","text/javascript")
-         mfenced_js.setAttribute("src", "mfenced.js");
-         document.head.appendChild(mfenced_js);
-         document.getElementById("button").addEventListener("click", function() { window.expandMathMLFencedElements(); });
-      });
+    <script type="module"> 
+      import { _MathTransforms } from '../common/math-transforms.js'
+      import './mfenced.js'
+
+      document.head.appendChild ( _MathTransforms.getCSSStyleSheet() );
+        window.transform = function (elementId) {
+          _MathTransforms.transform(elementId);
+        }
     </script>
   </head>
-  <body>
+  <body id="body">
     <h1>The mfenced element</h1>
 
     <p>This page contains some tests for the <a href="https://www.w3.org/TR/MathML/chapter3.html#presm.fenced">mfenced element</a>. Click the following button to load a <a href="mfenced.js">polyfill</a> and convert them into an equivalent expanded form.
     </p>
-    <p><input id="button" type="button" value="Load mfenced.js!"/></p>
+    <p><input id="button" onclick="transform(body)" type="button" value="Transform mfenced to MathML Core"/></p>
 
     <ol>
       <li>empty:
