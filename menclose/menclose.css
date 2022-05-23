@@ -1,0 +1,204 @@
+/* most of these values are derived from what MathJax uses */
+
+mrow.menclose {
+    display: inline-block;
+    text-align: left;
+    position: relative;
+}
+
+/* the following class names should be of the form 'menclose-[notation name]' */
+mrow.menclose-longdiv {
+    position: absolute;
+    top: 0;
+    bottom: 0.1em;
+    left: -0.4em;
+    width: 0.7em;
+    border: 0.067em solid;
+    transform: translateY(-0.067em);
+    border-radius: 70%;
+    clip-path: inset(0 0 0 0.4em);
+    box-sizing: border-box;
+}
+
+mrow.menclose-actuarial {
+    position: absolute;
+    display: inline-block;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-top: 0.067em solid;
+    border-right: 0.067em solid;
+}
+
+mrow.menclose-phasorangle {
+    display: inline-block;
+    left: 0;
+    bottom: 0;
+    position: absolute;
+    border-top: 0.067em solid;
+    transform-origin: bottom left;
+}
+
+mrow.menclose-phasoranglertl {
+    display: inline-block;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+    border-top: 0.067em solid;
+    transform-origin: bottom right;
+}
+
+mrow.menclose-box {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0.067em solid;
+}
+
+mrow.menclose-roundedbox {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0.067em solid;
+    border-radius: 0.267em;
+}
+
+mrow.menclose-circle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0.067em solid;
+    border-radius: 50%;
+}
+
+mrow.menclose-box {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border: 0.067em solid;
+}
+
+mrow.menclose-left {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-left: 0.067em solid;
+}
+
+mrow.menclose-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-right: 0.067em solid;
+}
+
+mrow.menclose-top {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-top: 0.067em solid;
+}
+
+mrow.menclose-bottom {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-bottom: 0.067em solid;
+}
+
+mrow.menclose-madruwb {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-right: 0.067em solid;
+    border-bottom: 0.067em solid;
+}
+
+/*
+ * Arrows and 'strikes' are composed of an 'menclose-arrow' wrapper and one, three or five children
+ * Strikes just have class 'line'
+ * Single-headed arrows have the children with classes 'line', 'rthead' (right top arrow head), and 'rbhead'
+ * Double-headed arrows add lthead' (left top arrow head), and 'lbhead'
+ */
+mrow.menclose-arrow {
+    position: absolute;
+    left: 0;
+    bottom: 50%;
+    height: 0;
+    width: 0;
+}
+
+mrow.menclose > mrow.menclose-arrow > * {
+    display: block;
+    position: absolute;
+    transform-origin: bottom;
+    border-left: 0.268em solid;
+    border-right: 0;
+    box-sizing: border-box;
+  }
+
+mrow.menclose-arrow  > mrow.line{
+    left: 0;
+    top: -0.0335em;
+    right: 0.201em;
+    height: 0;
+    border-top: 0.067em solid;
+    border-left: 0;
+}
+
+mrow.menclose-arrow > mrow.rthead {
+    transform: skewX(0.464rad);
+    right: 1px;
+    bottom: -1px;
+    border-bottom: 1px solid transparent;
+    border-top: 0.134em solid transparent;
+}
+
+mrow.menclose-arrow > mrow.rbhead {
+    transform: skewX(-0.464rad);
+    transform-origin: top;
+    right: 1px;
+    top: -1px;
+    border-top: 1px solid transparent;
+    border-bottom: 0.134em solid transparent;
+}
+
+mrow.menclose-arrow > mrow.lthead {
+    transform: skewX(-0.464rad);
+    left: 0;
+    bottom: -1px;
+    border-left: 0;
+    border-right: 0.268em solid;
+    border-bottom: 1px solid transparent;
+    border-top: 0.134em solid transparent;
+}
+
+mrow.menclose-arrow > mrow.lbhead {
+    transform: skewX(0.464rad);
+    transform-origin: top;
+    left: 0;
+    top: -1px;
+    border-left: 0;
+    border-right: 0.268em solid;
+    border-top: 1px solid transparent;
+    border-bottom: 0.134em solid transparent;
+}
