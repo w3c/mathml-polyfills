@@ -297,6 +297,7 @@ function useMencloseTransform(notationAttrValue) {
 
   // Start by seeing if CSS on MathML elements works (try it on mrow since that's what the this transform uses)
   if (getWidthOf('<mrow><mi>x</mi></mrow>') === getWidthOf('<mrow style="width: 101px;"><mi>x</mi></mrow>')) {
+    console.log("CSS not supported on MathML element -- transform skipped.")
     return false;   // CSS not supported -- transform won't work
   }
 
@@ -467,7 +468,7 @@ const transformMEnclose = (el) => {
       wordMRow.style.width = `${lineLength}px`;
       wordMRow.style.transform =
           (rotate ? `rotate(${rotate}rad) ` : '') +
-          'translate(0.067em, 0.0em';  // FIX: don't hardcode (0.067/2em) -- get from MENCLOSE_STYLE;
+          'translate(0.067em, 0.0em)';  // FIX: don't hardcode (0.067/2em) -- get from MENCLOSE_STYLE;
       wordMRow.style.left = `${(adjustedWidth - lineLength) / 2}px`
 
       const line = document.createElementNS(MATHML_NS, 'mrow');
