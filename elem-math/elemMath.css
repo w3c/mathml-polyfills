@@ -6,6 +6,18 @@ table.elem-math tr {
     vertical-align: baseline;
 }
 
+td.curved-line {
+    position: absolute;
+    padding-top: 0em;
+    width: 0.75em;
+    border: 0.3ex solid;  /* match border bottom */
+    transform: translate(0.48em, -0.15em);
+    border-radius: 70%;
+    clip-path: inset(0.1em 0 0 0.45em);
+    box-sizing: border-box;
+    margin-left: -0.85em;
+}
+
 .carry {
   font-size: 60%;
   line-height: 90%;
