@@ -296,10 +296,10 @@ function useMencloseTransform(notationAttrValue) {
   //  safari -- doesn't support radical, phasorangle, arrows CSS on MathML (hence this code won't work in Safari), and problems with defaults
 
   // Start by seeing if CSS on MathML elements works (try it on mrow since that's what the this transform uses)
-  if (getWidthOf('<mrow><mi>x</mi></mrow>') === getWidthOf('<mrow style="width: 101px;"><mi>x</mi></mrow>')) {
-    console.log("CSS not supported on MathML element -- transform skipped.")
-    return false;   // CSS not supported -- transform won't work
-  }
+  // if (getWidthOf('<math display="block"><mrow><mi>x</mi></mrow></math>') === getWidthOf('<math display="block"><mrow style="border: 100px;"><mi>x</mi></mrow></math>')) {
+  //   console.log("CSS not supported on MathML element -- transform skipped.")
+  //   return false;   // CSS not supported -- transform won't work
+  // }
 
   // Test if basic support of menclose
   if (getWidthOf('<mi>x</mi>') === getWidthOf('<menclose notation="box"><mi>x</mi></menclose>')) {
@@ -309,12 +309,14 @@ function useMencloseTransform(notationAttrValue) {
   // Could test all cases, but in practice it is phasorangle and arrows that are not implemented in Safari and Firefox
   //  (actually there are also RTL dir problems, but hopefully they will fix those)
   if (/arrow/.test(notationAttrValue)) {
-    if (getWidthOf('<mi>x</mi>') === getWidthOf('<menclose notation="rightarrow"><mi>x</mi></menclose>')) {
+    if (getWidthOf('<math display="block"><mi>x</mi></math>') === 
+        getWidthOf('<math display="block"><menclose notation="rightarrow"><mi>x</mi></menclose></math>')) {
       return true;    // uses an arrow and not supported
     }
   }
   if (/phasorangle/.test(notationAttrValue)) {
-    if (getWidthOf('<mi>x</mi>') === getWidthOf('<menclose notation="phasorangle"><mi>x</mi></menclose>')) {
+    if (getWidthOf('<math display="block"><mi>x</mi></math>') === 
+        getWidthOf('<math display="block"><menclose notation="phasorangle"><mi>x</mi></menclose></math>')) {
       return true;    // uses an phasorangle and not supported
     }   
   }
@@ -392,9 +394,9 @@ const transformMEnclose = (el) => {
   // Exceptions are 'radical' and 'longdiv' notations.
   
   // Firefox (as of 11/2020) handles menclose (except arrows) and doesn't deal with the CSS properly on MathML elements
-  if (!useMencloseTransform()) {
-    return el;
-  }
+  // if (!useMencloseTransform()) {
+  //   return el;
+  // }
 
   let notationAttrValue = el.getAttribute('notation') || '';
   if (!useMencloseTransform(notationAttrValue)) {
