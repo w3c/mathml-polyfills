@@ -119,18 +119,23 @@ class Carry {
 class TableCell {
      // Holds data to construct the actual <td>
 	/**
-	 * @param {string} [value]                        // contents (digit) of the cell
+	 * @param {string | Element} [value]             // contents (digit) of the cell
      * @param {string} [style='']                   // style info for the cell
 	 * @param {Carry} [carry=null]                  // a single carry
 	 */
     constructor(value, style, carry) {
-        value = value;
         if (carry) {
+            if (typeof value !== "object") {
+                throw new Error("Elementary math mscarry isn't an 'object'");
+            }
             this.data = document.createElement((carry.location === 'n' || carry.location === 's') ? 'div' : 'span');
-            this.data.textContent = value;
+            this.data.appendChild(value);
             this.data.className = 'carry';
             this.data.style.fontSize = Math.round(carry.scriptsizemultiplier).toString() + '%';
         } else {
+            if (typeof value !== "string") {
+                throw new Error("Elementary math mscarry isn't a 'string'");
+            }
             this.data = document.createTextNode(value);
         }
         this.carry = carry;                        // for multiple carries, 'data' is already built up -- value is last carry seen
@@ -464,9 +469,10 @@ class ElemMath {
      */
     process_mscarries(row, location, crossout, scriptsizemultiplier) {
         let cells = [];
-        for (let i=0; i<row.children.length; i++) {
-            const child = row.children[i];
-            const data = child.textContent.trim();
+        let child = row.children[0];
+        // children are pulled out of the row and put in the TableCell, so we can't use a standard 'for' loop
+        while (child) {
+            let nextChild = child.nextElementSibling;       // do this before child is modified
             let cellLocation = location;
             let cellCrossout = crossout
             if (child.tagName.toLowerCase() === 'mscarry') {
@@ -475,7 +481,8 @@ class ElemMath {
                 // FIX: child could be any MathML construct -- currently only supporting a *leaf*
                 // the text content of the parent will match that of the *leaf* child, so nothing to change here
             }
-            cells.push( new TableCell(data, '', new Carry(cellLocation, cellCrossout, scriptsizemultiplier)) );
+            cells.push( new TableCell(child, '', new Carry(cellLocation, cellCrossout, scriptsizemultiplier)) );
+            child = nextChild;
         }
         return cells;
     }
