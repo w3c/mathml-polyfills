@@ -103,7 +103,7 @@ function setAccentValue(child,attrName) {
 const transformAccents = (el) => {
   // If the 2nd/3rd args are <mo> or if they have accent=true,
   // add 'accent'/'accentunder' = true to 'el' (mover, etc)
-  if (!el.getAttribute("accentunder" && el.tagName !== 'mover')) {
+  if (!el.getAttribute("accentunder") && el.tagName !== 'mover') {
     // if accentunder is not set on munder/munderover, check to see if we should set it
     setAccentValue(el.children[1], 'accentunder');
   }
