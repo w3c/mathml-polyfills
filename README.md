@@ -7,7 +7,7 @@ web technologies natively implemented in browsers.
 See discussion on [wiki](https://github.com/mathml-refresh/mathml-polyfills/wiki/MathML-Polyfill-Task-Force-Guidelines)
 
 * [Example of all tests](https://mathml-refresh.github.io/mathml-polyfills/acid-test.html)
-* [The mfenced element](mfenced/)
-* [Elmentary math elements: mstack, mlongdiv, and others](elem-math/)
-* ...
+* [mfenced test](https://mathml-refresh.github.io/mathml-polyfills/mfenced/index.html)
+* [menclose test](https://mathml-refresh.github.io/mathml-polyfills/menclose/index.html)
+* [Elmentary math sweep test: mstack, mlongdiv, and others](https://mathml-refresh.github.io/mathml-polyfills/elem-math/index.html)
 
