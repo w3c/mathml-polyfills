@@ -10,5 +10,4 @@ See discussion on [wiki](https://github.com/mathml-refresh/mathml-polyfills/wiki
 * [mfenced test](https://mathml-refresh.github.io/mathml-polyfills/mfenced/index.html)
 * [menclose test](https://mathml-refresh.github.io/mathml-polyfills/menclose/index.html)
 * [Elmentary math sweep test: mstack, mlongdiv, and others](https://mathml-refresh.github.io/mathml-polyfills/elem-math/index.html)
-* ...
 
