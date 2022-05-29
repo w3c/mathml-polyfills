@@ -43,6 +43,8 @@ const transformBevelled = (mfrac) => {
     // add the "/"
     let slash = document.createElementNS(namespaceURI, "mo");
     slash.setAttribute("stretchy", "true");
+    // tuck the num and demon in a little -- the num a bit more since it is raised up
+    slash.setAttribute("style", "margin-left: -15%; margin-right: 10%"); 
     slash.appendChild(document.createTextNode('/'));
     mrow.appendChild(slash);
 
