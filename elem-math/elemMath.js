@@ -34,6 +34,79 @@
 
 import { _MathTransforms, MATHML_NS } from '../common/math-transforms.js'
 
+const ELEM_MATH_CSS = `
+table.elem-math {
+    border-collapse: collapse;
+    border-spacing: 0px;
+}
+table.elem-math tr {
+    vertical-align: baseline;
+}
+
+td.curved-line {
+    position: absolute;
+    padding-top: 0em;
+    width: 0.75em;
+    border: 0.3ex solid;  /* match border bottom */
+    transform: translate(0.48em, -0.15em);
+    border-radius: 70%;
+    clip-path: inset(0.1em 0 0 0.45em);
+    box-sizing: border-box;
+    margin-left: -0.85em;
+}
+
+.carry {
+  font-size: 60%;
+  line-height: 90%;
+}
+
+.crossout-horiz, .crossout-vert, .crossout-up, .crossout-down{
+    position: relative;
+    display: inline-block;
+}
+.crossout-horiz:before {
+    content: '';
+    border-bottom: .3ex solid black;
+    width: 140%;
+    position: absolute;
+    right: -20%;
+    top: 40%;
+}
+
+.crossout-vert::before {
+    content: '';
+    border-left: .3ex solid black;
+    height: 100%;
+    position: absolute;
+    right: 35%;
+    top: 0%;
+}
+
+.crossout-up::before {
+    content: '';
+    width: 100%;
+    position: absolute;
+    right: 0;
+    top: 40%;
+}
+.crossout-up::before {
+    border-bottom: .2em solid black;
+    transform: skewY(-60deg);
+}
+
+.crossout-down::after {
+    content: '';
+    width: 100%;
+    position: absolute;
+    right: 0;
+    top: 40%;
+}
+.crossout-down::after {
+    border-bottom: .2em solid black;
+    transform: skewY(60deg);
+}
+`
+
 // msline defined values
 const MSLINETHICKNESS_THIN = '.1ex'
 const MSLINETHICKNESS_MEDIUM = '.35ex'
@@ -1009,8 +1082,8 @@ let transformElemMath = (el) => {
 
     // put the math with table into a shadow DOM
     const spanShadowHost =  document.createElement("span");
-    spanShadowHost.attachShadow({mode: "open"});
-    addStyleSheetToShadowRoot(spanShadowHost.shadowRoot);
+    let shadowRoot = spanShadowHost.attachShadow({mode: "open"});
+    shadowRoot.appendChild(_MathTransforms.getCSSStyleSheet());
 
     // create the table equivalent and put it into the shadow DOM
     const elParent = el.parentElement;
@@ -1029,8 +1102,8 @@ let transformElemMath = (el) => {
     return null;
 }
 
-_MathTransforms.add('mstack', transformElemMath);
-_MathTransforms.add('mlongdiv', transformElemMath);
+_MathTransforms.add('mstack', transformElemMath, ELEM_MATH_CSS);
+_MathTransforms.add('mlongdiv', transformElemMath, ELEM_MATH_CSS);
 
 // import {poly} from '../common/math-polys-core.js'
 // poly.define('mstack', transformElemMath)
@@ -1046,7 +1119,7 @@ customElements.define('m-elem-math', class extends HTMLElement {
         
         // put the table into a shadow DOM
         const shadowRoot =  this.attachShadow({mode: 'open'});
-        addStyleSheetToShadowRoot(shadowRoot);
+        shadowRoot.appendChild(_MathTransforms.getCSSStyleSheet());
         shadowRoot.appendChild(table);
     }
   });

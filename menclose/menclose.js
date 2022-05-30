@@ -26,7 +26,7 @@ import { _MathTransforms, cloneElementWithShadowRoot, convertToPx, MATHML_NS } f
 
 
 /* most of these values are derived from what MathJax uses */
-export const MENCLOSE_CSS = `
+const MENCLOSE_CSS = `
 mrow.menclose {
     display: inline-block;
     text-align: left;

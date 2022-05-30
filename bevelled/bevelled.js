@@ -20,9 +20,7 @@
   THE SOFTWARE.
 */
 
-import { _MathTransforms } from '../common/math-transforms.js'
-
-const namespaceURI = "http://www.w3.org/1998/Math/MathML";
+import { _MathTransforms, convertToPx, MATHML_NS } from '../common/math-transforms.js'
 
 /**
  * 
@@ -31,18 +29,33 @@ const namespaceURI = "http://www.w3.org/1998/Math/MathML";
 const transformBevelled = (mfrac) => {
     // Return an <mrow> element representing the bevelled fraction.
     // The numerator is shifted up 0.5em
-    let mrow = document.createElementNS(namespaceURI, "mrow");
+
+    // we can't know the height of the "/" without inserting it first, but the num/denom are known
+    // get an approximation of the height -- do before remove child from mfrac
+    let numeratorHeight = mfrac.firstElementChild.getBoundingClientRect().height;
+    let shiftAmount = convertToPx(mfrac.firstElementChild, "0.5em");
+    let height = Math.max(numeratorHeight, mfrac.lastElementChild.getBoundingClientRect().height) + shiftAmount;
+
+    let mrow = document.createElementNS(MATHML_NS, "mrow");
 
     // create the numerator
-    let mpadded = document.createElementNS(namespaceURI, "mpadded");
-    mpadded.setAttribute("height", "+0.5em");
-    mpadded.setAttribute("voffset", "0.5em");
+    let mpadded = document.createElementNS(MATHML_NS, "mpadded");
+    mpadded.setAttribute("height", `${numeratorHeight + shiftAmount}px`); // relative shift not in core
+    mpadded.setAttribute("voffset", `${shiftAmount}px`);
     mpadded.appendChild(mfrac.firstElementChild);
     mrow.appendChild(mpadded);
 
     // add the "/"
-    let slash = document.createElementNS(namespaceURI, "mo");
+    let slash = document.createElementNS(MATHML_NS, "mo");
     slash.setAttribute("stretchy", "true");
+    slash.setAttribute("symmetric", "false");
+    slash.setAttribute("lspace", "0px");
+    slash.setAttribute("rspace", "0px");
+    // slash.setAttribute("maxsize", `${Math.round(0.95 * height)}px`);
+
+    // tuck the num and demon in a little -- base the amount on height
+    let inset = Math.round(-0.2 * height);
+    slash.setAttribute("style", `margin-left: ${inset}px; margin-right: ${inset}px`); 
     slash.appendChild(document.createTextNode('/'));
     mrow.appendChild(slash);
 

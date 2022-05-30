@@ -68,9 +68,10 @@ export function cloneElementWithShadowRoot(el, clone) {
   // rather than clone each element and then the children, we're assuming cloning the whole tree is most efficient
   // however, we still need to search 'el' to check for a shadowRoot.
   if (el.shadowRoot) {
-      clone.attachShadow({ mode: "open" });
+      let shadowRoot = clone.attachShadow({ mode: "open" });
+      shadowRoot.appendChild(_MathTransforms.getCSSStyleSheet());
       for (let i = 0; i < el.shadowRoot.childElementCount; i++) {
-        clone.shadowRoot.appendChild( cloneElementWithShadowRoot(el.shadowRoot.children[i]) )
+        shadowRoot.appendChild( cloneElementWithShadowRoot(el.shadowRoot.children[i]) )
       }
   }
 
