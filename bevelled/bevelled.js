@@ -36,7 +36,6 @@ const transformBevelled = (mfrac) => {
     let shiftAmount = convertToPx(mfrac.firstElementChild, "0.5em");
     let height = Math.max(numeratorHeight, mfrac.lastElementChild.getBoundingClientRect().height) + shiftAmount;
 
-    console.log("height: ", height, " em: ", 2*shiftAmount);
     let mrow = document.createElementNS(MATHML_NS, "mrow");
 
     // create the numerator
