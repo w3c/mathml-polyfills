@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>Elementary MathML elements</title>
     <meta charset="utf-8"/>
@@ -82,7 +82,7 @@
     <ol>
     <li>Simple addition with operator on the left
       <table><tr><th>Image</th><th>MathML</th></tr><tr>
-        <td><img src="https://www.w3.org/Math/draft-spec/image/em-plus-shift.png"></td>
+        <td><img src="https://www.w3.org/Math/draft-spec/image/em-plus-shift.png" alt="2d addition problem"></td>
         <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
           <mstack>
             <mn>424</mn>
@@ -95,7 +95,7 @@
 
   <li>Simple addition with operator on the right
     <table><tr><th>Image</th><th>MathML</th></tr><tr>
-      <td><img src="https://www.w3.org/Math/draft-spec/image/em-plus-right.png"></td>
+      <td><img src="https://www.w3.org/Math/draft-spec/image/em-plus-right.png" alt="2d addition problem with plus on right"></td>
       <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
       <mstack>
           <mn>123</mn> 
@@ -109,7 +109,7 @@
 
   <li>Two examples showing carries and crossouts
     <table><tr><th>Image</th><th>MathML</th></tr><tr>
-      <td><img src=https://www.w3.org/Math/draft-spec/image/em-sub-borrow-above.png></td>
+      <td><img src=https://www.w3.org/Math/draft-spec/image/em-sub-borrow-above.png alt="2d subtraction problem with borrows above"></td>
       <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
         <mstack>
           <mscarries crossout='updiagonalstrike'>
@@ -122,7 +122,7 @@
         </mstack>
       </math>
     </td></tr><tr>
-      <td><img src="https://www.w3.org/Math/draft-spec/image/em-sub-borrow-aboveleft.png"></td>
+      <td><img src="https://www.w3.org/Math/draft-spec/image/em-sub-borrow-aboveleft.png" alt="2d subtraction problem with borrows to northwest"></td>
       <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
         <mstack>
           <mscarries location='nw'>
@@ -142,7 +142,7 @@
 
   <li class='not-implemented'>Carries and crossouts, but with multiple digits in carry and <em>underlined</em>
     <table><tr><th>Image</th><th>MathML</th></tr><tr>
-      <td><img src="https://www.w3.org/Math/draft-spec/image/em-sub-borrow-swedish.png"></td>
+      <td><img src="https://www.w3.org/Math/draft-spec/image/em-sub-borrow-swedish.png" alt="2d subtraction problem with underlined borrow"></td>
       <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
         <mstack>
           <mscarries>
@@ -161,7 +161,7 @@
 
   <li>Simple multiplication (uses msgroup)
     <table><tr><th>Image</th><th>MathML</th></tr><tr>
-      <td><img src="https://www.w3.org/Math/draft-spec/image/em-mult-simple.png"></td>
+      <td><img src="https://www.w3.org/Math/draft-spec/image/em-mult-simple.png" alt="2d multiplication"></td>
       <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
         <mstack>
           <msgroup>
@@ -184,7 +184,7 @@
     It also (somewhat artificially) includes commas (",") as digit separators.
     The encoding includes these separators in the spacing attribute value.
     <table><tr><th>Image</th><th>MathML</th></tr><tr>
-      <td><img src="https://www.w3.org/Math/draft-spec/image/em-mult-carries.png"></td>
+      <td><img src="https://www.w3.org/Math/draft-spec/image/em-mult-carries.png" alt="2d multiplication problem with carries"></td>
       <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
         <mstack>
           <mscarries><mn>1</mn><mn>1</mn><none/></mscarries>
@@ -281,7 +281,7 @@
 
     <h3>Test with different attr args/values</h3>
     <h4>align</h4>
-    <p class="not-implemented"'>Not implemented</p>
+    <p class="not-implemented">Not implemented</p>
     <h4>stackalign (alignment of stack of elements</h4>
     <ol>
     <li>left
@@ -452,7 +452,7 @@
   <li>msgroup with a single number (position=2, shift=1 -- visually not much but two empty columns on right):
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
       <mstack>
-        <msgroup position="2", shift="1">
+        <msgroup position="2" shift="1">
           <mn>123</mn>
         </msgroup>
       </mstack>
@@ -462,7 +462,7 @@
   <li>msgroup with 2 arguments (position=-1, shift=2 -- visually '1's should align):
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
       <mstack>
-        <msgroup position="-1", shift="2">
+        <msgroup position="-1" shift="2">
         <mn>123</mn>
         <mn>321</mn>
       </msgroup>
@@ -473,10 +473,10 @@
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
       <mstack>
         <mn>123</mn>
-        <msgroup position="-1", shift="-1">
+        <msgroup position="-1" shift="-1">
         <mn>234</mn>
         <mn>345</mn>
-        <msgroup position="-1", shift="1">
+        <msgroup position="-1" shift="1">
           <mn>567</mn>
           <mn>456</mn>           
           <mn>345</mn>           
@@ -520,6 +520,7 @@
 </li>
 </ol>
 <h4>shift</h4>
+<ol>
 <li>2 msgroups (shift=1, shift=-1) -- the digits should align.
 The first group should shift to the left; the second group should shift to the right:
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -557,13 +558,15 @@ The first group should shift to the right by two digits each line; the second gr
     </mstack>
   </math>
 </li>
+</ol>
 <h2>msrow tests</h2>
 <h3>Test with different number of args</h3>
 <ol>
+  <li>
   <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
       <mstack>
         <msrow>
-        </mrow>
+        </msrow>
       </mstack>
     </math>
   </li>
@@ -599,7 +602,7 @@ The first group should shift to the right by two digits each line; the second gr
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
       <mstack>
         <msrow position='2'>
-        </mrow>
+        </msrow>
       </mstack>
     </math>
   </li>
@@ -1033,8 +1036,8 @@ test individually and in combinations
       <mn>123</mn>
     </mstack>
 </math>
-</li class='not-right'>
-<li>mscarry with single child and no position give should see 9 over 3:
+</li>
+<li class='not-right'>mscarry with single child and no position give should see 9 over 3:
   <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
     <mstack>
       <mscarries>
@@ -1251,9 +1254,9 @@ test individually and in combinations
 </ol>
 
 <h4>leftoverhang</h4>
-<p class="not-implemented"'>Not implemented</p>
+<p class="not-implemented">Not implemented</p>
 <h4>rightoverhang</h4>
-<p class="not-implemented"'>Not implemented</p>
+<p class="not-implemented">Not implemented</p>
 
 <h4>mslinethickness</h4>
 <ol>
@@ -1334,7 +1337,7 @@ test individually and in combinations
 
   <p>Long division examples from MathML spec
     (the polyfill supports a 'decimalpoint' attr on 'mlongdiv'/'mstack', which is not part of MathML 3;
-    see <a src="https://github.com/mathml-refresh/mathml/issues/180">this issue</a> for why)
+    see <a href="https://github.com/mathml-refresh/mathml/issues/180">this issue</a> for why)
 
     <table class="longdiv-table">
       <tr>
@@ -1347,11 +1350,11 @@ test individually and in combinations
       </tr>
       <tr>
        <td>Image from spec</td>
-       <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-us.png"</td>
-        <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-french.png"</td>
-        <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-medium-stacked-rightright.png"</td>
-        <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-short-stacked-rightright.png"</td>
-        <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-righttop.png"</td>
+       <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-us.png" alt="US long division example"></td>
+        <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-french.png" alt="French long division example"></td>
+        <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-medium-stacked-rightright.png" alt="Russian division example"></td>
+        <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-short-stacked-rightright.png" alt="Brazilian long division example"></td>
+        <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-righttop.png" alt="Chinese long division example"></td>
       </tr>
       <tr>
         <td>Polyfill rendering</td>
@@ -1438,11 +1441,11 @@ test individually and in combinations
 </tr>
 <tr>
   <td>Image from spec</td>
-  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-leftright.png"</td>
-  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-indian.png"</td>
-  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-colonrightright.png"</td>
-  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-mirrored-french.png"</td>
-  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-arabic-lefttop.png"</td>
+  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-leftright.png" alt="Dutch long division example"></td>
+  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-indian.png" alt="Indian long division example"></td>
+  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-colonrightright.png" alt="German long division example"></td>
+  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-mirrored-french.png" alt="Arabic long division example"></td>
+  <td><img src="https://www.w3.org/TR/MathML3/image/em-longdiv-arabic-lefttop.png" alt="Alternate Arabic long division example"></td>
 </tr>
 <tr>
   <td>Polyfill rendering</td>
@@ -1451,8 +1454,8 @@ test individually and in combinations
   <td class='replace-me'></td>
   <td class='replace-me'></td>
   <td>
-  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-      <mlongdiv longdivstyle="stackedleftlinetop" decimalpoint="&#x066B;">
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"  decimalpoint="&#x066B;">
+      <mlongdiv longdivstyle="stackedleftlinetop">
         <mn> &#x0663;<!--ARABIC-INDIC DIGIT THREE--> </mn>
         <mn> &#x0664;<!--ARABIC-INDIC DIGIT FOUR-->&#x0663;<!--ARABIC-INDIC DIGIT THREE-->&#x0665;<!--ARABIC-INDIC DIGIT FIVE-->&#x066B;<!--ARABIC DECIMAL SEPARATOR-->&#x0663;<!--ARABIC-INDIC DIGIT THREE--></mn>
       
@@ -1484,7 +1487,7 @@ test individually and in combinations
       </td>
   </tr>
 </table>
-</p>
+
 <script>
   // rather than writing out the same tests for each style, this code copies the template above and it into the table changing the style
   function longdivSpecExamples() {
@@ -1503,10 +1506,11 @@ test individually and in combinations
 </script>
 
 
-</p>
+
 
 <h2>Long divsion with too few arguments</h2>
-<li> three arguments
+<ol>
+  <li> three arguments
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
         <mlongdiv longdivstyle='lefttop'>
           <mn>1</mn>
@@ -1515,7 +1519,7 @@ test individually and in combinations
         </mlongdiv>
     </math>
     </li>
-
+</ol>
 <h3>No arguments</h3>
 <ol>
     <li id='longdiv0'>
