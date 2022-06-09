@@ -53,11 +53,27 @@ td.curved-line {
     clip-path: inset(0.1em 0 0 0.45em);
     box-sizing: border-box;
     margin-left: -0.85em;
+    margin-right: 0.75em;
+}
+
+td.precedes-separator {
+    padding-right: 0 !important;    // override an inline style
+}
+
+td.separator {
+    padding-left: 0  !important;    
+    padding-right: 0 !important;    // override an inline style
 }
 
 .carry {
-  font-size: 60%;
-  line-height: 90%;
+    font-size: 60%;
+    line-height: 90%;
+    width: 1px;
+    overflow: visible;
+}
+
+.hidden-digit {
+    visibility: hidden;
 }
 
 .crossout-horiz, .crossout-vert, .crossout-up, .crossout-down{
@@ -118,6 +134,7 @@ const MSTACK_MEDIUM = '.2em'
 const MSTACK_LOOSE = '.4em'
 
 const NON_BREAKING_SPACE = '\u00A0';
+const NO_SPACE = '\u200A';  // hair space (need something that is a char for use in carries)
 
 class MathMLAttrs {
     /**
@@ -291,7 +308,7 @@ class TableRow {
     padOnLeft(arr, amount) {
         let newCells = Array(amount);
         for (let i = 0; i < amount; i++) {
-            newCells[i] = new TableCell(NON_BREAKING_SPACE);
+            newCells[i] = new TableCell(NO_SPACE);
         }
         return newCells.concat(arr);
     }
@@ -305,7 +322,7 @@ class TableRow {
     padOnRight(arr, amount) {
         let newCells = Array(amount);
         for (let i = 0; i < amount; i++) {
-            newCells[i] = new TableCell(NON_BREAKING_SPACE);
+            newCells[i] = new TableCell(NO_SPACE);
         }
         return arr.concat(newCells);
      }
@@ -409,6 +426,13 @@ class ElemMath {
          */
         function mergeCarryAndData(cell, previousCell) {
             let data = cell.data;
+            if (data.textContent === NO_SPACE) {
+                let span = document.createElement('span');
+                span.appendChild(data);
+                data.textContent = '0';      // need digit width to get decent spacing/placement of the carry
+                span.className = "hidden-digit";
+                data = span;
+            }
             let parent = document.createElement('span');
             parent.appendChild(data);
             switch (previousCell.carry.location) {
@@ -734,7 +758,7 @@ class ElemMath {
         function countPaddingOnRight(row) {
             for (let i = row.data.length-1; i>=0; i--) {
                 const cell = row.data[i];
-                if (cell.data.textContent !== NON_BREAKING_SPACE) {
+                if (cell.data.textContent !== NO_SPACE) {
                     return row.data.length - 1 - i;
                 }
             }
@@ -751,7 +775,7 @@ class ElemMath {
             // delete empty cells from end
             for (let i = row.data.length-1; i>=0; i--) {
                 const cell = row.data[i];
-                if (cell.data.textContent !== NON_BREAKING_SPACE) {
+                if (cell.data.textContent !== NO_SPACE) {
                     break;
                 }
                 if (nKeep > 0) {
@@ -764,7 +788,7 @@ class ElemMath {
 
             // add on any needed cells
             for (let i=0; i<nKeep; i++) {
-                row.data.push( new TableCell(NON_BREAKING_SPACE) );
+                row.data.push( new TableCell(NO_SPACE) );
             }
 
             row.nRight -= nDeletedRight - nKeep;
@@ -777,16 +801,16 @@ class ElemMath {
         //   For a few styles, a second row is needed -- those are handled in those cases.
 
         if (stackRows.length == 0) {
-            stackRows.push( new TableRow( [new TableCell(NON_BREAKING_SPACE)], 0, 0 ) );
+            stackRows.push( new TableRow( [new TableCell(NO_SPACE)], 0, 0 ) );
         }
 
         // FIX: this is broken for anything that is more than one row tall.
         /** @type{TableRow[]} */
-        let divisorRows = divisor ? this.processChild(divisor, [], 0) : [new TableRow( [new TableCell(NON_BREAKING_SPACE)], 0, 0 )];
+        let divisorRows = divisor ? this.processChild(divisor, [], 0) : [new TableRow( [new TableCell(NO_SPACE)], 0, 0 )];
         let divisorRow = divisorRows[0];        // FIX: currently can only handle one row
         let iLastDivisorDigit = divisorRow.data.length-1;
 
-        let resultRows = result ? this.processChild(result, [], 0) : [new TableRow( [new TableCell(NON_BREAKING_SPACE)], 0, 0 )];
+        let resultRows = result ? this.processChild(result, [], 0) : [new TableRow( [new TableCell(NO_SPACE)], 0, 0 )];
         let resultRow = resultRows[0];          // FIX: currently can only handle one row
 
         switch (this.longdivstyle) {
@@ -799,7 +823,7 @@ class ElemMath {
                     stackRows.push( new TableRow(
                         divisorRow.data.concat(
                             [leftDelim],
-                            new TableCell(NON_BREAKING_SPACE),
+                            new TableCell(NO_SPACE),
                             [rightDelim],
                             resultRows[0].data)
                     ));
@@ -841,7 +865,7 @@ class ElemMath {
                 // FIX: this only works for *leaf* elements
                 // need to assure there are at least two rows in the stack (already made sure there is one)
                 if (stackRows.length == 1) {
-                    stackRows.push( new TableRow( [new TableCell(NON_BREAKING_SPACE)], 0, 0 ) );
+                    stackRows.push( new TableRow( [new TableCell(NO_SPACE)], 0, 0 ) );
                     stackRows = this.processShifts(stackRows, this.stackAlign);
 
                 }
@@ -858,7 +882,7 @@ class ElemMath {
                 const verticalLineLength = this.longdivstyle === 'shortstackedrightright' ? 1 :
                                            this.longdivstyle === 'mediumstackedrightright' ? 2 : stackRows.length;
                 for (let i = 0; i < verticalLineLength; i++) {
-                    let newCell = new TableCell(NON_BREAKING_SPACE);                   
+                    let newCell = new TableCell(NO_SPACE);                   
                     if (i < verticalLineLength) {
                         newCell.style += `border-right: ${MSLINETHICKNESS_MEDIUM} solid ${mathcolor};`;                    
                     }
@@ -893,7 +917,7 @@ class ElemMath {
                 // mstack on right, vertical line down left side of mstack; divisor to the left of that, horizontal line, then result underneath
                 // we need at least two stack elements for this layout
                 if (stackRows.length == 1) {
-                    stackRows.push( new TableRow( [new TableCell(NON_BREAKING_SPACE)], 0, 0 ) );
+                    stackRows.push( new TableRow( [new TableCell(NO_SPACE)], 0, 0 ) );
                     stackRows = this.processShifts(stackRows, this.stackAlign);
                 }
 
@@ -957,6 +981,7 @@ class ElemMath {
                     // add the ")" to the element (handled like a curved border with css)
                     divisorRow.data = divisorRow.padOnRight(divisorRow.data, 1)
                     iLastDivisorDigit += 1;
+                    
                     divisorRow.data[iLastDivisorDigit].class = 'curved-line';
                     divisorRow.data[iLastDivisorDigit].style = '';       // let CSS deal with it
                 }
@@ -972,6 +997,50 @@ class ElemMath {
         return answer;
     }
 	
+
+    /**
+     * Sets classes that shrink the padding on columns containing separators because it looks better
+     * @param {TableRow[]} stackRows 
+     * @returns nothing
+     */
+    shrinkSeparatorColumns(stackRows) {
+        if (stackRows.length === 0) {
+            return;
+        }
+
+        // scan each row for a separator (could be '' in some rows)
+        // remove an the index from the set of separators if it is not a separator or an empty cell (if all empty cells, also delete)
+        // if all the indices that are empty, don't count them -- could be a vertical line
+        let separatorCols = new Set(Array(stackRows[0].data.length).keys());      // indices of the columns
+        let allEmptyCells = new Set(Array(stackRows[0].data.length).keys());      // indices of columns that are completely empty
+        for (let row of stackRows) {
+            /** @type {TableCell[]} */
+            let cols = row.data;
+            for (let i=0; i < cols.length; i++) {
+                let text = cols[i].data.textContent;
+                if (text==='.' || text===',') {
+                    allEmptyCells.delete(i);
+                } else if (text !== NO_SPACE) {
+                    separatorCols.delete(i);
+                    allEmptyCells.delete(i);
+                }
+            }
+        }
+
+        // remove any remaining columns that are all empty cells
+        allEmptyCells.forEach( i => separatorCols.delete(i));
+        
+        for (let iCol of separatorCols) {
+            stackRows.forEach( row => {
+                row.data[iCol].class = "separator";
+                if (iCol > 0) {
+                    row.data[iCol-1].class = "precedes-separator";
+                }
+            })
+        }
+    }
+
+
     /**
      * @param {Element} el -- either mstack or mlongdiv (if later, first two children are divisor and result which can be <none/>)
      * @returns {Element} -- table equivalent to be inserted into DOM
@@ -999,6 +1068,9 @@ class ElemMath {
             stackRows[stackRows.length-1].addSpacingAfterRow = false;
         }
 
+        // set a class for columns of separators so that they are narrower (looks better)
+        this.shrinkSeparatorColumns(stackRows);
+
         let table = document.createElement('table');
         table.setAttribute('class', 'elem-math');
         for (const row of stackRows) {
@@ -1014,9 +1086,12 @@ class ElemMath {
                     span.appendChild(cellData.data);
                     cellData.data = span;
                 }
+                if (cellData.class === 'curved-line') {
+                    cellData.data.textContent = NON_BREAKING_SPACE;
+                }
 
                 htmlTD.appendChild(cellData.data);
-                if (cellData.class != 'curved-line') {
+                if (cellData.class !== 'curved-line') {
                     htmlTD.setAttribute('style', cellStyle + cellData.style);    // cellData.style so it overrides
                 }
                 if (cellData.class) {
