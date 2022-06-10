@@ -56,13 +56,13 @@ td.curved-line {
     margin-right: 0.75em;
 }
 
-td.precedes-separator {
-    padding-right: 0 !important;    // override an inline style
+mtd.precedes-separator {
+    padding-right: 0 !important;    /* override an inline style */
 }
 
-td.separator {
-    padding-left: 0  !important;    
-    padding-right: 0 !important;    // override an inline style
+mtd.separator {
+    padding-left: 0  !important;    /* override an inline style */
+    padding-right: 0 !important;    /* override an inline style */
 }
 
 .carry {
