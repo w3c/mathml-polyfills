@@ -1178,7 +1178,7 @@ let transformElemMath = (el) => {
 }
 
 _MathTransforms.add('mstack', transformElemMath, ELEM_MATH_CSS);
-_MathTransforms.add('mlongdiv', transformElemMath, ELEM_MATH_CSS);
+_MathTransforms.add('mlongdiv', transformElemMath); // don't need two copies of the styles, ELEM_MATH_CSS not included
 
 // import {poly} from '../common/math-polys-core.js'
 // poly.define('mstack', transformElemMath)
