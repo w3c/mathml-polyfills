@@ -26,7 +26,7 @@
 /*
  * The basic idea is that each digit gets its own column in the resulting table
  * There are lots of wrinkles on this, including getting alignment correct, drawing lines, etc.
- * https://mathml-refresh.github.io/mathml/#stacks-of-characters-mstack
+ * https://w3c.github.io/mathml/#stacks-of-characters-mstack
  *
  * The algorithm works by building a data structure that closely mirrors the resulting table.
  * Once all the rows are processed, that data structure is turned into an HTML table.

@@ -31,7 +31,7 @@ import { _MathTransforms, MATHML_NS } from '../common/math-transforms.js'
  */
 function collapseWhiteSpace(text) {
     // Collapse the whitespace as specified by the MathML specification.
-    // https://mathml-refresh.github.io/mathml/chapter2.html#fund.collapse
+    // https://w3c.github.io/mathml/chapter2.html#fund.collapse
     return text.replace(/^[\s]+|[\s]+$/g, '').replace(/[\s]+/g, ' ');
 }
 

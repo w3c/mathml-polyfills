@@ -28,7 +28,7 @@ const namespaceURI = "http://www.w3.org/1998/Math/MathML";
 
 function collapseWhiteSpace(text) {
     // Collapse the whitespace as specified by the MathML specification.
-    // https://mathml-refresh.github.io/mathml/chapter2.html#fund.collapse
+    // https://w3c.github.io/mathml/chapter2.html#fund.collapse
     return text.replace(/^[\s]+|[\s]+$/g, '').replace(/[\s]+/g, ' ');
 }
 
@@ -70,14 +70,14 @@ function shouldCopyAttribute(attribute) {
     // The <mfenced> and <mrow> elements have the same attributes except
     // that dir is only accepted on <mrow> and open/close/separators are
     // only accepted on <mfenced>.
-    // https://mathml-refresh.github.io/mathml/appendixa.html#parsing.rnc.pres
+    // https://w3c.github.io/mathml/appendixa.html#parsing.rnc.pres
     const excludedAttributes = ["dir", "open", "close", "separators"];
     return attribute.namespaceURI || !excludedAttributes.includes(attribute.localName);
 }
 
 const expandFencedElement = (mfenced) => {
     // Return an <mrow> element representing the expanded <mfenced>.
-    // https://mathml-refresh.github.io/mathml/chapter3.html#presm.mfenced
+    // https://w3c.github.io/mathml/chapter3.html#presm.mfenced
     let outerMrow = newMrow();
     outerMrow.appendChild(newOperator(collapseWhiteSpace(mfenced.getAttribute("open") || "(")));
     if (mfenced.childElementCount === 1) {
