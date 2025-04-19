@@ -1362,6 +1362,30 @@
         </tr>
 
     </table>
+
+<h2>MathML href linking</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(href)">Apply Transform</button>
+    </label>
+    <table id='href'>
+        <tr>
+            <td>Absolute and relative links</td>
+            <td>
+
+           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mfrac>
+                <mi href="https://www.w3.org">w3c</mi>
+                <mi href="href="https://www.w3.org/TR/MathML">MathML</mi>
+              </mfrac>						     
+              <mo>+</mo>
+              <mi href="../menclose/index.html">menclose</mi>
+              <mo>+</mo>
+              <mi href="#toc">toc</mi>
+           </math>
+</td>
+</tr>
+</table>
 </body>
 
 </html>
