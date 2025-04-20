@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+  <title>named space tests</title>
+  <meta charset="utf-8" />
+  <script type="module">
+    import { _MathTransforms } from '../common/math-transforms.js'
+    import './namedspace.js'
+    window.addEventListener("DOMContentLoaded", () => {
+      _MathTransforms.transform(document.body)
+    })
+  </script>
+  <style>
+    math {
+      font-family: "Stix Two Math", "Cambria Math", "Asana";
+    }
+  
+  </style>
+
+</head>
+
+<body>
+  <h1 id="top">namedspaces</h1>
+
+  <p>This page contains some tests for named spaces in lspace and rspace attribute
+    Only the case where the named space is the entire length are handled.
+  </p>
+
+
+
+  <table border>
+   <tbody>
+<tr><td>0</td><td>0</td><td>.</td><td>.</td><td>.</td></tr>
+<tr><td colspan="5">
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+   <mtable>
+    <mtr><mtd><mi>a</mi><mo lspace="0" rspace="0">+</mo><mi>b</mi></mtd></mtr>
+    <mtr><mtd><mi>a</mi><mspace width="1em"/><mo lspace="0">+</mo><mi>b</mi></mtd></mtr>
+   </mtable>
+  </math>
+</td>
+<tr><td>1</td><td>0.05555555555555555em</td><td>veryverythinmathspace</td><td>negativeveryverythinmathspace</td><td>±1/18 em</td></tr>
+<tr><td colspan="5">
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+   <mtable>
+    <mtr><mtd><mi>a</mi><mo lspace="veryverythinmathspace" rspace="veryverythinmathspace">+</mo><mi>b</mi></mtd></mtr>
+    <mtr><mtd><mi>a</mi><mspace width="1em"/><mo lspace="negativeveryverythinmathspace">+</mo><mi>b</mi></mtd></mtr>
+   </mtable>
+  </math>
+</td>
+<tr><td>2</td><td>0.1111111111111111em</td><td>verythinmathspace</td><td>negativeverythinmathspace</td><td>±2/18 em</td></tr>
+<tr><td colspan="5">
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+   <mtable>
+    <mtr><mtd><mi>a</mi><mo lspace="verythinmathspace" rspace="verythinmathspace">+</mo><mi>b</mi></mtd></mtr>
+    <mtr><mtd><mi>a</mi><mspace width="1em"/><mo lspace="negativeverythinmathspace">+</mo><mi>b</mi></mtd></mtr>
+   </mtable>
+  </math>
+</td>
+<tr><td>3</td><td>0.16666666666666666em</td><td>thinmathspace</td><td>negativethinmathspace</td><td>±3/18 em</td></tr>
+<tr><td colspan="5">
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+   <mtable>
+    <mtr><mtd><mi>a</mi><mo lspace="thinmathspace" rspace="thinmathspace">+</mo><mi>b</mi></mtd></mtr>
+    <mtr><mtd><mi>a</mi><mspace width="1em"/><mo lspace="negativethinmathspace">+</mo><mi>b</mi></mtd></mtr>
+   </mtable>
+  </math>
+</td>
+<tr><td>4</td><td>0.2222222222222222em</td><td>mediummathspace</td><td>negativemediummathspace</td><td>	±4/18 em</td></tr>
+<tr><td colspan="5">
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+   <mtable>
+    <mtr><mtd><mi>a</mi><mo lspace="mediummathspace" rspace="mediummathspace">+</mo><mi>b</mi></mtd></mtr>
+    <mtr><mtd><mi>a</mi><mspace width="1em"/><mo lspace="negativemediummathspace">+</mo><mi>b</mi></mtd></mtr>
+   </mtable>
+  </math>
+</td>
+<tr><td>5</td><td>0.2777777777777778em</td><td>thickmathspace</td><td>negativethickmathspace</td><td>±5/18 em</tr>
+<tr><td colspan="5">
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+   <mtable>
+    <mtr><mtd><mi>a</mi><mo lspace="thickmathspace" rspace="thickmathspace">+</mo><mi>b</mi></mtd></mtr>
+    <mtr><mtd><mi>a</mi><mspace width="1em"/><mo lspace="negativethickmathspace">+</mo><mi>b</mi></mtd></mtr>
+   </mtable>
+  </math>
+</td>
+<tr><td>6</td><td>0.3333333333333333em</td><td>verythickmathspace</td><td>negativeverythickmathspace</td><td>±6/18 em</td></tr>
+<tr><td colspan="5">
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+   <mtable>
+    <mtr><mtd><mi>a</mi><mo lspace="verythickmathspace" rspace="verythickmathspace">+</mo><mi>b</mi></mtd></mtr>
+    <mtr><mtd><mi>a</mi><mspace width="1em"/><mo lspace="negativeverythickmathspace">+</mo><mi>b</mi></mtd></mtr>
+   </mtable>
+  </math>
+</td>
+<tr><td>7</td><td>0.3888888888888889em</td><td>veryverythickmathspace</td><td>negativeveryverythickmathspace</td><td>±7/18 em</td></tr>
+<tr><td colspan="5">
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+   <mtable>
+    <mtr><mtd><mi>a</mi><mo lspace="veryverythickmathspace" rspace="veryverythickmathspace">+</mo><mi>b</mi></mtd></mtr>
+    <mtr><mtd><mi>a</mi><mspace width="1em"/><mo lspace="negativeveryverythickmathspace">+</mo><mi>b</mi></mtd></mtr>
+   </mtable>
+  </math>
+</td>
+</tbody>
+</table>
+ </body>
+ </html>
