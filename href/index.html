@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+  <title>href tests</title>
+  <meta charset="utf-8" />
+  <script type="module">
+    import { _MathTransforms } from '../common/math-transforms.js'
+    import './href.js'
+    window.addEventListener("DOMContentLoaded", () => {
+      _MathTransforms.transform(document.body)
+    })
+  </script>
+  <style>
+    math {
+      font-family: "Stix Two Math", "Cambria Math", "Asana";
+    }
+  
+    :target {background-color: yellow;}
+
+   // math *[href]:hover{background-color:blue;}
+  </style>
+
+</head>
+
+<body>
+  <h1 id="top">href</h1>
+
+  <p>This page contains some tests for the href attribute for linking
+    These are rendered via the 'href.js' polyfill.
+  </p>
+
+  <ol id="list">
+    <li>mrow, absolute
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow href="https://www.w3.org/TR/MathML">
+                <mi> mathml </mi>
+                <mo> + </mo>
+                <mi> TR </mi>
+              </mrow>
+            </math>
+</li>
+   <li> mi absolute
+           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mi  href="https://google.com"> google </mi>
+                <mo> + </mo>
+                <mi  href="https://www.w3.org"> w3c </mi>
+              </mrow>
+           </math>
+   </li>
+   <li>mrow,  relative
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow href="../menclose/index.html">
+                <mi> menclose </mi>
+                <mo> + </mo>
+                <mi> index </mi>
+              </mrow>
+            </math>
+</li>
+   <li> mi relative
+           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mi  href="../menclose/index.html"> menclose </mi>
+                <mo> + </mo>
+                <mi href="../menclose/index.html"> menclose </mi>
+              </mrow>
+           </math>
+   </li>
+   <li> mi fragid
+           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mi  href="#top"> top </mi>
+                <mo> + </mo>
+                <mi href="#list"> list </mi>
+              </mrow>
+           </math>
+   </li>
+  </ol>
+</body>
+</html>
