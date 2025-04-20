@@ -22,14 +22,14 @@
   THE SOFTWARE.
 */
 
-import { _MathTransforms } from '../common/math-transforms.js'
+import { _MathTransforms, MATHML_NS } from '../common/math-transforms.js'
 
 
 /**
  * @param {MathMLElement} el 
  */
 const transformHref = (el) => {
-    // perhaps should skip if it's already a link
+    if (el.namespaceURI == MATHML_NS) {
     el.style.cursor="pointer";
     el.addEventListener("click", (event) => {
             document.location=event.currentTarget.getAttribute("href");
@@ -40,6 +40,7 @@ const transformHref = (el) => {
     el.addEventListener("mouseout", (event) => {
             event.currentTarget.style.textDecoration="";
         });
+   }
     return el;
 }
 
