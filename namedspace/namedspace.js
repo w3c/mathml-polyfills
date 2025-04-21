@@ -24,8 +24,9 @@ import { _MathTransforms } from '../common/math-transforms.js'
 /**
  * @param {HTMLElement} el 
  */
-                           // longer keynames first                           
-    const MATHML_NAMED_SPACES = {
+
+// longer keynames first                           
+const MATHML_NAMED_SPACES = {
     veryverythinmathspace: "0.05555555555555555em",
     verythinmathspace: "0.1111111111111111em",
     thinmathspace: "0.16666666666666666em",
@@ -38,21 +39,20 @@ import { _MathTransforms } from '../common/math-transforms.js'
 const transformNamedspace = (el) => {
     let attr = el.getAttribute("rspace");
     if(attr){
-    for (const [k,v] of Object.entries(MATHML_NAMED_SPACES)) {
-        attr = attr.replaceAll(k,v);
-    }
-    attr=attr.replaceAll("negative0","-0");
-    el.setAttribute("rspace", attr);
+        for (const [k,v] of Object.entries(MATHML_NAMED_SPACES)) {
+            attr = attr.replaceAll(k,v);
+        }
+        attr=attr.replaceAll("negative0","-0");
+        el.setAttribute("rspace", attr);
     }
     attr = el.getAttribute("lspace");
     if(attr){
-    for (const [k,v] of Object.entries(MATHML_NAMED_SPACES)) {
-        attr = attr.replaceAll(k,v);
+        for (const [k,v] of Object.entries(MATHML_NAMED_SPACES)) {
+            attr = attr.replaceAll(k,v);
+        }
+        attr=attr.replaceAll("negative0","-0");
+        el.setAttribute("lspace", attr);
     }
-    attr=attr.replaceAll("negative0","-0");
-    el.setAttribute("lspace", attr);
-    }
-                    //
     return el;
 }
 
