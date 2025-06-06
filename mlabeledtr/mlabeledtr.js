@@ -51,10 +51,9 @@ function handleLabeledRows(mtable) {
 
   for (let i=0; i < mtable.children.length; i++) {
     let row = mtable.children[i];
-    const foundLabel = row.tagName === 'mlabeledtr';
-    let label = null;
 
-    if (foundLabel) {
+    if (row.tagName === 'mlabeledtr') {
+      // move the label to the left or right side of a new "mtr" (instead of "mlabeledtr")
       label = row.firstElementChild;
       label.setAttribute('intent', ':equation-label');
       let newRow = document.createElementNS(namespaceURI, "mtr");
@@ -71,6 +70,14 @@ function handleLabeledRows(mtable) {
         newRow.appendChild(label);
       }
       row.replaceWith(newRow);
+    } else {
+      // add an empty "mtd" to the left or right side of the row
+      const newColEntry = foundLabel ? label : emptyColumnEntry.cloneNode();
+      if (side === 'right') {
+        row.appendChild(newColEntry);
+      } else {
+        row.insertBefore(newColEntry, row.firstElementChild);
+      }
     }
   }
 
