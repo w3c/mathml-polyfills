@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+  <title>href tests</title>
+  <meta charset="utf-8" />
+  <script type="module">
+    import { _MathTransforms } from '../common/math-transforms.js'
+    import './mlabeledtr.js'
+    window.addEventListener("DOMContentLoaded", () => {
+      _MathTransforms.transform(document.body)
+    })
+  </script>
+  <style>
+    math {
+      font-family: "Stix Two Math", "Cambria Math", "Asana";
+    }
+  </style>
+
+</head>
+
+<body>
+  <h1 id="top">mlabeledtr</h1>
+
+  <p>This page contains some tests for the mlabeledtr element.
+    These are rendered via the 'mlabeledtr.js' polyfill.
+  </p>
+
+  <p> This test uses the default value for <code>side</code>. The label "(2.1) should render on the right side</p>
+  <math>
+  <mtable>
+  <mlabeledtr id='e-is-m-c-square'>
+    <mtd>
+      <mtext> (2.1) </mtext>
+    </mtd>
+    <mtd>
+     <mrow>
+       <mi>E</mi>
+       <mo>=</mo>
+       <mrow>
+        <mi>m</mi>
+        <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+        <msup>
+         <mi>c</mi>
+         <mn>2</mn>
+        </msup>
+       </mrow>
+     </mrow>
+    </mtd>
+  </mlabeledtr>
+</mtable>
+</math>
+
+  <p> This test uses "left" for <code>side</code>. The label "(2.1) should render on the left side</p>
+  <math>
+  <mtable>
+  <mlabeledtr id='e-is-m-c-square'>
+    <mtd>
+      <mtext> (2.1) </mtext>
+    </mtd>
+    <mtd>
+     <mrow>
+       <mi>E</mi>
+       <mo>=</mo>
+       <mrow>
+        <mi>m</mi>
+        <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+        <msup>
+         <mi>c</mi>
+         <mn>2</mn>
+        </msup>
+       </mrow>
+     </mrow>
+    </mtd>
+  </mlabeledtr>
+</mtable>
+</math>
+</body>
+</html>
