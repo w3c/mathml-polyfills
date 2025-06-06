@@ -1,3 +1,7 @@
+/***
+ * Handles the "numalign" and "denomalign" attributes on mfrac
+ * Handles the "align" attribute on munder, mover, and munderover
+ ***/
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
 /*
