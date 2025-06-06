@@ -61,7 +61,7 @@ function handleLabeledRows(mtable) {
       for (const attr of row.attributes) {
         newRow.setAttribute(attr.name, attr.value);
       }
-      console.log('side=', side);
+      console.log('side=', side, 'length=', row.children.length);
       // leave the label as the first element or move it to the right (last element)
       for (let c = side=='left' ? 0 : 1; c < row.children.length; c++) {
         console.log('c=', c, row.children[c].outerHTML);
