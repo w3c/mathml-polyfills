@@ -33,8 +33,8 @@ const transformSmall = (el) => {
 /**
  * @param {HTMLElement} el 
  */
-const transformMedium = (el) => {
-    // this should only be called when mathsize="medium"
+const transformNormal = (el) => {
+    // this should only be called when mathsize="normal"
     el.setAttribute("mathsize", "100%");
     return el;
 }
@@ -49,5 +49,5 @@ const transformBig = (el) => {
 }
 
 _MathTransforms.add('[mathsize="small"]', transformSmall);
-_MathTransforms.add('[mathsize="medium"]', transformMedium);
+_MathTransforms.add('[mathsize="normal"]', transformNormal);
 _MathTransforms.add('[mathsize="big"]', transformBig);
