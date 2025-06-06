@@ -54,7 +54,7 @@ function handleLabeledRows(mtable) {
 
     if (row.tagName === 'mlabeledtr') {
       // move the label to the left or right side of a new "mtr" (instead of "mlabeledtr")
-      label = row.firstElementChild;
+      let label = row.firstElementChild;
       label.setAttribute('intent', ':equation-label');
       let newRow = document.createElementNS(namespaceURI, "mtr");
       for (const attr of row.attributes) {
