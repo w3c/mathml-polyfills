@@ -61,12 +61,10 @@ function handleLabeledRows(mtable) {
       for (const attr of row.attributes) {
         newRow.setAttribute(attr.name, attr.value);
       }
-      console.log('side=', side, 'length=', row.children.length);
       // leave the label as the first element or move it to the right (last element)
       let mtd = row.children[side=='left' ? 0 : 1];
       newRow.appendChild(mtd);
       while (row.children.length > 0) {
-        console.log('c=', c, row.firstChild);
         newRow.appendChild(row.firstChild); // note: this removes the first child from 'row'
       }
       if (side === 'right') {
