@@ -26,7 +26,7 @@
     These are rendered via the 'mlabeledtr.js' polyfill.
   </p>
 
-  <p> This test uses the default value for <code>side</code>. The label "(2.1) should render on the right side</p>
+  <p> This test uses the default value for <code>side</code>. The label "(2.1) should render on the right side of the first row</p>
   <math>
   <mtable>
     <mlabeledtr>
@@ -48,12 +48,22 @@
         </mrow>
         </mtd>
     </mlabeledtr>
+    <mtr>
+        <mtd>
+            <math><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></math>
+        </mtd>
+    </mtr>
   </mtable>
 </math>
 
-  <p> This test uses "left" for <code>side</code>. The label "(2.1) should render on the left side</p>
+  <p> This test uses "left" for <code>side</code>. The label "(2.1) should render on the left side of the second row</p>
   <math>
   <mtable side="left">
+    <mtr>
+        <mtd>
+            <math><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></math>
+        </mtd>
+    </mtr>
     <mlabeledtr>
         <mtd>
         <mtext> (2.1) </mtext>
