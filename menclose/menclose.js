@@ -1,3 +1,8 @@
+/***
+ * Handles all of the notation values on menclose mentioned in the spec.
+ * It does this via CSS, which is only fully supported in chrome/edge
+ * as of 06/25.
+ ***/
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
 /*
