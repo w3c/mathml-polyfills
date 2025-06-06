@@ -1,5 +1,10 @@
+/***
+ * Handles the "accent" attribute on munder, mover, and munderover
+ * Handles the "accentunder" attribute on munderover
+ ***/
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
+
 /*
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
