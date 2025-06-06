@@ -1,3 +1,6 @@
+/***
+ * Handles the "beveled" attribute on mfrac
+ ***/
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
 /*
