@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+  <title>mlabeledtr tests</title>
+  <meta charset="utf-8" />
+  <script type="module">
+    import { _MathTransforms } from '../common/math-transforms.js'
+    import './mlabeledtr.js'
+    window.addEventListener("DOMContentLoaded", () => {
+      _MathTransforms.transform(document.body)
+    })
+  </script>
+  <link rel="stylesheet" href="mlabeledtr.css" />
+</head>
+
+<body>
+  <h1 id="top">mlabeledtr</h1>
+
+  <p>This page contains some tests for the mlabeledtr element.
+    These are rendered via the 'mlabeledtr.js' polyfill.
+  </p>
+
+  <p> This test uses the default value for <code>side</code>. The label "(2.1) should render on the right side of the first row</p>
+  <math display="block">
+  <mtable>
+    <mlabeledtr>
+        <mtd>
+        <mtext> (2.1) </mtext>
+        </mtd>
+        <mtd>
+        <mrow>
+        <mi>E</mi>
+        <mo>=</mo>
+        <mrow>
+            <mi>m</mi>
+            <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+            <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+            </msup>
+        </mrow>
+        </mrow>
+        </mtd>
+    </mlabeledtr>
+    <mtr>
+        <mtd>
+            <math><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></math>
+        </mtd>
+    </mtr>
+  </mtable>
+</math>
+
+  <p> This test uses "left" for <code>side</code>. The label "(2.1) should render on the left side of the second row</p>
+  <math display="block">
+  <mtable side="left">
+    <mtr>
+        <mtd>
+            <math><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></math>
+        </mtd>
+    </mtr>
+    <mlabeledtr>
+        <mtd>
+        <mtext> (2.1) </mtext>
+        </mtd>
+        <mtd>
+        <mrow>
+        <mi>E</mi>
+        <mo>=</mo>
+        <mrow>
+            <mi>m</mi>
+            <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+            <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+            </msup>
+        </mrow>
+        </mrow>
+        </mtd>
+    </mlabeledtr>
+  </mtable>
+</math>
+</body>
+</html>

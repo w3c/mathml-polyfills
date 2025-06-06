@@ -51,24 +51,33 @@ function handleLabeledRows(mtable) {
 
   for (let i=0; i < mtable.children.length; i++) {
     let row = mtable.children[i];
-    const foundLabel = row.tagName === 'mlabeledtr';
-    let label = null;
 
-    if (foundLabel) {
-      label = row.firstElementChild;
+    if (row.tagName === 'mlabeledtr') {
+      // move the label to the left or right side of a new "mtr" (instead of "mlabeledtr")
+      let label = row.firstElementChild;
+      label.setAttribute('intent', ':equation-label');
       let newRow = document.createElementNS(namespaceURI, "mtr");
-      for (let c=1; c < row.children.length; c++) {
-        newRow.appendChild(row.children[c]);
+      for (const attr of row.attributes) {
+        newRow.setAttribute(attr.name, attr.value);
+      }
+      // leave the label as the first element or move it to the right (last element)
+      let mtd = row.children[side=='left' ? 0 : 1];
+      newRow.appendChild(mtd);
+      while (row.children.length > 0) {
+        newRow.appendChild(row.firstChild); // note: this removes the first child from 'row'
+      }
+      if (side === 'right') {
+        newRow.appendChild(label);
       }
       row.replaceWith(newRow);
-      row = newRow;
-    }
-
-    const newColEntry = foundLabel ? label : emptyColumnEntry.cloneNode();
-    if (side === 'right') {
-      row.appendChild(newColEntry);
     } else {
-      row.insertBefore(newColEntry, row.firstElementChild);
+      // add an empty "mtd" to the left or right side of the row
+      const newColEntry = emptyColumnEntry.cloneNode();
+      if (side === 'right') {
+        row.appendChild(newColEntry);
+      } else {
+        row.insertBefore(newColEntry, row.firstElementChild);
+      }
     }
   }
 
