@@ -63,11 +63,11 @@ function handleLabeledRows(mtable) {
       }
       console.log('side=', side, 'length=', row.children.length);
       // leave the label as the first element or move it to the right (last element)
-      for (let c = side=='left' ? 0 : 1; c < row.children.length; c++) {
-        console.log('c=', c, row.children[c].innerHTML);
-        newRow.appendChild(row.children[c]);
-        console.log('  after appendChild, length =', row.children.length);
-
+      let mtd = row.children[side=='left' ? 0 : 1];
+      newRow.appendChild(mtd);
+      while (row.children.length > 0) {
+        console.log('c=', c, row.firstChild);
+        newRow.appendChild(row.firstChild); // note: this removes the first child from 'row'
       }
       if (side === 'right') {
         newRow.appendChild(label);
