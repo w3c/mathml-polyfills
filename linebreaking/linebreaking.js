@@ -1,3 +1,8 @@
+/***
+ * Handles all the linebreaking and indenting attributes in MathML on "mo".
+ * Does this by creating an mtable, with an mtr for each line that is created.
+ * Note: this uses ShadowDOM which means there can be problems (such as with href).
+***/
 // @ts-check
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
