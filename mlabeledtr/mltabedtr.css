@@ -1,0 +1,49 @@
+math {
+    font-family: "Stix Two Math", "Cambria Math", "Asana";
+    font-size: 1.0rem;
+}
+
+mtable {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  width: 52rem;
+  border: dotted 1px;
+  padding: 2em;
+}
+
+mtr {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+}
+
+mtd {
+  display: block math;
+}
+mtd.lhs {
+  justify-self: end;
+}
+
+/* Mock centering for trailing numbers, 5 fr grid width */
+mtable {
+  & > mtr > mtd:not([intent *= ":equation-label"]):first-child {
+    grid-column: 1;
+  }
+  & > mtr > mtd[intent *= ":equation-label"] + mtd {
+    grid-column: 1;
+  }
+}
+
+/* Flush equation number to the right edge */
+mtd[intent *= ":equation-label"] {
+  color: green;
+  grid-column: -1;
+  grid-row: 1;
+  justify-self: end;
+}
+
+mtd {
+  padding-left: 0;
+  padding-right: 0;
+}
