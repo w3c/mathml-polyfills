@@ -56,19 +56,20 @@ function handleLabeledRows(mtable) {
 
     if (foundLabel) {
       label = row.firstElementChild;
+      label.setAttribute('intent', ':equation-label');
       let newRow = document.createElementNS(namespaceURI, "mtr");
-      for (let c=1; c < row.children.length; c++) {
+      for (const attr of row.attributes) {
+        newRow.setAttribute(attr.name, attr.value);
+      }
+      // leave the label as the first element or move it to the right (last element)
+      for (let c = side=='left' ? 0 : 1; c < row.children.length; c++) {
         newRow.appendChild(row.children[c]);
+      }
+      if (side === 'right') {
+        newRow.appendChild(label);
       }
       row.replaceWith(newRow);
       row = newRow;
-    }
-
-    const newColEntry = foundLabel ? label : emptyColumnEntry.cloneNode();
-    if (side === 'right') {
-      row.appendChild(newColEntry);
-    } else {
-      row.insertBefore(newColEntry, row.firstElementChild);
     }
   }
 
