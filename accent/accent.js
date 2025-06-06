@@ -1,6 +1,8 @@
 /***
- * Handles the "accent" attribute on munder, mover, and munderover
- * Handles the "accentunder" attribute on munderover
+ * Handles the "accent" attribute on an mo when it inside of
+ *   munder, mover, and munderover
+ * Handles the "accentunder" attribute on an mo when it inside of
+ *   munderover
  ***/
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
