@@ -72,7 +72,7 @@ function handleLabeledRows(mtable) {
       row.replaceWith(newRow);
     } else {
       // add an empty "mtd" to the left or right side of the row
-      const newColEntry = foundLabel ? label : emptyColumnEntry.cloneNode();
+      const newColEntry = emptyColumnEntry.cloneNode();
       if (side === 'right') {
         row.appendChild(newColEntry);
       } else {
