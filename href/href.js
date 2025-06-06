@@ -1,3 +1,7 @@
+/***
+ * Make href work on all MathML elements by adding click, mouseover,
+ * and mouseout events
+***/
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
 /*
