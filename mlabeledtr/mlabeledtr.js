@@ -105,7 +105,7 @@ function addIntent(mtd){
     // already has the equation-label intent, so do nothing
     return;
   }
-  intentValue = head + ':equation-label' + intentValue.substring(iOpenParen); // works when iOpenParen is -1
+  intentValue = head + ':equation-label' + intentValue.substring(head.length);
   console.log('new intentValue', intentValue);
   mtd.setAttribute('intent', intentValue)
 }
