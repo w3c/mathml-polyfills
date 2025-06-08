@@ -163,14 +163,18 @@
   </mtable>
 </math>
 <script>
+  
   // Send errors to console if the expected intent does not match the actual intent.
-  intents = document.querySelectorAll('mtd[data-expected]');
-  console.log("all intents: ", intents);
-  for (element of intents) {
-    if (element.getAttribute('data-expected') != element.getAttribute('intent')) {
-      console.error("Expected: " + element.getAttribute('data-expected') + ", but got: " + element.getAttribute('intent'));
-    }
-  }
+    window.addEventListener("DOMContentLoaded", () => {
+      sleep(100);   // Wait for the math transforms to complete -- there's probably a better way to do this.
+      intents = document.querySelectorAll('mtd[data-expected]');
+      console.log("all intents: ", intents);
+      for (element of intents) {
+        if (element.getAttribute('data-expected') != element.getAttribute('intent')) {
+          console.error("Expected: " + element.getAttribute('data-expected') + ", but got: " + element.getAttribute('intent'));
+        }
+      }
+    })
 </script>
 </body>
 </html>
