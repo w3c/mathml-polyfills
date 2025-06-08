@@ -12,6 +12,21 @@
     })
   </script>
   <link rel="stylesheet" href="mlabeledtr.css" />
+  <script async>
+    // Send errors to console if the expected intent does not match the actual intent.
+    async function checkIntent(element) {
+      // Wait for the math transforms to complete -- there's probably a better way to do this.
+      await new Promise(r => setTimeout(r, 100));
+      intents = document.querySelectorAll('mtd[data-expected]');
+      for (element of intents) {
+        if (element.getAttribute('data-expected') != element.getAttribute('intent')) {
+          console.error("Expected: " + element.getAttribute('data-expected') + ", but got: " + element.getAttribute('intent'));
+        }
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {checkIntent()})
+  </script>
 </head>
 
 <body>
@@ -162,19 +177,5 @@
     </mlabeledtr>
   </mtable>
 </math>
-<script>
-  
-  // Send errors to console if the expected intent does not match the actual intent.
-    window.addEventListener("DOMContentLoaded", () => {
-      sleep(100);   // Wait for the math transforms to complete -- there's probably a better way to do this.
-      intents = document.querySelectorAll('mtd[data-expected]');
-      console.log("all intents: ", intents);
-      for (element of intents) {
-        if (element.getAttribute('data-expected') != element.getAttribute('intent')) {
-          console.error("Expected: " + element.getAttribute('data-expected') + ", but got: " + element.getAttribute('intent'));
-        }
-      }
-    })
-</script>
 </body>
 </html>
