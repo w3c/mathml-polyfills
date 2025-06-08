@@ -94,7 +94,7 @@ function addIntent(mtd){
   // We need to be careful because there already might be an intent set on it.
   // The intent might look like "foo", ":xxx", "foo:bar($arg)", "foo($arg:equation-label)", etc.
   if (!mtd.hasAttribute('intent')) {
-    mtd.setAttribute('intent', intentValue);
+    mtd.setAttribute('intent', ':equation-label');
     return;
   }
   let intentValue = mtd.getAttribute('intent');
