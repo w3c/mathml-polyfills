@@ -100,11 +100,13 @@ function addIntent(mtd){
   let intentValue = mtd.getAttribute('intent');
   let iOpenParen = intentValue.split('(');
   let head = iOpenParen == -1 ? intentValue : intentValue.substring(0, iOpenParen-1);
+  console.log('head', head);
   if (head.includes(':equation-label')) {
     // already has the equation-label intent, so do nothing
     return;
   }
   intentValue = head + ':equation-label' + intentValue.substring(iOpenParen); // works when iOpenParen is -1
+  console.log('new intentValue', intentValue);
   mtd.setAttribute('intent', intentValue)
 }
 
