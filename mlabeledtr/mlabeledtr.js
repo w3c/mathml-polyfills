@@ -99,7 +99,7 @@ function addIntent(mtd){
   let intentValue = mtd.getAttribute('intent');
   console.log('intentValue', intentValue);
   let iOpenParen = intentValue.indexOf('(');
-  let head = iOpenParen == -1 ? intentValue : intentValue.substring(0, iOpenParen-1);
+  let head = iOpenParen == -1 ? intentValue : intentValue.substring(0, iOpenParen);
   console.log('head', head, 'iOpenParen', iOpenParen);
   if (head.includes(':equation-label')) {
     // already has the equation-label intent, so do nothing
