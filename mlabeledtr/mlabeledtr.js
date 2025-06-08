@@ -97,16 +97,13 @@ function addIntent(mtd){
     return;
   }
   let intentValue = mtd.getAttribute('intent');
-  console.log('intentValue', intentValue);
   let iOpenParen = intentValue.indexOf('(');
   let head = iOpenParen == -1 ? intentValue : intentValue.substring(0, iOpenParen);
-  console.log('head', head, 'iOpenParen', iOpenParen);
   if (head.includes(':equation-label')) {
     // already has the equation-label intent, so do nothing
     return;
   }
   intentValue = head + ':equation-label' + intentValue.substring(head.length);
-  console.log('new intentValue', intentValue);
   mtd.setAttribute('intent', intentValue)
 }
 

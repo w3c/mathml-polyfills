@@ -165,7 +165,8 @@
 <script>
   intents = document.querySelectorAll('mtd[data-expected]');
   console.log("all intents: ", intents);
-  intents.foreach((element) => console.log(element.getAttribute('data-expected')));
+for (element of intents) {
+  console.log(element.getAttribute('data-expected'));
 </script>
 </body>
 </html>
