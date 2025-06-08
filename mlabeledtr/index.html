@@ -80,5 +80,87 @@
     </mlabeledtr>
   </mtable>
 </math>
+
+  <p> This test checks for what happens when intent exists on the target label</p>
+  <math display="block">
+  <mtable>
+    <mlabeledtr>
+        <mtd  intent="foo">
+        <mtext> (intent="foo") </mtext>
+        </mtd>
+        <mtd>
+        <mrow>
+        <mi>E</mi>
+        <mo>=</mo>
+        <mrow>
+            <mi>m</mi>
+            <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+            <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+            </msup>
+        </mrow>
+        </mrow>
+        </mtd>
+    </mlabeledtr>
+    <mlabeledtr>
+        <mtd intent="foo(1)">
+        <mtext> (intent "foo(1)") </mtext>
+        </mtd>
+        <mtd>
+        <mrow>
+        <mi>E</mi>
+        <mo>=</mo>
+        <mrow>
+            <mi>m</mi>
+            <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+            <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+            </msup>
+        </mrow>
+        </mrow>
+        </mtd>
+    </mlabeledtr>
+    <mlabeledtr>
+        <mtd intent=":my-property">
+        <mtext> (intent=":my-property") </mtext>
+        </mtd>
+        <mtd>
+        <mrow>
+        <mi>E</mi>
+        <mo>=</mo>
+        <mrow>
+            <mi>m</mi>
+            <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+            <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+            </msup>
+        </mrow>
+        </mrow>
+        </mtd>
+    </mlabeledtr>
+    <mlabeledtr>
+        <mtd intent=":equation-label">
+        <mtext> (intent=":equation-label") </mtext>
+        </mtd>
+        <mtd>
+        <mrow>
+        <mi>E</mi>
+        <mo>=</mo>
+        <mrow>
+            <mi>m</mi>
+            <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+            <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+            </msup>
+        </mrow>
+        </mrow>
+        </mtd>
+    </mlabeledtr>
+  </mtable>
+</math>
 </body>
 </html>

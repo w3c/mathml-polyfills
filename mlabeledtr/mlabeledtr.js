@@ -55,6 +55,7 @@ function handleLabeledRows(mtable) {
     if (row.tagName === 'mlabeledtr') {
       // move the label to the left or right side of a new "mtr" (instead of "mlabeledtr")
       let label = row.firstElementChild;
+      addIntent(label);
       label.setAttribute('intent', ':equation-label');
       let newRow = document.createElementNS(namespaceURI, "mtr");
       for (const attr of row.attributes) {
@@ -82,6 +83,29 @@ function handleLabeledRows(mtable) {
   }
 
   return mtable;
+}
+
+/**
+ * 
+ * @param {HTMLElement} mtd 
+ */
+function addIntent(mtd){
+  // Add an intent the intent property ':equation-label' to the to the mtd element.
+  // We need to be careful because there already might be an intent set on it.
+  // The intent might look like "foo", ":xxx", "foo:bar($arg)", "foo($arg:equation-label)", etc.
+  let intentValue = mtd.getAttribute('intent');
+  if (!hasAttribute('intent')) {
+    mtd.setAttribute('intent', intentValue);
+    return;
+  }
+  let iOpenParen = intentValue.split('(');
+  let head = iOpenParen == -1 ? intentValue : intentValue.substring(0, iOpenParen-1);
+  if (head.includes(':equation-label')) {
+    // already has the equation-label intent, so do nothing
+    return;
+  }
+  intentValue = head + ':equation-label' + intentValue.substring(iOpenParen); // works when iOpenParen is -1
+  mtd.setAttribute('intent', intentValue)
 }
 
 /**

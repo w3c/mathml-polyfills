@@ -5,7 +5,7 @@ math {
 
 mtable {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(2rem, 1fr));
   width: 52rem;
   border: dotted 1px;
   padding: 2em;
@@ -25,13 +25,13 @@ mtd.lhs {
   justify-self: end;
 }
 
-/* Mock centering for trailing numbers, 5 fr grid width */
-mtable {
+/* Mock centering for trailing numbers, 12 fr */
+mtable:not(.leading-numbers) {
   & > mtr > mtd:not([intent *= ":equation-label"]):first-child {
-    grid-column: 1;
+    grid-column: 12;
   }
   & > mtr > mtd[intent *= ":equation-label"] + mtd {
-    grid-column: 1;
+    grid-column: 12;
   }
 }
 
@@ -41,9 +41,18 @@ mtd[intent *= ":equation-label"] {
   grid-column: -1;
   grid-row: 1;
   justify-self: end;
+  padding: 0;
 }
 
-mtd {
-  padding-left: 0;
-  padding-right: 0;
+mtable.leading-numbers {
+  grid-template-columns: minmax(auto,22rem) repeat(auto-fit, minmax(2rem, 1fr));
+}
+
+/* Flush equation number to the left edge */
+mtable.leading-numbers mtd[intent *= ":equation-label"] {
+  color: green;
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+  padding: 0;
 }
