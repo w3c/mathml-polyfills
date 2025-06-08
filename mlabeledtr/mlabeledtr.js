@@ -56,7 +56,6 @@ function handleLabeledRows(mtable) {
       // move the label to the left or right side of a new "mtr" (instead of "mlabeledtr")
       let label = row.firstElementChild;
       addIntent(label);
-      label.setAttribute('intent', ':equation-label');
       let newRow = document.createElementNS(namespaceURI, "mtr");
       for (const attr of row.attributes) {
         newRow.setAttribute(attr.name, attr.value);
@@ -98,9 +97,10 @@ function addIntent(mtd){
     return;
   }
   let intentValue = mtd.getAttribute('intent');
+  console.log('intentValue', intentValue);
   let iOpenParen = intentValue.split('(');
   let head = iOpenParen == -1 ? intentValue : intentValue.substring(0, iOpenParen-1);
-  console.log('head', head);
+  console.log('head', head, 'iOpenParen', iOpenParen);
   if (head.includes(':equation-label')) {
     // already has the equation-label intent, so do nothing
     return;
