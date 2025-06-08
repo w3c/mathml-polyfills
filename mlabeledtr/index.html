@@ -85,7 +85,7 @@
   <math display="block">
   <mtable>
     <mlabeledtr>
-        <mtd  id='intent-foo' intent="foo">
+        <mtd data-expected='foo:equation-label' intent="foo">
         <mtext> (intent="foo") </mtext>
         </mtd>
         <mtd>
@@ -104,7 +104,7 @@
         </mtd>
     </mlabeledtr>
     <mlabeledtr>
-        <mtd id='intent-foo-1' intent="foo(1)">
+        <mtd data-expected=':foo:equation-label(1)' intent="foo(1)">
         <mtext> (intent "foo(1)") </mtext>
         </mtd>
         <mtd>
@@ -123,7 +123,7 @@
         </mtd>
     </mlabeledtr>
     <mlabeledtr>
-        <mtd id = 'intent-my-property' intent=":my-property">
+        <mtd data-expected=':my-property:equation-label' intent=":my-property">
         <mtext> (intent=":my-property") </mtext>
         </mtd>
         <mtd>
@@ -142,7 +142,7 @@
         </mtd>
     </mlabeledtr>
     <mlabeledtr>
-        <mtd id='intent-equation-label' intent=":equation-label">
+        <mtd data-expected=':equation-label' intent=":equation-label">
         <mtext> (intent=":equation-label") </mtext>
         </mtd>
         <mtd>
@@ -163,10 +163,9 @@
   </mtable>
 </math>
 <script>
-  intent = document.getElementById('intent-equation-label').getAttribute('intent')
-   if (intent != ':equation-label') {
-      console.error("'intent-equation-label' should be ':equation-label', but is: " + intent);
-   }
+  intents = document.querySelectorAll('mtd[data-expected]');
+  console.log("all intents: ", intents);
+  intents.foreach((element) => console.log(element.getAttribute('data-expected')));
 </script>
 </body>
 </html>
