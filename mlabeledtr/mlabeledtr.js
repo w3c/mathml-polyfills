@@ -93,11 +93,11 @@ function addIntent(mtd){
   // Add an intent the intent property ':equation-label' to the to the mtd element.
   // We need to be careful because there already might be an intent set on it.
   // The intent might look like "foo", ":xxx", "foo:bar($arg)", "foo($arg:equation-label)", etc.
-  let intentValue = mtd.getAttribute('intent');
-  if (!hasAttribute('intent')) {
+  if (!mtd.hasAttribute('intent')) {
     mtd.setAttribute('intent', intentValue);
     return;
   }
+  let intentValue = mtd.getAttribute('intent');
   let iOpenParen = intentValue.split('(');
   let head = iOpenParen == -1 ? intentValue : intentValue.substring(0, iOpenParen-1);
   if (head.includes(':equation-label')) {
