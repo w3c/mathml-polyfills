@@ -48,7 +48,6 @@ function handleLabeledRows(mtable) {
   const side = mtable.getAttribute('side') || 'right';
   let emptyColumnEntry = document.createElementNS(namespaceURI, "mtd");
   emptyColumnEntry.setAttribute('intent', ':no-equation-label');
-  emptyColumnEntry.appendChild(document.createTextNode(''));
 
   for (let i=0; i < mtable.children.length; i++) {
     let row = mtable.children[i];
