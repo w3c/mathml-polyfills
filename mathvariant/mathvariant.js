@@ -26,7 +26,6 @@
 */
 
 import { _MathTransforms } from '../common/math-transforms.js'
-console.log("Adding mathvariant conversion")
 
 const mathvariants = {
     // MathML mathvariant values to TeX unicode-math names in unimath-symbols.pdf
@@ -183,18 +182,25 @@ const convertMathvariant = (el) => {
     // its textContent is a character in mathFonts, change the textContent
     // to the desired math style and remove the attribute.
     let mathVariant = el.getAttribute('mathvariant')
-    if (!mathVariant)
+    if (!mathVariant || mathVariant == 'normal')
         return
 
     let mathStyle = mathvariants[mathVariant]
-    if (!mathStyle || mathStyle == 'mup')
+    if (!mathStyle)
         return
 
-    let ch = el.textContent
-    if (ch in mathFonts && mathStyle in mathFonts[ch]) {
-        el.innerHTML = mathFonts[ch][mathStyle]
-        el.removeAttribute('mathVariant')
+    let text = el.textContent
+    let val = ''
+
+    for (let i = 0; i < text.length; i++) {
+        let ch = text[i]
+        if (ch in mathFonts && mathStyle in mathFonts[ch])
+            val += mathFonts[ch][mathStyle]
+        else
+            val += ch
     }
+    el.innerHTML = val
+    el.removeAttribute('mathVariant')
 }
 
-_MathTransforms.add('mi', convertMathvariant);
+_MathTransforms.add('mi[mathvariant]', convertMathvariant);
