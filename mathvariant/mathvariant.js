@@ -240,4 +240,4 @@ const convertMathvariant = (el) => {
     el.removeAttribute('mathVariant')
 }
 
-_MathTransforms.add('mi[mathvariant]', convertMathvariant);
+_MathTransforms.add('*[mathvariant]', convertMathvariant);
