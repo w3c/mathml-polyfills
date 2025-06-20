@@ -1,6 +1,7 @@
 ﻿/***
- * Converts an <mi> with a mathvariant attribute other than 'normal' into
- * an <mi> with the corresponding symbol and no mathvariant attribute
+ * Converts an element with a mathvariant attribute other than 'normal' into
+ * the same kind of element with the corresponding math-style character(s)
+ * and no mathvariant attribute
  ***/
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
@@ -215,9 +216,9 @@ const mathFonts = {
 };
 
 const convertMathvariant = (el) => {
-    // If an mi element has a mathvariant attribute other than 'normal' and
-    // its textContent is a character in mathFonts, change the textContent
-    // to the desired math style and remove the attribute.
+    // If the element el has a mathvariant attribute other than 'normal',
+    // replace the character(s) in el.textContent by the corresponding
+    // math-style characters and remove the attribute.
     let mathVariant = el.getAttribute('mathvariant')
     if (!mathVariant || mathVariant == 'normal')
         return
