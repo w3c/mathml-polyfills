@@ -229,16 +229,21 @@ const convertMathvariant = (el) => {
 
     let text = el.textContent
     let val = ''
+    let removeAttr = true
 
     for (let i = 0; i < text.length; i++) {
         let ch = text[i]
-        if (ch in mathFonts && mathStyle in mathFonts[ch])
+        if (ch in mathFonts && mathStyle in mathFonts[ch]) {
             val += mathFonts[ch][mathStyle]
-        else
+        } else {
+            // ch not currently in Unicode. Let renderer do what it can
             val += ch
+            removeAttr = false
+        }
     }
-    el.innerHTML = val
-    el.removeAttribute('mathVariant')
+    el.textContent = val
+    if (removeAttr)
+        el.removeAttribute('mathVariant')
 }
 
 _MathTransforms.add('*[mathvariant]', convertMathvariant);
