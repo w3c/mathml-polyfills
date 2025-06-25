@@ -1,6 +1,6 @@
 # MathML polyfills
 
-This repository contains polyfills for features from the
+[This repository](https://github.com/w3c/mathml-polyfills/) contains polyfills for features from the
 [MathML specification](https://w3c.github.io/mathml/), relying only
 on [MathML Core](https://w3c.github.io/mathml-core/) and other
 web technologies natively implemented in browsers.
