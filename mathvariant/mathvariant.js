@@ -235,6 +235,8 @@ const mathAlphas = {
     "tailed":{"ج":"𞹂","ح":"𞹇","خ":"𞹗","س":"𞹎","ش":"𞹔","ص":"𞹑","ض":"𞹙","ع":"𞹏","غ":"𞹛","ق":"𞹒","ل":"𞹋","ن":"𞹍","ي":"𞹉","ٯ":"𞹟","ں":"𞹝"}
 }
 
+let init = false
+
 const convertMathvariant = (el) => {
     // If the element el has a mathvariant attribute other than 'normal',
     // replace the character(s) in el.textContent by the corresponding
@@ -246,6 +248,11 @@ const convertMathvariant = (el) => {
     let mathStyle = mathvariants[mathVariant]
     if (!mathStyle)
         return
+
+    if (!init) {
+        init = true
+        test()
+    }
 
     let text = el.textContent
     let val = ''
@@ -272,20 +279,23 @@ Object.entries(mathvariants).forEach(([key, value]) => {
     variantMaths[value] = key
 })
 
-let failed = 0
-let success = 0
+function test() {
+    let failed = 0
+    let success = 0
 
-Object.entries(mathFonts).forEach((ch, val) => {
-    Object.entries(val).forEach((font, chT) => {
-        if (chT != mathAlphas[variantMaths[font]][ch]) {
-            console.log(`ch: ${ch} font ${variantMaths[font]}: ${chT}`)
-            console.log(`${mathAlphas[variantMaths[font]][ch]}`)
-            failed++
-        } else {
-            success++
-        }
+    Object.entries(mathFonts).forEach(([ch, val]) => {
+        Object.entries(val).forEach(([font, chT]) => {
+            if (chT != mathAlphas[variantMaths[font]][ch]) {
+                console.log(`ch: ${ch} font ${variantMaths[font]}: ${chT}`)
+                console.log(`${mathAlphas[variantMaths[font]][ch]}`)
+                failed++
+            } else {
+                success++
+            }
+        })
     })
-})
-console.log("success = " + success + ": failed = " + failed)
+    // Should be 1160 successes (as of Unicode 16.0) and 0 failures
+    console.log("success = " + success + ": failed = " + failed)
+}
 
 _MathTransforms.add('*[mathvariant]', convertMathvariant);
