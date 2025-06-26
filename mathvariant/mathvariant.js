@@ -272,6 +272,8 @@ const convertMathvariant = (el) => {
     if (removeAttr)
         el.removeAttribute('mathVariant')
 }
+function isAsciiAlphanumeric(ch) { return /[\w]/.test(ch); }
+function isAsciiAlphabetic(ch) { return /[A-Za-z]/.test(ch) }
 
 // Compare tables
 const variantMaths = []
@@ -285,6 +287,11 @@ function test() {
 
     Object.entries(mathFonts).forEach(([ch, val]) => {
         Object.entries(val).forEach(([font, chT]) => {
+            if (isAsciiAlphanumeric(ch)) {
+                let ch1 = GetMathAlphanumeric(ch, font)
+                if (chT != ch1)
+                    console.log(`ch: ${ch} font ${variantMaths[font]}: ${chT}`)
+            }
             if (chT != mathAlphas[variantMaths[font]][ch]) {
                 console.log(`ch: ${ch} font ${variantMaths[font]}: ${chT}`)
                 console.log(`${mathAlphas[variantMaths[font]][ch]}`)
@@ -296,6 +303,58 @@ function test() {
     })
     // Should be 1160 successes (as of Unicode 16.0) and 0 failures
     console.log("success = " + success + ": failed = " + failed)
+}
+
+const letterLikeDoubleStruck = {'C':'ℂ','H':'ℍ','N':'ℕ','P':'ℙ','Q':'ℚ','R':'ℝ','Z':'ℤ'}
+const letterLikeFraktur = {'C':'ℭ','H':'ℌ','I':'ℑ','R':'ℜ','Z':'ℨ'}
+const letterLikeScript = {'B':'ℬ','E':'ℰ','F':'ℱ','H':'ℋ','I':'ℐ','L':'ℒ','M':'ℳ','R':'ℛ','e':'ℯ','g':'ℊ','o':'ℴ'}
+const bankDigit = ['mbf', 'Bbb', 'msans', 'mbfsans', 'mtt']
+const bankEn = ['mbf', 'mit', 'mbfit', 'mscr', 'mbfscr', 'mfrak', 'Bbb', 'mbffrak',
+		'msans', 'mbfsans', 'mitsans', 'mbfitsans', 'mtt']
+
+function GetMathAlphanumeric(ch, mathStyle) {
+    let chT = ''
+    let code = ch.charCodeAt(0)
+
+    if (isAsciiAlphabetic(ch)) {
+		// Handle letter-like characters first
+		switch (mathStyle) {
+			case 'mit':
+				if (ch == 'h')
+					return 'ℎ'			// Letterlike italic h
+				break
+			case 'mfrak':
+				chT = letterLikeFraktur[ch]
+				break
+			case 'mscr':
+				chT = letterLikeScript[ch]
+				break
+			case 'Bbb':
+				chT = letterLikeDoubleStruck[ch]
+				break
+		}
+        if (chT)
+            return chT
+
+        let n = bankEn.indexOf(mathStyle)
+		if (n == -1)
+			return ''
+
+		code -= 0x41
+		if (code > 26)
+			code -= 6						// No punct between lower & uppercase
+
+        code += 52 * n + 0x1D400			// Convert it to math alphabetic
+        chT = String.fromCodePoint(code)
+		return chT
+    }
+    if (ch >= '0' && ch <= '9') {
+        code += 0x1D7CE - 0x30
+        let n = bankDigit.indexOf(mathStyle)
+        if (n != -1)
+            return String.fromCodePoint(code + n * 10)
+    }
+    return ''                               // TODO: Greek, Arabic
 }
 
 _MathTransforms.add('*[mathvariant]', convertMathvariant);
