@@ -286,9 +286,7 @@ function test() {
     Object.entries(mathFonts).forEach(([ch, val]) => {
         Object.entries(val).forEach(([font, chT]) => {
             let ch1 = GetMathAlphanumeric(ch, font)
-            if (chT != ch1)
-                console.log(`ch: ${ch} font ${variantMaths[font]}: ${chT}`)
-            if (chT != mathAlphas[variantMaths[font]][ch]) {
+            if (chT != ch1 || chT != mathAlphas[variantMaths[font]][ch]) {
                 console.log(`ch: ${ch} font ${variantMaths[font]}: ${chT}`)
                 console.log(`${mathAlphas[variantMaths[font]][ch]}`)
                 failed++
@@ -304,25 +302,26 @@ function test() {
 const abjad = [0, 1, -1, 21, 22, 2, 7, 23, 3, 24, 19, 6, 14, 20, 17, 25, 8,
     26, 15, 27, -1, -1, -1, -1, -1, -1, 16, 18, 10, 11, 12, 13, 4, 5, -1, 9]
 const dottedChars = '\u066E\u06BA\u06A1\u066F'
+const letterlikeDoubleStruck = {'C':'ℂ','H':'ℍ','N':'ℕ','P':'ℙ','Q':'ℚ','R':'ℝ','Z':'ℤ'}
+const letterlikeFraktur = {'C':'ℭ','H':'ℌ','I':'ℑ','R':'ℜ','Z':'ℨ'}
+const letterlikeScript = {'B':'ℬ','E':'ℰ','F':'ℱ','H':'ℋ','I':'ℐ','L':'ℒ','M':'ℳ','R':'ℛ','e':'ℯ','g':'ℊ','o':'ℴ'}
 //                          minit       mtail       mstrc       mloop       Bbb
 const missingCharMask = [0xF5080169, 0x5569157B, 0xA1080869, 0xF0000000, 0xF0000000]
+const offsetsGr = {'∂':51,'∇':25,'ϴ':17,'ϵ':52,'ϑ':53,'ϰ':54,'ϕ':55,'ϱ':56,'ϖ':57}
 const setsAr = ['misol', 'minit','mtail', 'mstrc', 'mloop', 'Bbb']
 const setsDigit = ['mbf', 'Bbb', 'msans', 'mbfsans', 'mtt']
 const setsEn = ['mbf', 'mit', 'mbfit', 'mscr', 'mbfscr', 'mfrak', 'Bbb', 'mbffrak', 'msans', 'mbfsans', 'mitsans', 'mbfitsans', 'mtt']
 const setsGr = ['mbf', 'mit', 'mbfit', 'mbfsans', 'mbfitsans']
-const letterlikeDoubleStruck = {'C':'ℂ','H':'ℍ','N':'ℕ','P':'ℙ','Q':'ℚ','R':'ℝ','Z':'ℤ'}
-const letterlikeFraktur = {'C':'ℭ','H':'ℌ','I':'ℑ','R':'ℜ','Z':'ℨ'}
-const letterlikeScript = {'B':'ℬ','E':'ℰ','F':'ℱ','H':'ℋ','I':'ℐ','L':'ℒ','M':'ℳ','R':'ℛ','e':'ℯ','g':'ℊ','o':'ℴ'}
-const offsetsGr = {'∂':51,'∇':25,'ϴ':17,'ϵ':52,'ϑ':53,'ϰ':54,'ϕ':55,'ϱ':56,'ϖ':57}
 
 function GetMathAlphanumeric(ch, mathStyle) {
-    // Return the Unicode math alphanumeric character corresponding to ch and
-    // mathStyle. If the target character is missing, return ch. The Unicode
-    // math alphanumerics are divided into four categories (English, Greek,
-    // digits, and Arabic) each of which contains math-style character sets of
-    // specific character counts. This leads to a simple encoding scheme (see
-    // the digits category) that's somewhat complicated by exceptions in the
-    // letter categories.
+    // Return the Unicode math alphanumeric character corresponding to the
+    // unstyled character ch and the mathStyle. If no such math alphanumeric
+    // exists, return ch. The Unicode math alphanumerics are divided into
+    // four categories (English, Greek, digits, and Arabic) each of which
+    // contains math-style character sets with specific character counts,
+    // e.g., 10 for the digit sets. This leads to a simple encoding scheme
+    // (see the digits category) that's somewhat complicated by exceptions
+    // in the letter categories.
     let code = ch.charCodeAt(0)
     let n                                   // Set index
 
@@ -361,14 +360,12 @@ function GetMathAlphanumeric(ch, mathStyle) {
 		if (code > 26)
 			code -= 6						// No punct between lower & uppercase
 
-        code += 52 * n + 0x1D400			// Get math alphabetic codepoint
-        chT = String.fromCodePoint(code)
-		return chT
+        return String.fromCodePoint(code + 52 * n + 0x1D400)
     }
 
     if (ch >= '\u0391' && ch <= '\u03F5' || ch == '∂' || ch == '∇') {
         // Greek letters
-        if (mathStyle == 'mbf') {
+        if (mathStyle == 'mbf') {           // Math bold Greek special cases
             if (ch == 'Ϝ')
                 return '𝟊'                  // Digamma
             if (ch == 'ϝ')
@@ -383,16 +380,16 @@ function GetMathAlphanumeric(ch, mathStyle) {
         } else {
             code -= 0x391                   // Map \Alpha to 0
             if (code > 25)
-                code -= 6                   // Map 𝛼 down to end of UC
+                code -= 6                   // Map 𝛼 down to end of UC Greek
         }
         return String.fromCodePoint(code + 58 * n + 0x1D6A8)
     }
-    if (code < 0x627)                       // Codes preceding Arabic
+    if (code < 0x627)                       // Unhandled codes preceding Arabic
         return ch == 'ı'                    // Dotless i and j
             ? '𝚤' : ch == 'ȷ'
             ? '𝚥' : ch
 
-    if (code > 0x6BA)                       // No more chars
+    if (code > 0x6BA)                       // No unhandled chars above U+06BA
         return ch
 
     // Arabic letters
@@ -400,25 +397,26 @@ function GetMathAlphanumeric(ch, mathStyle) {
     if (n == -1)
         return ch
 
-    // Translate code from the dictionary order followed approximately in the
-    // Unicode Arabic block to the abjad order used by Arabic math alphabetics.
-    // Both orders start with aleph, e.g., U+0627
     if (code <= 0x64A) {
+        // Translate code from the dictionary order followed approximately
+        // in the Unicode Arabic block to the abjad order used by Arabic math
+        // alphabetics. Both orders start with aleph, e.g., U+0627
         code = abjad[code - 0x0627]
         if (code == -1)
             return ch
     } else {
-        code = dottedChars.indexOf(ch)
+        code = dottedChars.indexOf(ch)     // Get dotted-char offset
         if (code == -1)
             return ch
-        code += 28                          // Get dotted-char offset
+        code += 28
     }
-    // Suppress conversion for missing Arabic math characters
+    // Handle missing Arabic math characters
     if (mathStyle == 'misol') {
         if (code == 4)
-            n = 1                           // Use initial's heh
+            n = 1                           // Use initial style's heh
     } else if ((1 << code) & missingCharMask[n - 1])
-        return ch						    // Undefined character
+        return ch
+
     return String.fromCodePoint(32 * n + code + 0x1EE00)
 }
 
