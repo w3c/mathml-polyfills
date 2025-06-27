@@ -303,105 +303,115 @@ function test() {
 
 const abjad = [0, 1, -1, 21, 22, 2, 7, 23, 3, 24, 19, 6, 14, 20, 17, 25, 8,
     26, 15, 27, -1, -1, -1, -1, -1, -1, 16, 18, 10, 11, 12, 13, 4, 5, -1, 9]
-const dotted = '\u066E\u06BA\u06A1\u066F'
+const dottedChars = '\u066E\u06BA\u06A1\u066F'
 //                          minit       mtail       mstrc       mloop       Bbb
 const missingCharMask = [0xF5080169, 0x5569157B, 0xA1080869, 0xF0000000, 0xF0000000]
-const bankAr = ['misol', 'minit','mtail', 'mstrc', 'mloop', 'Bbb']
-const bankDigit = ['mbf', 'Bbb', 'msans', 'mbfsans', 'mtt']
-const bankEn = ['mbf', 'mit', 'mbfit', 'mscr', 'mbfscr', 'mfrak', 'Bbb', 'mbffrak', 'msans', 'mbfsans', 'mitsans', 'mbfitsans', 'mtt']
-const bankGr = ['mbf', 'mit', 'mbfit', 'mbfsans', 'mbfitsans']
-const letterLikeDoubleStruck = {'C':'ℂ','H':'ℍ','N':'ℕ','P':'ℙ','Q':'ℚ','R':'ℝ','Z':'ℤ'}
-const letterLikeFraktur = {'C':'ℭ','H':'ℌ','I':'ℑ','R':'ℜ','Z':'ℨ'}
-const letterLikeScript = {'B':'ℬ','E':'ℰ','F':'ℱ','H':'ℋ','I':'ℐ','L':'ℒ','M':'ℳ','R':'ℛ','e':'ℯ','g':'ℊ','o':'ℴ'}
+const setsAr = ['misol', 'minit','mtail', 'mstrc', 'mloop', 'Bbb']
+const setsDigit = ['mbf', 'Bbb', 'msans', 'mbfsans', 'mtt']
+const setsEn = ['mbf', 'mit', 'mbfit', 'mscr', 'mbfscr', 'mfrak', 'Bbb', 'mbffrak', 'msans', 'mbfsans', 'mitsans', 'mbfitsans', 'mtt']
+const setsGr = ['mbf', 'mit', 'mbfit', 'mbfsans', 'mbfitsans']
+const letterlikeDoubleStruck = {'C':'ℂ','H':'ℍ','N':'ℕ','P':'ℙ','Q':'ℚ','R':'ℝ','Z':'ℤ'}
+const letterlikeFraktur = {'C':'ℭ','H':'ℌ','I':'ℑ','R':'ℜ','Z':'ℨ'}
+const letterlikeScript = {'B':'ℬ','E':'ℰ','F':'ℱ','H':'ℋ','I':'ℐ','L':'ℒ','M':'ℳ','R':'ℛ','e':'ℯ','g':'ℊ','o':'ℴ'}
 const offsetsGr = {'∂':51,'∇':25,'ϴ':17,'ϵ':52,'ϑ':53,'ϰ':54,'ϕ':55,'ϱ':56,'ϖ':57}
 
 function GetMathAlphanumeric(ch, mathStyle) {
-    let chT = ''
+    // Return the Unicode math alphanumeric character corresponding to ch and
+    // mathStyle. If the target character is missing, return ch. The Unicode
+    // math alphanumerics are divided into four categories (English, Greek,
+    // digits, and Arabic) each of which contains math-style character sets of
+    // specific character counts. This leads to a simple encoding scheme (see
+    // the digits category) that's somewhat complicated by exceptions in the
+    // letter categories.
     let code = ch.charCodeAt(0)
-    let n
+    let n                                   // Set index
 
+    if (ch >= '0' && ch <= '9') {           // ASCII digits
+        code += 0x1D7CE - 0x30              // Get math-digit codepoint
+        n = setsDigit.indexOf(mathStyle)
+        return n != -1 ? String.fromCodePoint(code + n * 10) : ch
+    }
+
+    let chT = ''
     if (/[A-Za-z]/.test(ch)) {              // ASCII letters
-		// Handle letter-like characters first
+		// Handle legacy Unicode Letterlike characters first
 		switch (mathStyle) {
-			case 'mit':
+			case 'mit':                     // Math italic
 				if (ch == 'h')
-					return 'ℎ'			// Letterlike italic h
+					return 'ℎ'			    // Letterlike italic h
 				break
-			case 'mfrak':
-				chT = letterLikeFraktur[ch]
+			case 'mfrak':                   // Math fraktur
+				chT = letterlikeFraktur[ch]
 				break
-			case 'mscr':
-				chT = letterLikeScript[ch]
+			case 'mscr':                    // Math script
+				chT = letterlikeScript[ch]
 				break
-			case 'Bbb':
-				chT = letterLikeDoubleStruck[ch]
+			case 'Bbb':                     // Math blackboard bold (double-struck)
+				chT = letterlikeDoubleStruck[ch]
 				break
 		}
         if (chT)
             return chT
 
-        n = bankEn.indexOf(mathStyle)
-		if (n == -1)
+        n = setsEn.indexOf(mathStyle)       // Get set index
+		if (n == -1)                        // mathStyle isn't in setsEn
 			return ch
 
-		code -= 0x41
+		code -= 0x41                        // Compute char offset in set
 		if (code > 26)
 			code -= 6						// No punct between lower & uppercase
 
-        code += 52 * n + 0x1D400			// Convert it to math alphabetic
+        code += 52 * n + 0x1D400			// Get math alphabetic codepoint
         chT = String.fromCodePoint(code)
 		return chT
     }
-    if (ch >= '0' && ch <= '9') {           // ASCII digits
-        code += 0x1D7CE - 0x30
-        n = bankDigit.indexOf(mathStyle)
-        return n != -1 ?String.fromCodePoint(code + n * 10) : ch
-    }
+
     if (ch >= '\u0391' && ch <= '\u03F5' || ch == '∂' || ch == '∇') {
-        n = bankGr.indexOf(mathStyle)       // Greek
-        if (n == -1)
-            return ch
-        let code0 = offsetsGr[ch]
-        if (code0) {
-            code = code0
-        } else {
+        // Greek letters
+        if (mathStyle == 'mbf') {
             if (ch == 'Ϝ')
                 return '𝟊'                  // Digamma
             if (ch == 'ϝ')
                 return '𝟋'                  // digamma
+        }
+        n = setsGr.indexOf(mathStyle)
+        if (n == -1)
+            return ch
+        let code0 = offsetsGr[ch]           // Offset if noncontiguous char
+        if (code0) {
+            code = code0
+        } else {
             code -= 0x391                   // Map \Alpha to 0
             if (code > 25)
                 code -= 6                   // Map 𝛼 down to end of UC
         }
-        code += 58 * n + 0x1D6A8
-        return String.fromCodePoint(code)
+        return String.fromCodePoint(code + 58 * n + 0x1D6A8)
     }
-    if (code < 0x627)
-        return ch == 'ı'
+    if (code < 0x627)                       // Codes preceding Arabic
+        return ch == 'ı'                    // Dotless i and j
             ? '𝚤' : ch == 'ȷ'
             ? '𝚥' : ch
 
-    if (code > 0x6BA)
+    if (code > 0x6BA)                       // No more chars
         return ch
 
-    // Handle Arabic math alphabetics
-    n = bankAr.indexOf(mathStyle)
+    // Arabic letters
+    n = setsAr.indexOf(mathStyle)
     if (n == -1)
         return ch
 
-    let code1 = code
-
-    // Translate code from the dictionary order followed approximately by the
-    // Unicode Arabic block to the abjad order used by Arabic math alphabetics
+    // Translate code from the dictionary order followed approximately in the
+    // Unicode Arabic block to the abjad order used by Arabic math alphabetics.
+    // Both orders start with aleph, e.g., U+0627
     if (code <= 0x64A) {
-        code = abjad[code - 0x627]
+        code = abjad[code - 0x0627]
         if (code == -1)
             return ch
     } else {
-        code = dotted.indexOf(ch)
+        code = dottedChars.indexOf(ch)
         if (code == -1)
             return ch
-        code += 28
+        code += 28                          // Get dotted-char offset
     }
     // Suppress conversion for missing Arabic math characters
     if (mathStyle == 'misol') {
@@ -409,8 +419,7 @@ function GetMathAlphanumeric(ch, mathStyle) {
             n = 1                           // Use initial's heh
     } else if ((1 << code) & missingCharMask[n - 1])
         return ch						    // Undefined character
-    n = 32 * n + code + 0x1EE00
-    return String.fromCodePoint(n)
+    return String.fromCodePoint(32 * n + code + 0x1EE00)
 }
 
 _MathTransforms.add('*[mathvariant]', convertMathvariant);
