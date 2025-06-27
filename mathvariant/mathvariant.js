@@ -272,10 +272,8 @@ const convertMathvariant = (el) => {
     if (removeAttr)
         el.removeAttribute('mathVariant')
 }
-function isAsciiAlphanumeric(ch) { return /[\w]/.test(ch); }
-function isAsciiAlphabetic(ch) { return /[A-Za-z]/.test(ch) }
 
-// Compare tables
+// Compare tables and code implementations
 const variantMaths = []
 Object.entries(mathvariants).forEach(([key, value]) => {
     variantMaths[value] = key
@@ -287,11 +285,9 @@ function test() {
 
     Object.entries(mathFonts).forEach(([ch, val]) => {
         Object.entries(val).forEach(([font, chT]) => {
-            if (isAsciiAlphanumeric(ch)) {
-                let ch1 = GetMathAlphanumeric(ch, font)
-                if (chT != ch1)
-                    console.log(`ch: ${ch} font ${variantMaths[font]}: ${chT}`)
-            }
+            let ch1 = GetMathAlphanumeric(ch, font)
+            if (chT != ch1)
+                console.log(`ch: ${ch} font ${variantMaths[font]}: ${chT}`)
             if (chT != mathAlphas[variantMaths[font]][ch]) {
                 console.log(`ch: ${ch} font ${variantMaths[font]}: ${chT}`)
                 console.log(`${mathAlphas[variantMaths[font]][ch]}`)
@@ -305,18 +301,26 @@ function test() {
     console.log("success = " + success + ": failed = " + failed)
 }
 
+const abjad = [0, 1, -1, 21, 22, 2, 7, 23, 3, 24, 19, 6, 14, 20, 17, 25, 8,
+    26, 15, 27, -1, -1, -1, -1, -1, -1, 16, 18, 10, 11, 12, 13, 4, 5, -1, 9]
+const dotted = '\u066E\u06BA\u06A1\u066F'
+//                          minit       mtail       mstrc       mloop       Bbb
+const missingCharMask = [0xF5080169, 0x5569157B, 0xA1080869, 0xF0000000, 0xF0000000]
+const bankAr = ['misol', 'minit','mtail', 'mstrc', 'mloop', 'Bbb']
+const bankDigit = ['mbf', 'Bbb', 'msans', 'mbfsans', 'mtt']
+const bankEn = ['mbf', 'mit', 'mbfit', 'mscr', 'mbfscr', 'mfrak', 'Bbb', 'mbffrak', 'msans', 'mbfsans', 'mitsans', 'mbfitsans', 'mtt']
+const bankGr = ['mbf', 'mit', 'mbfit', 'mbfsans', 'mbfitsans']
 const letterLikeDoubleStruck = {'C':'ℂ','H':'ℍ','N':'ℕ','P':'ℙ','Q':'ℚ','R':'ℝ','Z':'ℤ'}
 const letterLikeFraktur = {'C':'ℭ','H':'ℌ','I':'ℑ','R':'ℜ','Z':'ℨ'}
 const letterLikeScript = {'B':'ℬ','E':'ℰ','F':'ℱ','H':'ℋ','I':'ℐ','L':'ℒ','M':'ℳ','R':'ℛ','e':'ℯ','g':'ℊ','o':'ℴ'}
-const bankDigit = ['mbf', 'Bbb', 'msans', 'mbfsans', 'mtt']
-const bankEn = ['mbf', 'mit', 'mbfit', 'mscr', 'mbfscr', 'mfrak', 'Bbb', 'mbffrak',
-		'msans', 'mbfsans', 'mitsans', 'mbfitsans', 'mtt']
+const offsetsGr = {'∂':51,'∇':25,'ϴ':17,'ϵ':52,'ϑ':53,'ϰ':54,'ϕ':55,'ϱ':56,'ϖ':57}
 
 function GetMathAlphanumeric(ch, mathStyle) {
     let chT = ''
     let code = ch.charCodeAt(0)
+    let n
 
-    if (isAsciiAlphabetic(ch)) {
+    if (/[A-Za-z]/.test(ch)) {              // ASCII letters
 		// Handle letter-like characters first
 		switch (mathStyle) {
 			case 'mit':
@@ -336,9 +340,9 @@ function GetMathAlphanumeric(ch, mathStyle) {
         if (chT)
             return chT
 
-        let n = bankEn.indexOf(mathStyle)
+        n = bankEn.indexOf(mathStyle)
 		if (n == -1)
-			return ''
+			return ch
 
 		code -= 0x41
 		if (code > 26)
@@ -348,13 +352,65 @@ function GetMathAlphanumeric(ch, mathStyle) {
         chT = String.fromCodePoint(code)
 		return chT
     }
-    if (ch >= '0' && ch <= '9') {
+    if (ch >= '0' && ch <= '9') {           // ASCII digits
         code += 0x1D7CE - 0x30
-        let n = bankDigit.indexOf(mathStyle)
-        if (n != -1)
-            return String.fromCodePoint(code + n * 10)
+        n = bankDigit.indexOf(mathStyle)
+        return n != -1 ?String.fromCodePoint(code + n * 10) : ch
     }
-    return ''                               // TODO: Greek, Arabic
+    if (ch >= '\u0391' && ch <= '\u03F5' || ch == '∂' || ch == '∇') {
+        n = bankGr.indexOf(mathStyle)       // Greek
+        if (n == -1)
+            return ch
+        let code0 = offsetsGr[ch]
+        if (code0) {
+            code = code0
+        } else {
+            if (ch == 'Ϝ')
+                return '𝟊'                  // Digamma
+            if (ch == 'ϝ')
+                return '𝟋'                  // digamma
+            code -= 0x391                   // Map \Alpha to 0
+            if (code > 25)
+                code -= 6                   // Map 𝛼 down to end of UC
+        }
+        code += 58 * n + 0x1D6A8
+        return String.fromCodePoint(code)
+    }
+    if (code < 0x627)
+        return ch == 'ı'
+            ? '𝚤' : ch == 'ȷ'
+            ? '𝚥' : ch
+
+    if (code > 0x6BA)
+        return ch
+
+    // Handle Arabic math alphabetics
+    n = bankAr.indexOf(mathStyle)
+    if (n == -1)
+        return ch
+
+    let code1 = code
+
+    // Translate code from the dictionary order followed approximately by the
+    // Unicode Arabic block to the abjad order used by Arabic math alphabetics
+    if (code <= 0x64A) {
+        code = abjad[code - 0x627]
+        if (code == -1)
+            return ch
+    } else {
+        code = dotted.indexOf(ch)
+        if (code == -1)
+            return ch
+        code += 28
+    }
+    // Suppress conversion for missing Arabic math characters
+    if (mathStyle == 'misol') {
+        if (code == 4)
+            n = 1                           // Use initial's heh
+    } else if ((1 << code) & missingCharMask[n - 1])
+        return ch						    // Undefined character
+    n = 32 * n + code + 0x1EE00
+    return String.fromCodePoint(n)
 }
 
 _MathTransforms.add('*[mathvariant]', convertMathvariant);
