@@ -48,7 +48,9 @@ const mathvariants = {
     'initial': 'minit',
     'tailed': 'mtail',
     'looped': 'mloop',
-    'stretched': 'mstrc'
+    'stretched': 'mstrc',
+    'chancery': 'mchan',
+    'roundhand': 'mrhnd'
 };
 
 // Math-alphanumeric-style conversions
@@ -263,9 +265,10 @@ const convertMathvariant = (el) => {
         if (ch in mathFonts && mathStyle in mathFonts[ch]) {
             val += mathFonts[ch][mathStyle]
         } else {
-            // ch not currently in Unicode. Let renderer do what it can
-            val += ch
-            removeAttr = false
+            let chT = getMathAlphanumeric(ch, mathStyle)
+            val += chT
+            if (chT == ch)                  // Math styled char not in Unicode
+                removeAttr = false
         }
     }
     el.textContent = val
@@ -285,7 +288,7 @@ function test() {
 
     Object.entries(mathFonts).forEach(([ch, val]) => {
         Object.entries(val).forEach(([font, chT]) => {
-            let ch1 = GetMathAlphanumeric(ch, font)
+            let ch1 = getMathAlphanumeric(ch, font)
             if (chT != ch1 || chT != mathAlphas[variantMaths[font]][ch]) {
                 console.log(`ch: ${ch} font ${variantMaths[font]}: ${chT}`)
                 console.log(`${mathAlphas[variantMaths[font]][ch]}`)
@@ -305,7 +308,7 @@ const dottedChars = '\u066E\u06BA\u06A1\u066F'
 const letterlikeDoubleStruck = {'C':'ℂ','H':'ℍ','N':'ℕ','P':'ℙ','Q':'ℚ','R':'ℝ','Z':'ℤ'}
 const letterlikeFraktur = {'C':'ℭ','H':'ℌ','I':'ℑ','R':'ℜ','Z':'ℨ'}
 const letterlikeScript = {'B':'ℬ','E':'ℰ','F':'ℱ','H':'ℋ','I':'ℐ','L':'ℒ','M':'ℳ','R':'ℛ','e':'ℯ','g':'ℊ','o':'ℴ'}
-//                          minit       mtail       mstrc       mloop       Bbb
+//                          minit       mtail       mstrc       mloop        Bbb
 const missingCharMask = [0xF5080169, 0x5569157B, 0xA1080869, 0xF0000000, 0xF0000000]
 const offsetsGr = {'∂':51,'∇':25,'ϴ':17,'ϵ':52,'ϑ':53,'ϰ':54,'ϕ':55,'ϱ':56,'ϖ':57}
 const setsAr = ['misol', 'minit','mtail', 'mstrc', 'mloop', 'Bbb']
@@ -313,7 +316,7 @@ const setsDigit = ['mbf', 'Bbb', 'msans', 'mbfsans', 'mtt']
 const setsEn = ['mbf', 'mit', 'mbfit', 'mscr', 'mbfscr', 'mfrak', 'Bbb', 'mbffrak', 'msans', 'mbfsans', 'mitsans', 'mbfitsans', 'mtt']
 const setsGr = ['mbf', 'mit', 'mbfit', 'mbfsans', 'mbfitsans']
 
-function GetMathAlphanumeric(ch, mathStyle) {
+function getMathAlphanumeric(ch, mathStyle) {
     // Return the Unicode math alphanumeric character corresponding to the
     // unstyled character ch and the mathStyle. If no such math alphanumeric
     // exists, return ch. The Unicode math alphanumerics are divided into
@@ -322,6 +325,9 @@ function GetMathAlphanumeric(ch, mathStyle) {
     // e.g., 10 for the digit sets. This leads to a simple encoding scheme
     // (see the digits category) that's somewhat complicated by exceptions
     // in the letter categories.
+    if (!mathStyle || mathStyle == 'mup')
+        return ch                           // No change for upright
+
     let code = ch.charCodeAt(0)
     let n                                   // Set index
 
@@ -331,9 +337,15 @@ function GetMathAlphanumeric(ch, mathStyle) {
         return n != -1 ? String.fromCodePoint(code + n * 10) : ch
     }
 
-    let chT = ''
     if (/[A-Za-z]/.test(ch)) {              // ASCII letters
-		// Handle legacy Unicode Letterlike characters first
+        // Set up roundhand and chancery script styles
+        let varsel = ''
+        if (mathStyle == 'mchan' || mathStyle == 'mrhnd') {
+            varsel = mathStyle == 'mchan' ? '\uFE00' : '\uFE01'
+            mathStyle = 'mscr'
+        }
+		// Handle legacy Unicode Letterlike characters
+		let chT = ''
 		switch (mathStyle) {
 			case 'mit':                     // Math italic
 				if (ch == 'h')
@@ -350,7 +362,7 @@ function GetMathAlphanumeric(ch, mathStyle) {
 				break
 		}
         if (chT)
-            return chT
+            return chT + varsel
 
         n = setsEn.indexOf(mathStyle)       // Get set index
 		if (n == -1)                        // mathStyle isn't in setsEn
@@ -360,7 +372,7 @@ function GetMathAlphanumeric(ch, mathStyle) {
 		if (code > 26)
 			code -= 6						// No punct between lower & uppercase
 
-        return String.fromCodePoint(code + 52 * n + 0x1D400)
+        return String.fromCodePoint(code + 52 * n + 0x1D400) + varsel
     }
 
     if (ch >= '\u0391' && ch <= '\u03F5' || ch == '∂' || ch == '∇') {
@@ -400,7 +412,7 @@ function GetMathAlphanumeric(ch, mathStyle) {
     if (code <= 0x64A) {
         // Translate code from the dictionary order followed approximately
         // in the Unicode Arabic block to the abjad order used by Arabic math
-        // alphabetics. Both orders start with aleph, e.g., U+0627
+        // alphabetics. Both orders start with alef, e.g., U+0627
         code = abjad[code - 0x0627]
         if (code == -1)
             return ch
@@ -415,7 +427,7 @@ function GetMathAlphanumeric(ch, mathStyle) {
         if (code == 4)
             n = 1                           // Use initial style's heh
     } else if ((1 << code) & missingCharMask[n - 1])
-        return ch
+        return ch                           // Math-styled char not defined
 
     return String.fromCodePoint(32 * n + code + 0x1EE00)
 }
