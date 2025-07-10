@@ -47,32 +47,64 @@ function handleLabeledRows(mtable) {
 
   const side = mtable.getAttribute('side') || 'right';
   let emptyColumnEntry = document.createElementNS(namespaceURI, "mtd");
-  emptyColumnEntry.appendChild(document.createTextNode(''));
+  emptyColumnEntry.setAttribute('intent', ':no-equation-label');
 
   for (let i=0; i < mtable.children.length; i++) {
     let row = mtable.children[i];
-    const foundLabel = row.tagName === 'mlabeledtr';
-    let label = null;
 
-    if (foundLabel) {
-      label = row.firstElementChild;
+    if (row.tagName === 'mlabeledtr') {
+      // move the label to the left or right side of a new "mtr" (instead of "mlabeledtr")
+      let label = row.firstElementChild;
+      addIntent(label);
       let newRow = document.createElementNS(namespaceURI, "mtr");
-      for (let c=1; c < row.children.length; c++) {
-        newRow.appendChild(row.children[c]);
+      for (const attr of row.attributes) {
+        newRow.setAttribute(attr.name, attr.value);
+      }
+      // leave the label as the first element or move it to the right (last element)
+      let mtd = row.children[side=='left' ? 0 : 1];
+      newRow.appendChild(mtd);
+      while (row.children.length > 0) {
+        newRow.appendChild(row.firstChild); // note: this removes the first child from 'row'
+      }
+      if (side === 'right') {
+        newRow.appendChild(label);
       }
       row.replaceWith(newRow);
-      row = newRow;
-    }
-
-    const newColEntry = foundLabel ? label : emptyColumnEntry.cloneNode();
-    if (side === 'right') {
-      row.appendChild(newColEntry);
     } else {
-      row.insertBefore(newColEntry, row.firstElementChild);
+      // add an empty "mtd" to the left or right side of the row
+      const newColEntry = emptyColumnEntry.cloneNode();
+      if (side === 'right') {
+        row.appendChild(newColEntry);
+      } else {
+        row.insertBefore(newColEntry, row.firstElementChild);
+      }
     }
   }
 
   return mtable;
+}
+
+/**
+ * 
+ * @param {HTMLElement} mtd 
+ */
+function addIntent(mtd){
+  // Add an intent the intent property ':equation-label' to the to the mtd element.
+  // We need to be careful because there already might be an intent set on it.
+  // The intent might look like "foo", ":xxx", "foo:bar($arg)", "foo($arg:equation-label)", etc.
+  if (!mtd.hasAttribute('intent')) {
+    mtd.setAttribute('intent', ':equation-label');
+    return;
+  }
+  let intentValue = mtd.getAttribute('intent');
+  let iOpenParen = intentValue.indexOf('(');
+  let head = iOpenParen == -1 ? intentValue : intentValue.substring(0, iOpenParen);
+  if (head.includes(':equation-label')) {
+    // already has the equation-label intent, so do nothing
+    return;
+  }
+  intentValue = head + ':equation-label' + intentValue.substring(head.length);
+  mtd.setAttribute('intent', intentValue)
 }
 
 /**
