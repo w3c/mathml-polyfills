@@ -673,8 +673,8 @@ class ElemMath {
                     this.add(rows, new TableRow(cells, nDigitsRightOfDecimalPt, shift) );
                     this.attrs = oldAttrs;
                 }
+                break;
             }
-            break;
                             
             default: {
                 let cells;
@@ -685,6 +685,10 @@ class ElemMath {
                 } else {
                     // FIX: this isn't right for non-leaf cells
                     // We are out of a MathML context inside of the table we are building, so we can't just stuff the MathML in it
+                    let text = child.textContent.trim()
+                    if (text === '-') {
+                        text = '\u2212';  // use proper minus sign
+                    }
                     cells = [new TableCell(child.textContent.trim())];
                 }
                 this.add(rows, new TableRow(cells, nDigitsRightOfDecimalPt, shift) );  
