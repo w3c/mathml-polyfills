@@ -547,7 +547,11 @@ class ElemMath {
             } else {
                 // everything should be in one column.
                 // FIX: the child might be something complex -- textContent might be inappropriate
-                cells.push( new TableCell(child.textContent.trim()) );
+                let text = child.textContent.trim()
+                if (text === '-') {
+                    text = '\u2212';  // use proper minus sign
+                }
+                cells.push( new TableCell(text) );
                 if (foundNumber) {
                     nDigitsRightOfDecimalPt += 1;
                 }
@@ -673,8 +677,8 @@ class ElemMath {
                     this.add(rows, new TableRow(cells, nDigitsRightOfDecimalPt, shift) );
                     this.attrs = oldAttrs;
                 }
+                break;
             }
-            break;
                             
             default: {
                 let cells;

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+  <title>mlabeledtr tests</title>
+  <meta charset="utf-8" />
+  <script type="module">
+    import { _MathTransforms } from '../common/math-transforms.js'
+    import './mlabeledtr.js'
+    window.addEventListener("DOMContentLoaded", () => {
+      _MathTransforms.transform(document.body)
+    })
+  </script>
+  <link rel="stylesheet" href="mlabeledtr.css" />
+  <script async>
+    // Send errors to console if the expected intent does not match the actual intent.
+    async function checkIntent(element) {
+      // Wait for the math transforms to complete -- there's probably a better way to do this.
+      await new Promise(r => setTimeout(r, 100));
+      intents = document.querySelectorAll('mtd[data-expected]');
+      for (element of intents) {
+        if (element.getAttribute('data-expected') != element.getAttribute('intent')) {
+          console.error("Expected: " + element.getAttribute('data-expected') + ", but got: " + element.getAttribute('intent'));
+        }
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {checkIntent()})
+  </script>
+</head>
+
+<body>
+  <h1 id="top">mlabeledtr</h1>
+
+  <p>This page contains some tests for the mlabeledtr element.
+    These are rendered via the 'mlabeledtr.js' polyfill.
+  </p>
+
+  <p> This test uses the default value for <code>side</code>. The label "(2.1) should render on the right side of the first row</p>
+  <math display="block">
+  <mtable>
+    <mlabeledtr>
+        <mtd>
+        <mtext> (2.1) </mtext>
+        </mtd>
+        <mtd>
+        <mrow>
+        <mi>E</mi>
+        <mo>=</mo>
+        <mrow>
+            <mi>m</mi>
+            <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+            <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+            </msup>
+        </mrow>
+        </mrow>
+        </mtd>
+    </mlabeledtr>
+    <mtr>
+        <mtd>
+            <math><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></math>
+        </mtd>
+    </mtr>
+  </mtable>
+</math>
+
+  <p> This test uses "left" for <code>side</code>. The label "(2.1) should render on the left side of the second row</p>
+  <math display="block">
+  <mtable side="left">
+    <mtr>
+        <mtd>
+            <math><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></math>
+        </mtd>
+    </mtr>
+    <mlabeledtr>
+        <mtd>
+        <mtext> (2.1) </mtext>
+        </mtd>
+        <mtd>
+        <mrow>
+        <mi>E</mi>
+        <mo>=</mo>
+        <mrow>
+            <mi>m</mi>
+            <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+            <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+            </msup>
+        </mrow>
+        </mrow>
+        </mtd>
+    </mlabeledtr>
+  </mtable>
+</math>
+
+  <p> This test checks for what happens when intent exists on the target label</p>
+  <math display="block">
+  <mtable>
+    <mlabeledtr>
+        <mtd data-expected='foo:equation-label' intent="foo">
+        <mtext> (intent="foo") </mtext>
+        </mtd>
+        <mtd>
+        <mrow>
+        <mi>E</mi>
+        <mo>=</mo>
+        <mrow>
+            <mi>m</mi>
+            <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+            <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+            </msup>
+        </mrow>
+        </mrow>
+        </mtd>
+    </mlabeledtr>
+    <mlabeledtr>
+        <mtd data-expected='foo:equation-label(1)' intent="foo(1)">
+        <mtext> (intent "foo(1)") </mtext>
+        </mtd>
+        <mtd>
+        <mrow>
+        <mi>E</mi>
+        <mo>=</mo>
+        <mrow>
+            <mi>m</mi>
+            <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+            <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+            </msup>
+        </mrow>
+        </mrow>
+        </mtd>
+    </mlabeledtr>
+    <mlabeledtr>
+        <mtd data-expected=':my-property:equation-label' intent=":my-property">
+        <mtext> (intent=":my-property") </mtext>
+        </mtd>
+        <mtd>
+        <mrow>
+        <mi>E</mi>
+        <mo>=</mo>
+        <mrow>
+            <mi>m</mi>
+            <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+            <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+            </msup>
+        </mrow>
+        </mrow>
+        </mtd>
+    </mlabeledtr>
+    <mlabeledtr>
+        <mtd data-expected=':equation-label' intent=":equation-label">
+        <mtext> (intent=":equation-label") </mtext>
+        </mtd>
+        <mtd>
+        <mrow>
+        <mi>E</mi>
+        <mo>=</mo>
+        <mrow>
+            <mi>m</mi>
+            <mo>&#x2062;<!--INVISIBLE TIMES--></mo>
+            <msup>
+            <mi>c</mi>
+            <mn>2</mn>
+            </msup>
+        </mrow>
+        </mrow>
+        </mtd>
+    </mlabeledtr>
+  </mtable>
+</math>
+</body>
+</html>

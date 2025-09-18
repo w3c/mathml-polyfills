@@ -1,0 +1,58 @@
+math {
+    font-family: "Stix Two Math", "Cambria Math", "Asana";
+    font-size: 1.0rem;
+}
+
+mtable {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(2rem, 1fr));
+  width: 52rem;
+  border: dotted 1px;
+  padding: 2em;
+}
+
+mtr {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+}
+
+mtd {
+  display: block math;
+}
+mtd.lhs {
+  justify-self: end;
+}
+
+/* Mock centering for trailing numbers, 12 fr */
+mtable:not(.leading-numbers) {
+  & > mtr > mtd:not([intent *= ":equation-label"]):first-child {
+    grid-column: 12;
+  }
+  & > mtr > mtd[intent *= ":equation-label"] + mtd {
+    grid-column: 12;
+  }
+}
+
+/* Flush equation number to the right edge */
+mtd[intent *= ":equation-label"] {
+  color: green;
+  grid-column: -1;
+  grid-row: 1;
+  justify-self: end;
+  padding: 0;
+}
+
+mtable.leading-numbers {
+  grid-template-columns: minmax(auto,22rem) repeat(auto-fit, minmax(2rem, 1fr));
+}
+
+/* Flush equation number to the left edge */
+mtable.leading-numbers mtd[intent *= ":equation-label"] {
+  color: green;
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+  padding: 0;
+}
