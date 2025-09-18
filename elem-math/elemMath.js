@@ -686,6 +686,7 @@ class ElemMath {
                     // FIX: this isn't right for non-leaf cells
                     // We are out of a MathML context inside of the table we are building, so we can't just stuff the MathML in it
                     let text = child.textContent.trim()
+                    console.log(`text="${text}" in <${child.tagName.toLowerCase()}`);
                     if (text === '-') {
                         text = '\u2212';  // use proper minus sign
                     }
