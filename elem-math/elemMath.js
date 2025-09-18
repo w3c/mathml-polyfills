@@ -547,6 +547,7 @@ class ElemMath {
             } else {
                 // everything should be in one column.
                 // FIX: the child might be something complex -- textContent might be inappropriate
+                console.log(`prcess_msrow: text="${child.textContent.trim()}"`);
                 cells.push( new TableCell(child.textContent.trim()) );
                 if (foundNumber) {
                     nDigitsRightOfDecimalPt += 1;
