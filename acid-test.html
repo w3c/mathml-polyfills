@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="./menclose/menclose.css">
     <script type="module">
-        import { _MathTransforms } from './all-polyfills.js'
+        import { _MathTransforms } from './all-polyfills.js?v=1.01'
 
         document.head.appendChild ( _MathTransforms.getCSSStyleSheet() );
         window.transform = function (elementId) {
@@ -501,6 +501,38 @@
                     <mo>,</mo>
                     <ms lquote="“" rquote="”">open/close quotes</ms>
                     <mo>)</mo>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                If an element has a mathvariant attribute other than 'normal', convert its content to the corresponding symbol(s)
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mi mathvariant="double-struck">A</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="fraktur">BCD</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="script">C</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="sans-serif-italic">D</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="fraktur">b</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="script">c</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="sans-serif-italic">d</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="normal">d</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="looped" style="font-family:XITS Math">&#x0628;</mi>
+                    <mo>+</mo>
+                    <mn mathvariant="bold">2</mn>
+                    <mo>+</mo>
+                    <mn mathvariant="roundhand">H</mn>
+                    <mo>+</mo>
+                    <mn mathvariant="chancery">W</mn>
                 </math>
             </td>
         </tr>
@@ -1382,6 +1414,8 @@
               <mi href="menclose/index.html">menclose</mi>
               <mo>+</mo>
               <mi href="#toc">toc</mi>
+	      <mo>+</mo>
+	      <mi><a href="https://www.w3.org/TR/html">HTML a link</a></mi>
            </math>
 </td>
 </tr>
