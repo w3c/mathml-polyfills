@@ -35,6 +35,7 @@ import { _MathTransforms, MATHML_NS } from '../common/math-transforms.js'
 const transformHref = (el) => {
     if (el.namespaceURI == MATHML_NS) {
     el.style.cursor="pointer";
+    el.tabIndex=0;
     el.addEventListener("click", (event) => {
             document.location=event.currentTarget.getAttribute("href");
         });

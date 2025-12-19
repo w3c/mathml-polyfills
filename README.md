@@ -9,4 +9,13 @@ See discussion on [wiki](https://github.com/w3c/mathml-polyfills/wiki/MathML-Pol
 * [Example of all tests](https://w3c.github.io/mathml-polyfills/acid-test.html)
 * [mfenced test](https://w3c.github.io/mathml-polyfills/mfenced/index.html)
 * [menclose test](https://w3c.github.io/mathml-polyfills/menclose/index.html)
+* [href test](https://w3c.github.io/mathml-polyfills/href/index.html)
+* [ms test](https://w3c.github.io/mathml-polyfills/ms/index.html)
+* [mlabeledtr test](https://w3c.github.io/mathml-polyfills/mlabeldtr/index.html)
+* [named space test](https://w3c.github.io/mathml-polyfills/namedspace/index.html)
 * [Elementary math sweep test: mstack, mlongdiv, and others](https://w3c.github.io/mathml-polyfills/elem-math/index.html)
+
+-----
+
+[Source Repository](https://github.com/w3c/mathml-polyfills)
+
