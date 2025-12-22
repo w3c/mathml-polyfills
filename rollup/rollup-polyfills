@@ -1,0 +1,10 @@
+#!/usr/bin/bash
+
+# npx -p @rollup/plugin-node-resolve
+
+npx rollup ../all-polyfills.js -f iife -o allpolyfillsbundle.js  --output.name allpolyfillsbundle
+
+# makes invalid version
+# npx minify allpolyfillsbundle.js > allpolyfillsbundle.min.js
+
+
