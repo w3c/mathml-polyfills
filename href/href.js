@@ -36,8 +36,12 @@ const transformHref = (el) => {
     if (el.namespaceURI == MATHML_NS) {
     el.style.cursor="pointer";
     el.tabIndex=0;
+    el.setAttribute("role","link");
     el.addEventListener("click", (event) => {
             document.location=event.currentTarget.getAttribute("href");
+        });
+    el.addEventListener("keydown", (event) => {
+        if(event.key=="Enter") document.location=event.currentTarget.getAttribute("href");
         });
     el.addEventListener("mouseover", (event) => {
             event.currentTarget.style.textDecoration="solid underline";
