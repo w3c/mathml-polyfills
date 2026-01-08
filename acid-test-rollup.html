@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Browser transform MathML tests</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="./menclose/menclose.css">
+    <script src="rollup/allpolyfillsbundle.js"></script>
+    <script>
+     document.head.appendChild ( allpolyfillsbundle._MathTransforms.getCSSStyleSheet() );
+        window.transform = function (elementId) {
+            allpolyfillsbundle._MathTransforms.transform(elementId);
+        }
+
+        function htmlContents(toc) {
+            //toc of contents - remove # if necessary
+            let TOC = document.getElementById(toc.replace(/\#/g, ''))
+
+            let headers = document.querySelectorAll('h2');
+            //keep track of ids
+            let ids = []
+            headers.forEach(function (el) {
+                // if it has an id already, just add that to the array
+                if (el.id) return ids.push(el.id)
+                //id will be the textcontent without non-letter characters in lower case
+                let id = el.textContent.replace(/[^a-zA-Z]/g, '').toLowerCase() + 'Header'
+                while (ids.indexOf(id) !== -1) {
+                    //add zzz's to the end until we have a unique id
+                    id = id + 'zzz'
+                }
+                //ready to be tracked
+                ids.push(id)
+                //okay we can set now
+                el.id = id
+            })
+
+            let html = '<ol>'
+            headers.forEach(function (h) {
+                html += `<li><a href="#${h.id}">${h.textContent}</a></li>`;
+            });
+            html += '</ol>';
+
+            TOC.insertAdjacentHTML('beforeend', html);
+        }
+        document.addEventListener("DOMContentLoaded", function (event) {
+            htmlContents('#toc')
+        })
+    </script>
+    <style>
+        table {
+            border-collapse: collapse;
+            margin-top: 3ex;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+
+        th,
+        td {
+            padding: 10px;
+        }
+
+        #linebreaking mtable {
+            background-color: lightyellow;
+        }
+
+        math {
+            font-family: "Stix Two Math", "Cambria Math", "Asana";
+        }
+    </style>
+</head>
+
+<body>
+    <h1>MathML transform tests</h1>
+    <p>The following tables contain MathML that is not part of core.
+        The page loads transforms that will transform the full MathML into MathML core.
+        The transforms will <em>not</em> run until you click the button below.
+        This allows you to see the effects of the transform.
+    </p>
+    <p>Examples:</p>
+    <div id="toc"></div> <!-- TOC auto built from h2's-->
+    <h2>General MathML Elements and Attributes</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(general)">Apply Transform</button>
+    </label>
+    <table id="general">
+        <tr>
+            <th>Description</th>
+            <th>Math example</th>
+        </tr>
+        <tr>
+            <td>
+                mfenced
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mfenced open="[" separators=";" close="]">
+                        <mn>0</mn>
+                        <mn>1</mn>
+                    </mfenced>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                under/over scripts with an mo that should be displayed as an accent
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mover>
+                        <mi>x</mi>
+                        <mo>&#x21C0;</mo>
+                    </mover>
+                    <mo>+</mo>
+                    <mover>
+                        <mi>x</mi>
+                        <mo>^</mo>
+                    </mover>
+                    <mo>+</mo>
+                    <munder>
+                        <mo>&#x2211;</mo>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>&#x2208;</mo>
+                            <mi>D</mi>
+                        </mrow>
+                    </munder>
+                    <mi>f</mi>
+                    <mo>(</mo>
+                    <mi>x</mi>
+                    <mo>)</mo>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                munder alignment left/left/right<br>
+                first example is with stretchy operator
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <munder align="left" accentunder="true">
+                        <mrow>
+                            <mi>r</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                        </mrow>
+                        <mo>&#x21C0;</mo>
+                    </munder>
+                    <mo>,</mo>
+                    <munder align="left">
+                        <mrow>
+                            <mi>l</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                        </mrow>
+                        <mo accent="true">&#x25B3;</mo>
+                    </munder>
+                    <mo>,</mo>
+                    <munder align="right" accentunder="true">
+                        <mrow>
+                            <mi>r</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                        </mrow>
+                        <mo>&#x25A1;</mo>
+                    </munder>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                mover alignment left/left/right<br>
+                first example is with stretchy operator
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <mover align="left" accent="true">
+                        <mrow>
+                            <mi>r</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                        </mrow>
+                        <mo>&#x21C0;</mo>
+                    </mover>
+                    <mo>,</mo>
+                    <mover align="left">
+                        <mrow>
+                            <mi>l</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                        </mrow>
+                        <mo accent="true">&#x25B3;</mo>
+                    </mover>
+                    <mo>,</mo>
+                    <mover align="right" accent="true">
+                        <mrow>
+                            <mi>r</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                        </mrow>
+                        <mo>&#x25A1;</mo>
+                    </mover>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                munderover alignment left/left/right<br>
+                first example is with stretchy operator
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <munderover align="left" accentunder="true" accent="true">
+                        <mrow>
+                            <mi>r</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                        </mrow>
+                        <mo>&#x21C0;</mo>
+                        <mo>&#x21C1;</mo>
+                    </munderover>
+                    <mo>,</mo>
+                    <munderover align="left">
+                        <mrow>
+                            <mi>l</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                        </mrow>
+                        <mi>left</mi>
+                        <mo accent="true">&#x25B3;</mo>
+                    </munderover>
+                    <mo>,</mo>
+                    <munderover align="right" accentunder="true" accent="true">
+                        <mrow>
+                            <mi>r</mi>
+                            <mo>+</mo>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                        </mrow>
+                        <mo>&#x25A1;</mo>
+                        <mi>right</mi>
+                    </munderover>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                bevelled fraction
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mi>f</mi>
+                    <mo>(</mo>
+                    <mfrac bevelled="true">
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>+</mo>
+                            <mn>1</mn>
+                        </mrow>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>-</mo>
+                            <mn>1</mn>
+                        </mrow>
+                    </mfrac>
+                    <mo>)</mo>
+                    <mo>+</mo>
+                    <mn>1</mn>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                numerator alignment left/center/right and nested with right/left
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mfrac numalign="left">
+                        <mn>1</mn>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>-</mo>
+                            <mn>1</mn>
+                        </mrow>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac numalign="center">
+                        <mn>22</mn>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>-</mo>
+                            <mn>2</mn>
+                        </mrow>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac numalign="right">
+                        <mrow>
+                            <mn>333</mn>
+                        </mrow>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>-</mo>
+                            <mi>y</mi>
+                            <mo>-</mo>
+                            <mn>3</mn>
+                        </mrow>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac numalign="left" denomalign="right">
+                        <mrow>
+                            <mfrac numalign="right">
+                                <mn>4</mn>
+                                <mrow>
+                                    <mi>x</mi>
+                                    <mo>+</mo>
+                                    <mi>y</mi>
+                                </mrow>
+                            </mfrac>
+                        </mrow>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>-</mo>
+                            <mi>y</mi>
+                            <mo>-</mo>
+                            <mn>3</mn>
+                        </mrow>
+                    </mfrac>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                denominator alignment left/center/right and nested with left/right
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mfrac denomalign="left">
+                        <mrow>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                            <mo>+</mo>
+                            <mi>c</mi>
+                        </mrow>
+                        <mn>3</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac denomalign="center">
+                        <mstyle displaystyle="true">
+                            <mi>x</mi>
+                            <mo>+</mo>
+                            <mi>y</mi>
+                            <mo>+</mo>
+                            <mn>1234</mn>
+                        </mstyle>
+                        <mstyle displaystyle="true">
+                            <mn>3</mn>
+                        </mstyle>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac denomalign="right">
+                        <mstyle displaystyle="true">
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mi>b</mi>
+                            <mo>+</mo>
+                            <mi>c</mi>
+                        </mstyle>
+                        <mstyle displaystyle="true">
+                            <mn>3</mn>
+                        </mstyle>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac denomalign="right">
+                        <mrow>
+                            <mfrac numalign="left" denomalign="right">
+                                <mn>4</mn>
+                                <mrow>
+                                    <mi>x</mi>
+                                    <mo>+</mo>
+                                    <mi>y</mi>
+                                </mrow>
+                            </mfrac>
+                        </mrow>
+                        <mrow>
+                            <mn>3</mn>
+                        </mrow>
+                    </mfrac>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                mfrac with named linethickness (none, thin, medium, thick, 8px)
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mfrac>
+                        <mn>1</mn>
+                        <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac linethickness="thin">
+                        <mn>1</mn>
+                        <mn>3</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac linethickness="medium">
+                        <mn>1</mn>
+                        <mn>4</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac linethickness="thick">
+                        <mn>1</mn>
+                        <mn>5</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac linethickness="8px">
+                        <mn>1</mn>
+                        <mn>6</mn>
+                    </mfrac>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                fraction with named mathsize for numerator
+                (none, small, medium, big, 20px)
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mfrac>
+                        <mn>1</mn>
+                        <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac>
+                        <mn mathsize="small">1</mn>
+                        <mn>3</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac>
+                        <mn mathsize="medium">1</mn>
+                        <mn>4</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac>
+                        <mn mathsize="big">1</mn>
+                        <mn>5</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mfrac>
+                        <mn mathsize="20px">1</mn>
+                        <mn>6</mn>
+                    </mfrac>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                mglyph -- example with lone mglyph in 'mi' and second with other chars. <br>
+                The second uses 'em's (which must convert to px) and also valign set to push the top down to the baseline.
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mi>f</mi>
+                    <mo>(</mo>
+                    <mi><mglyph src="./simple-knot.png" width="64px" alt="simple knot"/></mi>
+                    <mo>,</mo>
+                    <mi>x<mglyph src="./simple-knot.png" height="2em" valign="-2em" alt="simple knot shifted down"/>z</mi>
+                    <mo>)</mo>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                ms -- default quotes and curly quotes; internal quotes should be escaped
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mi>f</mi>
+                    <mo>(</mo>
+                    <ms>normal &quot;s</ms>
+                    <mo>,</mo>
+                    <ms lquote="“" rquote="”">open/close quotes</ms>
+                    <mo>)</mo>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                If an element has a mathvariant attribute other than 'normal', convert its content to the corresponding symbol(s)
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mi mathvariant="double-struck">A</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="fraktur">BCD</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="script">C</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="sans-serif-italic">D</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="fraktur">b</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="script">c</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="sans-serif-italic">d</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="normal">d</mi>
+                    <mo>+</mo>
+                    <mi mathvariant="looped" style="font-family:XITS Math">&#x0628;</mi>
+                    <mo>+</mo>
+                    <mn mathvariant="bold">2</mn>
+                    <mo>+</mo>
+                    <mn mathvariant="roundhand">H</mn>
+                    <mo>+</mo>
+                    <mn mathvariant="chancery">W</mn>
+                </math>
+            </td>
+        </tr>
+    </table>
+
+    <h2>mpadded Attribute Pseudo Values</h2>
+    <label>
+        Click to see the effect of the transfhhorm on the following table:
+        <button onclick="transform(mpadded)">Apply Transform</button>
+    </label>
+    <table id="mpadded">
+        <tr>
+            <th>Description</th>
+            <th>Math example</th>
+        </tr>
+        <tr style="vertical-align: top;">
+            <td>
+                mpadded -- pseudo units (width, depth, height) are not part of core
+                <br>
+                Yellow is space child, blue is mpadded dimensions.
+                'lspace'/'voffset' are set so that a yellow square should be centered inside a blue square,
+                with the blue square having twice the side length of the yellow square.
+                <h3>Before transform</h3>
+                <div id="beforeAttrValues"></div>
+                <h3>After transform</h3>
+                <div id="afterAttrValues"></div>
+            </td>
+            <td id='mpaddedTest'>
+                <div style="width: 300px; text-align:left;">
+                    <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+                        <mn>1</mn>
+                        <mpadded lspace="0.5width" voffset="-.25height" width="2width" height="1.5height" depth="3depth"
+                            style="background: lightblue;">
+                            <mspace width="30px" height="20px" depth="10px" style="background: yellow;"></mspace>
+                        </mpadded>
+                        <mo>,</mo>
+                        <mn>2</mn>
+                        <mpadded lspace="15px" voffset="-5px" width="6depth" height="1.0width" depth="1.5height"
+                            style="background: lightblue;">
+                            <mspace width="30px" height="20px" depth="10px" style="background: yellow;"></mspace>
+                        </mpadded>
+                        <mo>,</mo>
+                        <mn>3</mn>
+                        <mpadded lspace="50%width" voffset="-50%depth" width="600%depth" height="100%width"
+                            depth="150%height" style="background: lightblue;">
+                            <mspace width="30px" height="20px" depth="10px" style="background: yellow;"></mspace>
+                        </mpadded>
+                        <mo>,</mo>
+                        <mn>4</mn>
+                        <mpadded lspace="50%width" voffset="-50%depth" width="2width" height="150%height"
+                            depth="300%depth" style="background: lightblue;">
+                            <mspace width="30px" height="20px" depth="10px" style="background: yellow;"></mspace>
+                        </mpadded>
+                        <mn>5</mn>
+                    </math>
+                </div>
+            </td>
+            <script>
+                function showAttrs(el, displayEl) {
+                    const mpaddedEls = el.getElementsByTagName('mpadded');
+                    let attrStrings = '';
+                    for (let i = 0; i < mpaddedEls.length; i++) {
+                        if (i > 0) {
+                            attrStrings += '\n';
+                        }
+                        attrStrings += `mpadded ${i + 1}: `;
+                        const attrs = mpaddedEls[i].attributes;
+                        for (let j = 0; j < attrs.length; j++) {
+                            attrStrings += ` ${attrs[j].name}="${attrs[j].value}"`;
+                        }
+                    }
+                    displayEl.innerText = attrStrings;
+                }
+                showAttrs(window.mpaddedTest, window.beforeAttrValues);
+                new MutationObserver(
+                    (mutationsList, observer) => showAttrs(window.mpadded, window.afterAttrValues))
+                    .observe(window.mpadded, { attributes: true, subtree: true });
+            </script>
+        </tr>
+    </table>
+
+    <h2>menclose</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(menclose)">Apply Transform</button>
+    </label>
+    <table id="menclose">
+        <tr>
+            <th>Description</th>
+            <th>Math example</th>
+        </tr>
+        <tr style="vertical-align: top;">
+            <td> Box with 'strikes' in all directions</td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+                    <menclose notation='horizontalstrike updiagonalstrike downdiagonalstrike verticalstrike box'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+            </td>
+        </tr>
+        <tr style="vertical-align: top;">
+            <td> Box with double-ended arrows in all directions</td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+                    <menclose notation='updownarrow leftrightarrow northeastsouthwestarrow northwestsoutheastarrow box'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+            </td>
+        </tr>
+        <tr style="vertical-align: top;">
+            <td>Circle and rounded box with horizontal/vertical strikes</td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+                    <menclose notation='circle roundedbox horizontalstrike verticalstrike'>
+                        <msqrt>
+                            <mrow>
+                                <mi>x</mi>
+                                <mo>+</mo>
+                                <mi>y</mi>
+                            </mrow>
+                        </msqrt>
+                        <mo>+</mo>
+                        <mi>z</mi>
+                    </menclose>
+                </math>
+            </td>
+        </tr>
+     </table>
+
+    <h2>Linebreaks in Display MathML</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(linebreaking)">Apply Transform</button>
+    </label>
+    <p>Custom element -- should break to the width of a line</p>
+    <hr>
+    <math-with-linebreaks>
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+            <msub><mi>a</mi><mn>1</mn></msub><mo>+</mo><msub><mi>a</mi><mn>2</mn></msub><mo>+</mo><msub><mi>a</mi><mn>3</mn></msub><mo>+</mo><msub><mi>a</mi><mn>4</mn></msub><mo>+</mo><msub><mi>a</mi><mn>5</mn></msub><mo>+</mo><msub><mi>a</mi><mn>6</mn></msub><mo>+</mo><msub><mi>a</mi><mn>7</mn></msub><mo>+</mo><msub><mi>a</mi><mn>8</mn></msub><mo>+</mo><msub><mi>a</mi><mn>9</mn></msub><mo>+</mo><msub><mi>a</mi><mn>10</mn></msub>
+            <mo>+</mo><msub><mi>a</mi><mn>11</mn></msub><mo>+</mo><msub><mi>a</mi><mn>12</mn></msub><mo>+</mo><msub><mi>a</mi><mn>13</mn></msub><mo>+</mo><msub><mi>a</mi><mn>14</mn></msub><mo>+</mo><msub><mi>a</mi><mn>15</mn></msub><mo>+</mo><msub><mi>a</mi><mn>16</mn></msub><mo>+</mo><msub><mi>a</mi><mn>17</mn></msub><mo>+</mo><msub><mi>a</mi><mn>18</mn></msub><mo>+</mo><msub><mi>a</mi><mn>19</mn></msub><mo>+</mo><msub><mi>a</mi><mn>20</mn></msub>
+            <mo>+</mo><msub><mi>a</mi><mn>21</mn></msub><mo>+</mo><msub><mi>a</mi><mn>22</mn></msub><mo>+</mo><msub><mi>a</mi><mn>23</mn></msub><mo>+</mo><msub><mi>a</mi><mn>24</mn></msub><mo>+</mo><msub><mi>a</mi><mn>25</mn></msub><mo>+</mo><msub><mi>a</mi><mn>26</mn></msub><mo>+</mo><msub><mi>a</mi><mn>27</mn></msub><mo>+</mo><msub><mi>a</mi><mn>28</mn></msub><mo>+</mo><msub><mi>a</mi><mn>29</mn></msub><mo>+</mo><msub><mi>a</mi><mn>30</mn></msub>
+            <mo>+</mo><msub><mi>a</mi><mn>31</mn></msub><mo>+</mo><msub><mi>a</mi><mn>32</mn></msub><mo>+</mo><msub><mi>a</mi><mn>33</mn></msub><mo>+</mo><msub><mi>a</mi><mn>34</mn></msub><mo>+</mo><msub><mi>a</mi><mn>35</mn></msub><mo>+</mo><msub><mi>a</mi><mn>36</mn></msub><mo>+</mo><msub><mi>a</mi><mn>37</mn></msub><mo>+</mo><msub><mi>a</mi><mn>38</mn></msub><mo>+</mo><msub><mi>a</mi><mn>39</mn></msub><mo>+</mo><msub><mi>a</mi><mn>40</mn></msub>
+            </mrow>
+        </math>    
+    </math-with-linebreaks>
+    <hr>
+    <table id="linebreaking" style="table-layout: fixed; width: 100vw;">
+        <colgroup> <col style="width: 40%;">  <col style="width: 60%;"> </colgroup>
+        <tr>
+            <td>
+                Linebreaks: Forced linebreak before second '=' and another before "+4x+1".
+                <br>
+                Indents: 2nd line on "=" 3rd line on "+" after "="
+                <br>
+                maxwidth = 30em -- shouldn't affect linebreaks (tests non-px value)
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" maxwidth="30em" display="block">
+                    <mrow>
+                        <mrow>
+                            <mi>f</mi>
+                            <mo>&#x2061;</mo>
+                            <mo>(</mo>
+                            <mi>x</mi>
+                            <mo>)</mo>
+                        </mrow>
+
+                        <mo id='eq1-equals'>=</mo>
+                        <mrow>
+                            <msup>
+                                <mrow>
+                                    <mo>(</mo>
+                                    <mrow>
+                                        <mi>x</mi>
+                                        <mo>+</mo>
+                                        <mn>1</mn>
+                                    </mrow>
+                                    <mo>)</mo>
+                                </mrow>
+                                <mn>4</mn>
+                            </msup>
+                            <mo linebreak='newline' linebreakstyle='before' indentalign='id' indenttarget='eq1-equals'>=
+                            </mo>
+                            <mrow>
+                                <msup>
+                                    <mi>x</mi>
+                                    <mn>4</mn>
+                                </msup>
+                                <mo id='eq1-plus'>+</mo>
+                                <mrow>
+                                    <mn>4</mn>
+                                    <mo>&#x2062;</mo>
+                                    <msup>
+                                        <mi>x</mi>
+                                        <mn>3</mn>
+                                    </msup>
+                                </mrow>
+                                <mo>+</mo>
+                                <mrow>
+                                    <mn>6</mn>
+                                    <mo>&#x2062;</mo>
+                                    <msup>
+                                        <mi>x</mi>
+                                        <mn>2</mn>
+                                    </msup>
+                                </mrow>
+
+                                <mo linebreak='newline' linebreakstyle='before' indentalignlast='id'
+                                    indenttarget='eq1-plus'>+</mo>
+                                <mrow>
+                                    <mn>4</mn>
+                                    <mo>&#x2062;</mo>
+                                    <mi>x</mi>
+                                </mrow>
+                                <mo>+</mo>
+                                <mn>1</mn>
+                            </mrow>
+                        </mrow>
+                    </mrow>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Linebreaks: automatic. maxwidth = 190px
+                <br>
+                Indents: automatic
+            <td> 
+                <math xmlns="http://www.w3.org/1998/Math/MathML" maxwidth="190px" display="block">
+                    <mrow>
+                        <mrow>
+                            <mi>f</mi>
+                            <mo>&#x2061;<!--FUNCTION APPLICATION--></mo>
+                            <mo>(</mo>
+                            <mi>x</mi>
+                            <mo>)</mo>
+                        </mrow>
+
+                        <mo>=</mo>
+                        <msup>
+                            <mrow>
+                                <mo>(</mo>
+                                <mrow>
+                                    <mi>x</mi>
+                                    <mo>+</mo>
+                                    <mn>1</mn>
+                                </mrow>
+                                <mo>)</mo>
+                            </mrow>
+                            <mn>4</mn>
+                        </msup>
+                        <mo>=</mo>
+                        <mrow>
+                            <msup>
+                                <mi>x</mi>
+                                <mn>4</mn>
+                            </msup>
+                            <mo>+</mo>
+                            <mrow>
+                                <mn>4</mn>
+                                <mo>&#x2062;</mo>
+                                <msup>
+                                    <mi>x</mi>
+                                    <mn>3</mn>
+                                </msup>
+                            </mrow>
+                            <mo>+</mo>
+                            <mn>6</mn>
+                            <mo>&#x2062;</mo>
+                            <msup>
+                                <mi>x</mi>
+                                <mn>2</mn>
+                            </msup>
+                            <mo>+</mo>
+                            <mrow>
+                                <mn>4</mn>
+                                <mo>&#x2062;</mo>
+                                <mi>x</mi>
+                            </mrow>
+                            <mo>+</mo>
+                            <mn>1</mn>
+                      </mrow>
+                    </mrow>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Automatic linebreak (200px break width)<br>
+                Should be four lines: linebreak between the parens and also on '+'s<br>
+                Indentation: automatic<br>
+                There are no mrows in this test, so testing recreating structure also.
+            </td>
+            <td>
+                <math xmlns='http://www.w3.org/1998/Math/MathML' maxwidth='200px' indentalign="auto" display="block">
+                    <mo id='lparen'>(</mo>
+                    <msup>
+                        <mi>x</mi>
+                        <mn>4</mn>
+                    </msup>
+                    <mo>-</mo>
+                    <mn>4</mn>
+                    <mo>&#x2062;</mo>
+                    <msup>
+                        <mi>x</mi>
+                        <mn>3</mn>
+                    </msup>
+                    <mo>&#x2062;</mo>
+                    <mi>y</mi>
+                    <mo>+</mo>
+                    <mn>6</mn>
+                    <mo>&#x2062;</mo>
+                    <msup>
+                        <mi>x</mi>
+                        <mn>2</mn>
+                    </msup>
+                    <mo>&#x2062;</mo>
+                    <msup>
+                        <mi>y</mi>
+                        <mn>2</mn>
+                    </msup>
+                    <mo>-</mo>
+                    <mn>4</mn>
+                    <mo>&#x2062;</mo>
+                    <mi>x</mi>
+                    <mo>&#x2062;</mo>
+                    <msup>
+                        <mi>y</mi>
+                        <mn>3</mn>
+                    </msup>
+                    <mo>+</mo>
+                    <msup>
+                        <mi>y</mi>
+                        <mn>4</mn>
+                    </msup>
+                    <mo>)</mo>
+                    <mo linebreak="goodbreak" linebreakstyle='after' linebreakmultchar='×'>&#x2062;</mo>
+                    <mo>(</mo>
+                    <msup>
+                        <mi>x</mi>
+                        <mn>4</mn>
+                    </msup>
+                    <mo>+</mo>
+                    <mn>4</mn>
+                    <mo>&#x2062;</mo>
+                    <msup>
+                        <mi>x</mi>
+                        <mn>3</mn>
+                    </msup>
+                    <mo>&#x2062;</mo>
+                    <mi>y</mi>
+                    <mo>+</mo>
+                    <mn>6</mn>
+                    <mo>&#x2062;</mo>
+                    <msup>
+                        <mi>x</mi>
+                        <mn>2</mn>
+                    </msup>
+                    <mo>&#x2062;</mo>
+                    <msup>
+                        <mi>y</mi>
+                        <mn>2</mn>
+                    </msup>
+                    <mo>+</mo>
+                    <mn>4</mn>
+                    <mo>&#x2062;</mo>
+                    <mi>x</mi>
+                    <mo>&#x2062;</mo>
+                    <msup>
+                        <mi>y</mi>
+                        <mn>3</mn>
+                    </msup>
+                    <mo>+</mo>
+                    <msup>
+                        <mi>y</mi>
+                        <mn>4</mn>
+                    </msup>
+                    <mo>)</mo>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                A manual linebreak at second equals; <br>
+                Automatic linebreak (should be with '•' added) and if it breaks there, "target" aligned with '(' <br>
+                Attributes tested: linebreakstyle, linebreakmultchar, linebreak, indentalign, indenttarget
+            </td>
+            <td>
+                <math xmlns='http://www.w3.org/1998/Math/MathML'  display="block" linebreakmultchar='•' linebreakstyle='before'>
+                    <mrow>
+                        <msup>
+                            <mrow>
+                                <mo>(</mo>
+                                <mrow>
+                                    <msup>
+                                        <mi>x</mi>
+                                        <mn>2</mn>
+                                    </msup>
+                                    <mo>-</mo>
+                                    <msup>
+                                        <mi>y</mi>
+                                        <mn>2</mn>
+                                    </msup>
+                                </mrow>
+                                <mo>)</mo>
+                            </mrow>
+                            <mn>4</mn>
+                        </msup>
+                        <mo id='equals-eq2'>=</mo>
+                        <mrow>
+                            <msup>
+                                <mrow>
+                                    <mo>(</mo>
+                                    <mrow>
+                                        <mi>x</mi>
+                                        <mo>-</mo>
+                                        <mi>y</mi>
+                                    </mrow>
+                                    <mo>)</mo>
+                                </mrow>
+                                <mn>4</mn>
+                            </msup>
+                            <mo>&#x2062;</mo>
+                            <msup>
+                                <mrow>
+                                    <mo>(</mo>
+                                    <mrow>
+                                        <mi>x</mi>
+                                        <mo>+</mo>
+                                        <mi>y</mi>
+                                    </mrow>
+                                    <mo>)</mo>
+                                </mrow>
+                                <mn>4</mn>
+                            </msup>
+                        </mrow>
+                        <mo linebreak='newline' indentalign='id' indenttarget='equals-eq2'>=</mo>
+                        <mrow>
+                            <mrow>
+                                <mo id='lparen-eq2'>(</mo>
+                                <mrow>
+                                    <msup>
+                                        <mi>x</mi>
+                                        <mn>4</mn>
+                                    </msup>
+                                    <mo>-</mo>
+                                    <mrow>
+                                        <mn>4</mn>
+                                        <mo>&#x2062;</mo>
+                                        <msup>
+                                            <mi>x</mi>
+                                            <mn>3</mn>
+                                        </msup>
+                                        <mo>&#x2062;</mo>
+                                        <mi>y</mi>
+                                    </mrow>
+                                    <mo>+</mo>
+                                    <mrow>
+                                        <mn>6</mn>
+                                        <mo>&#x2062;</mo>
+                                        <msup>
+                                            <mi>x</mi>
+                                            <mn>2</mn>
+                                        </msup>
+                                        <mo>&#x2062;</mo>
+                                        <msup>
+                                            <mi>y</mi>
+                                            <mn>2</mn>
+                                        </msup>
+                                    </mrow>
+                                    <mo>-</mo>
+                                    <mrow>
+                                        <mn>4</mn>
+                                        <mo>&#x2062;</mo>
+                                        <mi>x</mi>
+                                        <mo>&#x2062;</mo>
+                                        <msup>
+                                            <mi>y</mi>
+                                            <mn>3</mn>
+                                        </msup>
+                                    </mrow>
+                                    <mo>+</mo>
+                                    <msup>
+                                        <mi>y</mi>
+                                        <mn>4</mn>
+                                    </msup>
+                                </mrow>
+                                <mo>)</mo>
+                            </mrow>
+                            <mo indentalign='id' indenttarget='lparen-eq2' linebreakstyle='after'>&#x2062;</mo>
+                            <mrow>
+                                <mo>(</mo>
+                                <mrow>
+                                    <msup>
+                                        <mi>x</mi>
+                                        <mn>4</mn>
+                                    </msup>
+                                    <mo>+</mo>
+                                    <mrow>
+                                        <mn>4</mn>
+                                        <mo>&#x2062;</mo>
+                                        <msup>
+                                            <mi>x</mi>
+                                            <mn>3</mn>
+                                        </msup>
+                                        <mo>&#x2062;</mo>
+                                        <mi>y</mi>
+                                    </mrow>
+                                    <mo>+</mo>
+                                    <mrow>
+                                        <mn>6</mn>
+                                        <mo>&#x2062;</mo>
+                                        <msup>
+                                            <mi>x</mi>
+                                            <mn>2</mn>
+                                        </msup>
+                                        <mo>&#x2062;</mo>
+                                        <msup>
+                                            <mi>y</mi>
+                                            <mn>2</mn>
+                                        </msup>
+                                    </mrow>
+                                    <mo>+</mo>
+                                    <mrow>
+                                        <mn>4</mn>
+                                        <mo>&#x2062;</mo>
+                                        <mi>x</mi>
+                                        <mo>&#x2062;</mo>
+                                        <msup>
+                                            <mi>y</mi>
+                                            <mn>3</mn>
+                                        </msup>
+                                    </mrow>
+                                    <mo>+</mo>
+                                    <msup>
+                                        <mi>y</mi>
+                                        <mn>4</mn>
+                                    </msup>
+                                </mrow>
+                                <mo>)</mo>
+                            </mrow>
+                        </mrow>
+                    </mrow>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                LineBreak: forced linebreak in numerator of fraction<br>
+                Indent: auto
+            </td>
+            <td>
+                <math xmlns='http://www.w3.org/1998/Math/MathML' display="block">
+                    <mfrac>
+                        <mrow>
+                            <msup>
+                                <mi>x</mi>
+                                <mn>7</mn>
+                            </msup>
+                            <mo>+</mo>
+                            <mrow>
+                                <mn>7</mn>
+                                <mo>&#8290;</mo>
+                                <msup>
+                                    <mi>x</mi>
+                                    <mn>6</mn>
+                                </msup>
+                            </mrow>
+                            <mo>+</mo>
+                            <mrow>
+                                <mn>21</mn>
+                                <mo>&#8290;</mo>
+                                <msup>
+                                    <mi>x</mi>
+                                    <mn>5</mn>
+                                </msup>
+                            </mrow>
+                            <mo>+</mo>
+                            <mrow>
+                                <mn>35</mn>
+                                <mo>&#8290;</mo>
+                                <msup>
+                                    <mi>x</mi>
+                                    <mn>4</mn>
+                                </msup>
+                            </mrow>
+                            <mo linebreak='newline'>+</mo>
+                            <mrow>
+                                <mn>35</mn>
+                                <mo>&#8290;</mo>
+                                <msup>
+                                    <mi>x</mi>
+                                    <mn>3</mn>
+                                </msup>
+                            </mrow>
+                            <mo>+</mo>
+                            <mrow>
+                                <mn>21</mn>
+                                <mo>&#8290;</mo>
+                                <msup>
+                                    <mi>x</mi>
+                                    <mn>2</mn>
+                                </msup>
+                            </mrow>
+                            <mo>+</mo>
+                            <mrow>
+                                <mn>7</mn>
+                                <mo>&#8290;</mo>
+                                <mi>x</mi>
+                            </mrow>
+                            <mo>+</mo>
+                            <mn>1</mn>
+                        </mrow>
+                        <mrow>
+                            <mi>y</mi>
+                            <mo>+</mo>
+                            <mn>1</mn>
+                        </mrow>
+                    </mfrac>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Automatic linebreaking with width changing with table width <br>
+                Should break before '+'s<br>
+                Indentation: automatic
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" overflow="linebreak" display="block" >
+                    <mrow>
+                    <msub><mi>a</mi><mn>1</mn></msub><mo>+</mo><msub><mi>a</mi><mn>2</mn></msub><mo>+</mo><msub><mi>a</mi><mn>3</mn></msub><mo>+</mo><msub><mi>a</mi><mn>4</mn></msub><mo>+</mo><msub><mi>a</mi><mn>5</mn></msub><mo>+</mo><msub><mi>a</mi><mn>6</mn></msub><mo>+</mo><msub><mi>a</mi><mn>7</mn></msub><mo>+</mo><msub><mi>a</mi><mn>8</mn></msub><mo>+</mo><msub><mi>a</mi><mn>9</mn></msub><mo>+</mo><msub><mi>a</mi><mn>10</mn></msub>
+                    <mo>+</mo><msub><mi>a</mi><mn>11</mn></msub><mo>+</mo><msub><mi>a</mi><mn>12</mn></msub><mo>+</mo><msub><mi>a</mi><mn>13</mn></msub><mo>+</mo><msub><mi>a</mi><mn>14</mn></msub><mo>+</mo><msub><mi>a</mi><mn>15</mn></msub><mo>+</mo><msub><mi>a</mi><mn>16</mn></msub><mo>+</mo><msub><mi>a</mi><mn>17</mn></msub><mo>+</mo><msub><mi>a</mi><mn>18</mn></msub><mo>+</mo><msub><mi>a</mi><mn>19</mn></msub><mo>+</mo><msub><mi>a</mi><mn>20</mn></msub>
+                    <mo>+</mo><msub><mi>a</mi><mn>21</mn></msub><mo>+</mo><msub><mi>a</mi><mn>22</mn></msub><mo>+</mo><msub><mi>a</mi><mn>23</mn></msub><mo>+</mo><msub><mi>a</mi><mn>24</mn></msub><mo>+</mo><msub><mi>a</mi><mn>25</mn></msub><mo>+</mo><msub><mi>a</mi><mn>26</mn></msub><mo>+</mo><msub><mi>a</mi><mn>27</mn></msub><mo>+</mo><msub><mi>a</mi><mn>28</mn></msub><mo>+</mo><msub><mi>a</mi><mn>29</mn></msub><mo>+</mo><msub><mi>a</mi><mn>30</mn></msub>
+                    <mo>+</mo><msub><mi>a</mi><mn>31</mn></msub><mo>+</mo><msub><mi>a</mi><mn>32</mn></msub><mo>+</mo><msub><mi>a</mi><mn>33</mn></msub><mo>+</mo><msub><mi>a</mi><mn>34</mn></msub><mo>+</mo><msub><mi>a</mi><mn>35</mn></msub><mo>+</mo><msub><mi>a</mi><mn>36</mn></msub><mo>+</mo><msub><mi>a</mi><mn>37</mn></msub><mo>+</mo><msub><mi>a</mi><mn>38</mn></msub><mo>+</mo><msub><mi>a</mi><mn>39</mn></msub><mo>+</mo><msub><mi>a</mi><mn>40</mn></msub>
+                    </mrow>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                This is inline math and should not linebreak due to the linebreaking transforms because there is no reflow observer on which to hang some code.
+            </td>
+            <td>
+                <p> Some text in a paragraph that contains math:
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <mrow>
+                            <msub><mi>a</mi><mn>1</mn></msub><mo>+</mo><msub><mi>a</mi><mn>2</mn></msub><mo>+</mo><msub><mi>a</mi><mn>3</mn></msub><mo>+</mo><msub><mi>a</mi><mn>4</mn></msub><mo>+</mo><msub><mi>a</mi><mn>5</mn></msub><mo>+</mo><msub><mi>a</mi><mn>6</mn></msub><mo>+</mo><msub><mi>a</mi><mn>7</mn></msub><mo>+</mo><msub><mi>a</mi><mn>8</mn></msub><mo>+</mo><msub><mi>a</mi><mn>9</mn></msub><mo>+</mo><msub><mi>a</mi><mn>10</mn></msub>
+                        </mrow>
+                    </math>
+                This text ends the paragraph.
+                </p>
+            
+            </td>
+        </tr>
+    </table>
+
+    <h2>MathML Table elements and Attributes</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(mtable)">Apply Transform</button>
+    </label>
+    <table id="mtable">
+        <tr>
+            <td>
+                mlabeledtr -- label should be on right of line
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mtable width="100%" columnwidth="auto fit">
+                        <mlabeledtr id='e-is-m-c-square'>
+                            <mtd>
+                                <mtext> (2.1) </mtext>
+                            </mtd>
+                            <mtd>
+                                <mrow>
+                                    <mi>E</mi>
+                                    <mo>=</mo>
+                                    <mrow>
+                                        <mi>m</mi>
+                                        <mo>&#x2062;</mo>
+                                        <msup>
+                                            <mi>c</mi>
+                                            <mn>2</mn>
+                                        </msup>
+                                    </mrow>
+                                </mrow>
+                            </mtd>
+                        </mlabeledtr>
+                    </mtable>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                mlabeledtr -- label should be on left of rows 1 and 3
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mtable side='left' width="100%" columnwidth="auto fit">
+                        <mtr>
+                            <mtd>
+                                <mtext>Famous Formulas</mtext>
+                            </mtd>
+                        </mtr>
+                        <mlabeledtr>
+                            <mtd>
+                                <mtext> (3.1) </mtext>
+                            </mtd>
+                            <mtd>
+                                <msup>
+                                    <mi>e</mi>
+                                    <mrow>
+                                        <mi>i</mi>
+                                        <mi mathvariant="normal">&#x3C0;</mi>
+                                    </mrow>
+                                </msup>
+                                <mo>+</mo>
+                                <mn>1</mn>
+                                <mo>=</mo>
+                                <mn>0</mn>
+                            </mtd>
+                        </mlabeledtr>
+                        <mtr>
+                            <mtd>
+                                <msup>
+                                    <mi>a</mi>
+                                    <mn>2</mn>
+                                </msup>
+                                <mo>+</mo>
+                                <msup>
+                                    <mi>b</mi>
+                                    <mn>2</mn>
+                                </msup>
+                                <mo>=</mo>
+                                <msup>
+                                    <mi>c</mi>
+                                    <mn>2</mn>
+                                </msup>
+                            </mtd>
+                        </mtr>
+                        <mlabeledtr>
+                            <mtd>
+                                <mtext> (2.3) </mtext>
+                            </mtd>
+                            <mtd>
+                                <mrow>
+                                    <mi>E</mi>
+                                    <mo>=</mo>
+                                    <mrow>
+                                        <mi>m</mi>
+                                        <mo>&#x2062;</mo>
+                                        <msup>
+                                            <mi>c</mi>
+                                            <mn>2</mn>
+                                        </msup>
+                                    </mrow>
+                                </mrow>
+                            </mtd>
+                        </mlabeledtr>
+                    </mtable>
+                </math>
+            </td>
+        </tr>
+    </table>
+
+    <h2>Elementary Math</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(elemMath)">Apply Transform</button>
+    </label>
+    <table id='elemMath'>
+        <tr>
+            <td>Elementary math: 2D subtraction problem with borrows and carries</td>
+            <td><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mstack>
+                        <mscarries location='nw'>
+                            <none />
+                            <mscarry crossout='updiagonalstrike' location='n'>
+                                <mn>2</mn>
+                            </mscarry>
+                            <mn>1</mn>
+                            <none />
+                        </mscarries>
+                        <mn>2,327</mn>
+                        <msrow>
+                            <mo>-</mo>
+                            <mn> 1,156</mn>
+                        </msrow>
+                        <msline />
+                        <mn>1,171</mn>
+                    </mstack>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>Elementary math: Repeating decimals (line over fractional part)</td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mstack stackalign="right">
+                        <msline length="6" />
+                        <mn> 0.142857 </mn>
+                    </mstack>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>Elementary math: Long Division</td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mlongdiv longdivstyle="lefttop">
+                        <mn> 3 </mn>
+                        <mn> 435.3</mn>
+
+                        <mn> 1306</mn>
+
+                        <msgroup position="2" shift="-1">
+                            <msgroup>
+                                <mn> 12</mn>
+                                <msline length="2" />
+                            </msgroup>
+                            <msgroup>
+                                <mn> 10</mn>
+                                <mn> 9</mn>
+                                <msline length="2" />
+                            </msgroup>
+                            <msgroup>
+                                <mn> 16</mn>
+                                <mn> 15</mn>
+                                <msline length="2" />
+                                <mn> 1.0</mn> <!-- aligns on '.', not the right edge ('0') -->
+                            </msgroup>
+                            <msgroup position='-1'>
+                                <!-- extra shift to move to the right of the "." -->
+                                <mn> 9</mn>
+                                <msline length="3" />
+                                <mn> 1</mn>
+                            </msgroup>
+                        </msgroup>
+                    </mlongdiv>
+                </math>
+            </td>
+        </tr>
+
+    </table>
+
+<h2>MathML href linking</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(href)">Apply Transform</button>
+    </label>
+    <table id='href'>
+        <tr>
+            <td>Absolute and relative links</td>
+            <td>
+
+           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mfrac>
+                <mi href="https://www.w3.org">w3c</mi>
+                <mi href="https://www.w3.org/TR/MathML">MathML</mi>
+              </mfrac>						     
+              <mo>+</mo>
+              <mi href="menclose/index.html">menclose</mi>
+              <mo>+</mo>
+              <mi href="#toc">toc</mi>
+	      <mo>+</mo>
+	      <mi><a href="https://www.w3.org/TR/html">HTML a link</a></mi>
+           </math>
+</td>
+</tr>
+</table>
+</body>
+
+</html>
