@@ -6,16 +6,19 @@ on [MathML Core](https://w3c.github.io/mathml-core/) and other
 web technologies natively implemented in browsers.
 See discussion on [wiki](https://github.com/w3c/mathml-polyfills/wiki/MathML-Polyfill-Task-Force-Guidelines)
 
-* [Example of all tests](https://w3c.github.io/mathml-polyfills/acid-test.html)
-* [mfenced test](https://w3c.github.io/mathml-polyfills/mfenced/index.html)
-* [menclose test](https://w3c.github.io/mathml-polyfills/menclose/index.html)
-* [href test](https://w3c.github.io/mathml-polyfills/href/index.html)
-* [ms test](https://w3c.github.io/mathml-polyfills/ms/index.html)
-* [mlabeledtr test](https://w3c.github.io/mathml-polyfills/mlabeledtr/index.html)
-* [named space test](https://w3c.github.io/mathml-polyfills/namedspace/index.html)
-* [Elementary math sweep test: mstack, mlongdiv, and others](https://w3c.github.io/mathml-polyfills/elem-math/index.html)
+## Test pages
+
+* [acid-test.html](https://w3c.github.io/mathml-polyfills/acid-test.html) — combined examples for many polyfills (button to apply transforms)
+* [elem-math/index.html](https://w3c.github.io/mathml-polyfills/elem-math/index.html) — elementary math (`mstack`, `mlongdiv`, etc.)
+* [href/index.html](https://w3c.github.io/mathml-polyfills/href/index.html) — `href` on MathML elements
+* [menclose/index.html](https://w3c.github.io/mathml-polyfills/menclose/index.html) — `menclose` notations
+* [mfenced/index.html](https://w3c.github.io/mathml-polyfills/mfenced/index.html) — `mfenced`
+* [mlabeledtr/index.html](https://w3c.github.io/mathml-polyfills/mlabeledtr/index.html) — `mlabeledtr`
+* [ms/index.html](https://w3c.github.io/mathml-polyfills/ms/index.html) — `ms` quotes
+* [namedspace/index.html](https://w3c.github.io/mathml-polyfills/namedspace/index.html) — named MathML spaces
+* [scriptshift/index.html](https://w3c.github.io/mathml-polyfills/scriptshift/index.html) — `subscriptshift` / `superscriptshift` on `msub`, `msup`, `msubsup`
+* [semantics/index.html](https://w3c.github.io/mathml-polyfills/semantics/index.html) — `semantics` presentation order
 
 -----
 
 [Source Repository](https://github.com/w3c/mathml-polyfills)
-
