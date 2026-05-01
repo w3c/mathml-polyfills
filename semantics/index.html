@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>semantics tests</title>
+  <meta charset="utf-8" />
+  <script type="module">
+    import { _MathTransforms } from '../common/math-transforms.js'
+    import './semantics.js'
+    document.head.appendChild(_MathTransforms.getCSSStyleSheet())
+
+    window.addEventListener('DOMContentLoaded', () => {
+      _MathTransforms.transform(document.body)
+    })
+  </script>
+  <style>
+    math {
+      font-family: "Stix Two Math", "Cambria Math", "Asana Math", serif;
+      box-sizing: border-box;
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    table.tests {
+      border-collapse: collapse;
+      margin: 1.5em 0;
+    }
+
+    table.tests th,
+    table.tests td {
+      border: 1px solid #ccc;
+      padding: 0.75em 1em;
+      vertical-align: middle;
+      text-align: left;
+    }
+
+    table.tests th {
+      background: #f5f5f5;
+    }
+
+    caption {
+      font-weight: bold;
+      text-align: left;
+      margin-bottom: 0.5em;
+    }
+
+    p.serve-note {
+      border: 1px solid #c9a227;
+      background: #fffbeb;
+      padding: 0.75em 1em;
+      max-width: 50em;
+    }
+
+    code.small {
+      font-size: 0.85em;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>semantics</h1>
+
+  <p class="serve-note">
+    This page uses <code>&lt;script type=&quot;module&quot;&gt;</code> with relative <code>import</code> paths.
+    Browsers usually block those imports from the <code>file://</code> URL, so the polyfill will not run if you open this file directly from disk.
+    Serve the repository root over HTTP and open this page from there, for example:
+    <code>python -m http.server 8080</code> then visit
+    <code>http://localhost:8080/semantics/index.html</code>.
+  </p>
+
+  <p>
+    Tests for <code>semantics.js</code>: the first element child of <code>semantics</code> should be the presentation
+    fragment (MathML 4). If presentation lives only in
+    <code class="small">annotation-xml</code> with
+    <code class="small">encoding=MathML-Presentation</code> or
+    <code class="small">encoding=application/mathml-presentation+xml</code>, it is hoisted to the front; if a
+    non-presentation child appears first, the first direct presentation sibling is moved before it.
+    After <code>_MathTransforms.transform</code>, use devtools to confirm child order under <code>semantics</code>.
+  </p>
+  <p>If correct, all examples should display as 
+    <math>
+        <mrow>
+          <mi>a</mi>
+          <mo>+</mo>
+          <mn>1</mn>
+        </mrow>
+    </math>
+.</p>
+
+  <table class="tests">
+    <caption><code>semantics</code> — presentation first</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Math (after transform)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Presentation already first (no structural change)</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <semantics>
+              <mrow>
+                <mi>a</mi>
+                <mo>+</mo>
+                <mn>1</mn>
+              </mrow>
+              <annotation encoding="text/plain">a plus one</annotation>
+            </semantics>
+          </math>
+        </td>
+      </tr>
+      <tr>
+        <td><code>annotation</code> before presentation; polyfill moves <code>mrow</code> first</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <semantics>
+              <annotation encoding="text/plain">a plus one</annotation>
+              <mrow>
+                <mi>a</mi>
+                <mo>+</mo>
+                <mn>1</mn>
+              </mrow>
+            </semantics>
+          </math>
+        </td>
+      </tr>
+      <tr>
+        <td>Presentation only inside <code>annotation-xml</code> (<code>MathML-Presentation</code>)</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <semantics>
+              <annotation encoding="application/x-tex">a+1</annotation>
+              <annotation-xml encoding="MathML-Presentation">
+                <mrow>
+                  <mi>a</mi>
+                  <mo>+</mo>
+                  <mn>1</mn>
+                </mrow>
+              </annotation-xml>
+            </semantics>
+          </math>
+        </td>
+      </tr>
+      <tr>
+        <td>Presentation only inside <code>annotation-xml</code> (<code>application/mathml-presentation+xml</code>)</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <semantics>
+              <annotation encoding="text/plain">x squared</annotation>
+              <annotation-xml encoding="application/mathml-presentation+xml">
+                <mrow>
+                  <mi>a</mi>
+                  <mo>+</mo>
+                  <mn>1</mn>
+                </mrow>
+                </annotation-xml>
+            </semantics>
+          </math>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+
+</html>
