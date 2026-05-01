@@ -10,7 +10,9 @@
     document.head.appendChild ( _MathTransforms.getCSSStyleSheet() );
 
     window.addEventListener("DOMContentLoaded", () => {
-      _MathTransforms.transform(document.body)
+      document.querySelectorAll('.menclose-test-polyfill-root').forEach((root) => {
+        _MathTransforms.transform(root)
+      })
     })
   </script>
   <style>
@@ -95,6 +97,31 @@
       border-collapse: collapse;
       border-spacing: 0px;
     }
+
+    table.menclose-sweep {
+      border-collapse: collapse;
+      margin: 1em 0 1.5em 0;
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    table.menclose-sweep th,
+    table.menclose-sweep td {
+      border: 1px solid #ccc;
+      padding: 0.75em 1em;
+      vertical-align: middle;
+      text-align: left;
+    }
+
+    table.menclose-sweep th {
+      background: #f5f5f5;
+    }
+
+    table.menclose-sweep caption {
+      font-weight: bold;
+      text-align: left;
+      margin-bottom: 0.5em;
+    }
   </style>
 </head>
 
@@ -107,12 +134,14 @@
   </p>
 
   <h2>Examples from MathML spec (some general examples)</h2>
+  <p>Native <code>menclose</code> (middle column) vs polyfill (right column), same MathML in each row.</p>
   <ol>
     <li>box and circle
-      <table>
+      <table class="menclose-sweep">
         <tr>
           <th>Image</th>
-          <th>MathML</th>
+          <th>Native <code>menclose</code> (no polyfill on this subtree)</th>
+          <th>After <code>_MathTransforms.transform</code></th>
         </tr>
         <tr>
           <td><img src="https://www.w3.org/TR/MathML/image/circlebox.png" alt="circled x plus y"></td>
@@ -124,15 +153,27 @@
               </menclose>
             </math>
           </td>
+          <td>
+            <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <menclose notation='circle box'>
+                <mi> x </mi>
+                <mo> + </mo>
+                <mi> y </mi>
+              </menclose>
+            </math>
+            </div>
+          </td>
         </tr>
       </table>
     </li>
 
     <li>actuarial notation
-      <table>
+      <table class="menclose-sweep">
         <tr>
           <th>Image</th>
-          <th>MathML</th>
+          <th>Native <code>menclose</code> (no polyfill on this subtree)</th>
+          <th>After <code>_MathTransforms.transform</code></th>
         </tr>
         <tr>
           <td><img src="https://www.w3.org/TR/MathML/image/actuarial.png" alt="actuarial notation"></td>
@@ -151,15 +192,34 @@
               </msub>
             </math>
           </td>
+          <td>
+            <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <msub>
+                <mi>a</mi>
+                <mrow>
+                  <menclose notation='actuarial'>
+                    <mi>n</mi>
+                  </menclose>
+                  <mo>&#x2063;
+                    <!--INVISIBLE SEPARATOR-->
+                  </mo>
+                  <mi>i</mi>
+                </mrow>
+              </msub>
+            </math>
+            </div>
+          </td>
         </tr>
       </table>
     </li>
 
     <li>phasorangle
-      <table>
+      <table class="menclose-sweep">
         <tr>
           <th>Image</th>
-          <th>MathML</th>
+          <th>Native <code>menclose</code> (no polyfill on this subtree)</th>
+          <th>After <code>_MathTransforms.transform</code></th>
         </tr>
         <tr>
           <td><img src="https://www.w3.org/TR/MathML/image/phasorangle.png" alt="phasor angle of negative pi over 2"></td>
@@ -182,6 +242,28 @@
               </mrow>
             </math>
           </td>
+          <td>
+            <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mi>C</mi>
+              <mrow>
+                <menclose notation='phasorangle'>
+                  <mrow>
+                    <mo>&#x2212;
+                      <!--MINUS SIGN-->
+                    </mo>
+                    <mfrac>
+                      <mi>&#x3C0;
+                        <!--GREEK SMALL LETTER PI-->
+                      </mi>
+                      <mn>2</mn>
+                    </mfrac>
+                  </mrow>
+                </menclose>
+              </mrow>
+            </math>
+            </div>
+          </td>
         </tr>
       </table>
     </li>
@@ -191,828 +273,1872 @@
   </ol>
 
   <h2>menclose attribute sweep (in isolation)</h2>
-  <ol>
-    <li>menclose default (should be long division):
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose longdiv:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="longdiv">
-          <mn>128</mn>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose actuarial:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="actuarial">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose phasorangle:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="phasorangle">
-          <mrow>
-            <mi>π</mi>
-            <mo>/</mo>
-            <mn>8</mn>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose radical:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="radical">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose box:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="box">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose roundedbox:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="roundedbox">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose circle:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="circle">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose left:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="left">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose right:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="right">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose top:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="top">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose bottom:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="bottom">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose updiagonalstrike:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="updiagonalstrike">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose downdiagonalstrike:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="downdiagonalstrike">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose verticalstrike:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="verticalstrike">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose horizontalstrike:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="horizontalstrike">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose northeastarrow:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="northeastarrow">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose uparrow:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="uparrow">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose rightarrow:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="rightarrow">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose downarrow:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="downarrow">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose leftarrow:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="leftarrow">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose northwestarrow:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="northwestarrow">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose southwestarrow:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="southwestarrow">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose southeastarrow:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="southeastarrow">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose leftrightarrow:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="leftrightarrow">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose updownarrow:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="updownarrow">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose northwestsoutheastarrow:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="northwestsoutheastarrow">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose northeastsouthwestarrow:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="northeastsouthwestarrow">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose madruwb:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="madruwb">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>3</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose box and unknown notation values (foo and bar):
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="foo box bar">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>3</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose with ony unknown notation values (foo and bar) -- should use default long div:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation="foo bar">
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>3</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-
-  </ol>
+  <p>Each row shows the same MathML twice: the middle column is outside any polyfill run (native <code>menclose</code>); the right column is wrapped in <code>menclose-test-polyfill-root</code> and processed with <code>_MathTransforms.transform</code> so you can compare native rendering with the polyfill.</p>
+  <table class="menclose-sweep">
+    <caption>Notation values in isolation</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>menclose</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>menclose default (should be long division):</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose>
+                    <mrow>
+                      <mi>x</mi>
+                      <mo>+</mo>
+                      <mi>y</mi>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose longdiv:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="longdiv">
+                    <mn>128</mn>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="longdiv">
+                      <mn>128</mn>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose actuarial:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="actuarial">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="actuarial">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose phasorangle:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="phasorangle">
+                    <mrow>
+                      <mi>π</mi>
+                      <mo>/</mo>
+                      <mn>8</mn>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="phasorangle">
+                      <mrow>
+                        <mi>π</mi>
+                        <mo>/</mo>
+                        <mn>8</mn>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose radical:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="radical">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="radical">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose box:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="box">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="box">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose roundedbox:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="roundedbox">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="roundedbox">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose circle:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="circle">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="circle">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose left:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="left">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="left">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose right:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="right">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="right">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose top:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="top">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="top">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose bottom:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="bottom">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="bottom">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose updiagonalstrike:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="updiagonalstrike">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="updiagonalstrike">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose downdiagonalstrike:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="downdiagonalstrike">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="downdiagonalstrike">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose verticalstrike:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="verticalstrike">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="verticalstrike">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose horizontalstrike:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="horizontalstrike">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="horizontalstrike">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose northeastarrow:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="northeastarrow">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="northeastarrow">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose uparrow:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="uparrow">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="uparrow">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose rightarrow:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="rightarrow">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="rightarrow">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose downarrow:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="downarrow">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="downarrow">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose leftarrow:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="leftarrow">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="leftarrow">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose northwestarrow:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="northwestarrow">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="northwestarrow">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose southwestarrow:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="southwestarrow">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="southwestarrow">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose southeastarrow:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="southeastarrow">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="southeastarrow">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose leftrightarrow:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="leftrightarrow">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="leftrightarrow">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose updownarrow:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="updownarrow">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="updownarrow">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose northwestsoutheastarrow:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="northwestsoutheastarrow">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="northwestsoutheastarrow">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose northeastsouthwestarrow:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="northeastsouthwestarrow">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="northeastsouthwestarrow">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose madruwb:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="madruwb">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>3</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="madruwb">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>3</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose box and unknown notation values (foo and bar):</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="foo box bar">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>3</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="foo box bar">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>3</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose with ony unknown notation values (foo and bar) -- should use default long div:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation="foo bar">
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>3</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation="foo bar">
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>3</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
   <h2>menclose attributes in combination</h2>
-  <ol>
-    <li>menclose left and right with arrow to touch:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='left right rightarrow'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-          <mo>+</mo>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose top and bottom with arrow to touch:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='bottom top downarrow'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-          <mo>+</mo>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose top and right with arrows to touch:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='right top uparrow rightarrow'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-          <mo>+</mo>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose bottom and left with arrows to touch:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='downarrow bottom leftarrow left'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-          <mo>+</mo>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose horizontal/vertical/diagonal double and box:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='horizontalstrike updiagonalstrike downdiagonalstrike verticalstrike box'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose horizontal/vertical/diagonal double and box (order changed from above):
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='box downdiagonalstrike verticalstrike updiagonalstrike horizontalstrike'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose diagonal arrows and box:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='box northwestarrow northeastarrow'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-          <mo>+</mo>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose diagonal arrows and box:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='box southwestarrow southeastarrow'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-          <mo>+</mo>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose diagonal arrows and box:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='box northeastsouthwestarrow northwestsoutheastarrow'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-          <mo>+</mo>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose horizontal/vertical arrows and box:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='box downarrow leftarrow'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-          <mo>+</mo>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose horizontal/vertical arrows and box:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='box uparrow rightarrow'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-          <mo>+</mo>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-
-    <li>menclose horizontal/vertical/diagonal double arrows and box:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation=' updownarrow leftrightarrow northeastsouthwestarrow northwestsoutheastarrow box'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose horizontal/vertical/diagonal strikes and right, top:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='horizontalstrike updiagonalstrike downdiagonalstrike verticalstrike right top'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose horizontal/vertical/diagonal strikes and left, bottom:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='horizontalstrike updiagonalstrike downdiagonalstrike verticalstrike left bottom'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose circle with horizontal/vertical strikes:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='circle horizontalstrike verticalstrike'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-          <mo>+</mo>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose roundedbox with horizontal/vertical strikes:
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <menclose notation='horizontalstrike roundedbox verticalstrike'>
-          <mfrac>
-            <mrow>
-              <mi>x</mi>
-              <mo>+</mo>
-              <mi>y</mi>
-            </mrow>
-            <mn>2</mn>
-          </mfrac>
-          <mo>+</mo>
-          <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mi>y</mi>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-  </ol>
-
+  <p>Native <code>menclose</code> (middle) vs polyfill (right), same markup in each row.</p>
+  <table class="menclose-sweep">
+    <caption>Combined notation attributes</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>menclose</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>menclose left and right with arrow to touch:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='left right rightarrow'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mrow>
+                      <mi>x</mi>
+                      <mo>+</mo>
+                      <mi>y</mi>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='left right rightarrow'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                      <mo>+</mo>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose top and bottom with arrow to touch:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='bottom top downarrow'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mrow>
+                      <mi>x</mi>
+                      <mo>+</mo>
+                      <mi>y</mi>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='bottom top downarrow'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                      <mo>+</mo>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose top and right with arrows to touch:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='right top uparrow rightarrow'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mrow>
+                      <mi>x</mi>
+                      <mo>+</mo>
+                      <mi>y</mi>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='right top uparrow rightarrow'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                      <mo>+</mo>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose bottom and left with arrows to touch:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='downarrow bottom leftarrow left'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mrow>
+                      <mi>x</mi>
+                      <mo>+</mo>
+                      <mi>y</mi>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='downarrow bottom leftarrow left'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                      <mo>+</mo>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose horizontal/vertical/diagonal double and box:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='horizontalstrike updiagonalstrike downdiagonalstrike verticalstrike box'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='horizontalstrike updiagonalstrike downdiagonalstrike verticalstrike box'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose horizontal/vertical/diagonal double and box (order changed from above):</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='box downdiagonalstrike verticalstrike updiagonalstrike horizontalstrike'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='box downdiagonalstrike verticalstrike updiagonalstrike horizontalstrike'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose diagonal arrows and box:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='box northwestarrow northeastarrow'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mrow>
+                      <mi>x</mi>
+                      <mo>+</mo>
+                      <mi>y</mi>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='box northwestarrow northeastarrow'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                      <mo>+</mo>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose diagonal arrows and box:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='box southwestarrow southeastarrow'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mrow>
+                      <mi>x</mi>
+                      <mo>+</mo>
+                      <mi>y</mi>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='box southwestarrow southeastarrow'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                      <mo>+</mo>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose diagonal arrows and box:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='box northeastsouthwestarrow northwestsoutheastarrow'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mrow>
+                      <mi>x</mi>
+                      <mo>+</mo>
+                      <mi>y</mi>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='box northeastsouthwestarrow northwestsoutheastarrow'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                      <mo>+</mo>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose horizontal/vertical arrows and box:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='box downarrow leftarrow'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mrow>
+                      <mi>x</mi>
+                      <mo>+</mo>
+                      <mi>y</mi>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='box downarrow leftarrow'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                      <mo>+</mo>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose horizontal/vertical arrows and box:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='box uparrow rightarrow'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mrow>
+                      <mi>x</mi>
+                      <mo>+</mo>
+                      <mi>y</mi>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='box uparrow rightarrow'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                      <mo>+</mo>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose horizontal/vertical/diagonal double arrows and box:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation=' updownarrow leftrightarrow northeastsouthwestarrow northwestsoutheastarrow box'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation=' updownarrow leftrightarrow northeastsouthwestarrow northwestsoutheastarrow box'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose horizontal/vertical/diagonal strikes and right, top:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='horizontalstrike updiagonalstrike downdiagonalstrike verticalstrike right top'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='horizontalstrike updiagonalstrike downdiagonalstrike verticalstrike right top'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose horizontal/vertical/diagonal strikes and left, bottom:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='horizontalstrike updiagonalstrike downdiagonalstrike verticalstrike left bottom'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='horizontalstrike updiagonalstrike downdiagonalstrike verticalstrike left bottom'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose circle with horizontal/vertical strikes:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='circle horizontalstrike verticalstrike'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mrow>
+                      <mi>x</mi>
+                      <mo>+</mo>
+                      <mi>y</mi>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='circle horizontalstrike verticalstrike'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                      <mo>+</mo>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose roundedbox with horizontal/vertical strikes:</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <menclose notation='horizontalstrike roundedbox verticalstrike'>
+                    <mfrac>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                      <mn>2</mn>
+                    </mfrac>
+                    <mo>+</mo>
+                    <mrow>
+                      <mi>x</mi>
+                      <mo>+</mo>
+                      <mi>y</mi>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <menclose notation='horizontalstrike roundedbox verticalstrike'>
+                      <mfrac>
+                        <mrow>
+                          <mi>x</mi>
+                          <mo>+</mo>
+                          <mi>y</mi>
+                        </mrow>
+                        <mn>2</mn>
+                      </mfrac>
+                      <mo>+</mo>
+                      <mrow>
+                        <mi>x</mi>
+                        <mo>+</mo>
+                        <mi>y</mi>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
   <h2>menclose rtl dir tests</h2>
-  <p>'dir' is set on 'math' element unless otherwise specified.</p>
-  <ol>
-    <li>menclose phasorangle (should reverse):
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
-        <menclose notation="phasorangle">
-          <mrow>
-            <mi>π</mi>
-            <mo>/</mo>
-            <mn>8</mn>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose phasorangle (dir set on 'mrow', should reverse):
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-        <mrow  dir="rtl">
-          <menclose notation="phasorangle">
-            <mrow>
-              <mi>π</mi>
-              <mo>/</mo>
-              <mn>8</mn>
-            </mrow>
-          </menclose>
-          </mrow>
-      </math>
-        </li>
-    <li>menclose radical (should reverse, relies on underlying implementation of msqrt):
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
-        <menclose notation="radical">
-          <mrow>
-            <mi>π</mi>
-            <mo>/</mo>
-            <mn>8</mn>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose left (should stay on left):
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
-        <menclose notation="left">
-          <mrow>
-            <mi>π</mi>
-            <mo>/</mo>
-            <mn>8</mn>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose longdiv (should stay on left):
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
-        <menclose notation="longdiv">
-          <mrow>
-            <mi>π</mi>
-            <mo>/</mo>
-            <mn>8</mn>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
-    <li>menclose rightarrow (should still point to right):
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
-        <menclose notation="rightarrow">
-          <mrow>
-            <mi>π</mi>
-            <mo>/</mo>
-            <mn>8</mn>
-          </mrow>
-        </menclose>
-      </math>
-    </li>
+  <p><code>dir</code> is set on the <code>math</code> element unless otherwise noted. Native <code>menclose</code> (middle) vs polyfill (right), same markup in each row.</p>
+  <table class="menclose-sweep">
+    <caption>RTL <code>dir</code> tests</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>menclose</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>menclose phasorangle (should reverse):</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+                  <menclose notation="phasorangle">
+                    <mrow>
+                      <mi>π</mi>
+                      <mo>/</mo>
+                      <mn>8</mn>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+                    <menclose notation="phasorangle">
+                      <mrow>
+                        <mi>π</mi>
+                        <mo>/</mo>
+                        <mn>8</mn>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose phasorangle (dir set on 'mrow', should reverse):</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                  <mrow  dir="rtl">
+                    <menclose notation="phasorangle">
+                      <mrow>
+                        <mi>π</mi>
+                        <mo>/</mo>
+                        <mn>8</mn>
+                      </mrow>
+                    </menclose>
+                    </mrow>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mrow  dir="rtl">
+                      <menclose notation="phasorangle">
+                        <mrow>
+                          <mi>π</mi>
+                          <mo>/</mo>
+                          <mn>8</mn>
+                        </mrow>
+                      </menclose>
+                      </mrow>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose radical (should reverse, relies on underlying implementation of msqrt):</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+                  <menclose notation="radical">
+                    <mrow>
+                      <mi>π</mi>
+                      <mo>/</mo>
+                      <mn>8</mn>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+                    <menclose notation="radical">
+                      <mrow>
+                        <mi>π</mi>
+                        <mo>/</mo>
+                        <mn>8</mn>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose left (should stay on left):</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+                  <menclose notation="left">
+                    <mrow>
+                      <mi>π</mi>
+                      <mo>/</mo>
+                      <mn>8</mn>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+                    <menclose notation="left">
+                      <mrow>
+                        <mi>π</mi>
+                        <mo>/</mo>
+                        <mn>8</mn>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose longdiv (should stay on left):</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+                  <menclose notation="longdiv">
+                    <mrow>
+                      <mi>π</mi>
+                      <mo>/</mo>
+                      <mn>8</mn>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+                    <menclose notation="longdiv">
+                      <mrow>
+                        <mi>π</mi>
+                        <mo>/</mo>
+                        <mn>8</mn>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>menclose rightarrow (should still point to right):</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+                  <menclose notation="rightarrow">
+                    <mrow>
+                      <mi>π</mi>
+                      <mo>/</mo>
+                      <mn>8</mn>
+                    </mrow>
+                  </menclose>
+                </math>
+        </td>
+        <td>
+          <div class="menclose-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir="rtl">
+                    <menclose notation="rightarrow">
+                      <mrow>
+                        <mi>π</mi>
+                        <mo>/</mo>
+                        <mn>8</mn>
+                      </mrow>
+                    </menclose>
+                  </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-    </ol>
 
 </body>
 
