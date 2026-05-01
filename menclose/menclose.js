@@ -110,15 +110,6 @@ mrow.menclose-circle {
     border-radius: 50%;
 }
 
-mrow.menclose-box {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    border: 0.067em solid;
-}
-
 mrow.menclose-left {
     position: absolute;
     top: 0;
@@ -264,74 +255,181 @@ const ARROW_INFO = {
   'updiagonalstrike':        [-1, 0,           false, ['']],
   'downdiagonalstrike':      [ 1, 0,           false, ['']],
   'uparrow':                 [0,  -Math.PI / 2,false, ['verticalstrike']],
-  'downarrow':               [0,  Math.PI / 2, false, ['verticakstrike']],
+  'downarrow':               [0,  Math.PI / 2, false, ['verticalstrike']],
   'rightarrow':              [0,  0,           false, ['horizontalstrike']],
   'leftarrow':               [0,  Math.PI,     false, ['horizontalstrike']],
   'updownarrow':             [0,  Math.PI / 2, true,  ['verticalstrike', 'uparrow', 'downarrow']],
   'leftrightarrow':          [0,  0,           true,  ['horizontalstrike', 'leftarrow', 'rightarrow']],
-  'northeastarrow':          [-1, 0,           false, ['updiagonalstrike', 'updiagonalarrow']],
+  'northeastarrow':          [-1, 0,           false, ['updiagonalstrike']],
   'southeastarrow':          [ 1, 0,           false, ['downdiagonalstrike']],
   'northwestarrow':          [ 1, Math.PI,     false, ['downdiagonalstrike']],
   'southwestarrow':          [-1, Math.PI,     false, ['updiagonalstrike']],
-  'northeastsouthwestarrow': [-1, 0,           true,  ['updiagonalstrike', 'northeastarrow', 'updiagonalarrow', 'southwestarrow']],
+  'northeastsouthwestarrow': [-1, 0,           true,  ['updiagonalstrike', 'northeastarrow', 'southwestarrow']],
   'northwestsoutheastarrow': [ 1, 0,           true,  ['downdiagonalstrike', 'northwestarrow', 'southeastarrow']]
 };
 
-const ALL_NOTATIONS = Array.from( new Set(BORDER_NOTATIONS.concat(Object.keys(MENCLOSE_STYLE), Object.keys(ARROW_INFO))) );
+// 'phasoranglertl' is an internal-only notation produced by the RTL handler in transformMEnclose,
+// so it's excluded here to prevent author markup from triggering it directly.
+const ALL_NOTATIONS = Array.from(
+  new Set(
+    BORDER_NOTATIONS.concat(
+      Object.keys(MENCLOSE_STYLE).filter(n => n !== 'phasoranglertl'),
+      Object.keys(ARROW_INFO)
+    )
+  )
+);
 
-function getWidthOf(mathmlStr) {
+/** Notations whose polyfill uses mrow.menclose-arrow and/or phasorangle transforms (needs working MathML CSS transforms). */
+const TRANSFORM_HEAVY_NOTATIONS = new Set([
+  ...Object.keys(ARROW_INFO),
+  'phasorangle',
+  'phasoranglertl',
+]);
+
+/**
+ * Shrink-wrap probe math so getBoundingClientRect reflects intrinsic content, not a full-line
+ * block box (display="block" on &lt;math&gt; was making width comparisons always tie).
+ * @param {string} mathInnerHtml inner XML of the &lt;math&gt; element
+ * @returns {{ width: number, height: number }}
+ */
+function measureProbeMath(mathInnerHtml) {
+  const wrapper = document.createElement('div');
+  wrapper.setAttribute(
+    'style',
+    'position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;display:inline-block;width:max-content;height:max-content;margin:0;padding:0;border:0;'
+  );
   const math = document.createElementNS(MATHML_NS, 'math');
-  math.innerHTML = mathmlStr;
-  document.body.appendChild(math);
-  const width = math.getBoundingClientRect().width;
-  document.body.lastElementChild.remove();
-  return width;
+  math.innerHTML = mathInnerHtml;
+  wrapper.appendChild(math);
+  document.body.appendChild(wrapper);
+  const rect = math.getBoundingClientRect();
+  const out = { width: rect.width, height: rect.height };
+  wrapper.remove();
+  return out;
 }
 
 /**
- * 
- * @param {string} notationAttrValue
- * @returns {boolean} -- true if the transform should be used
+ * Compare two probe sizes with a small tolerance for sub-pixel layout differences.
+ * @param {{ width: number, height: number }} a
+ * @param {{ width: number, height: number }} b
+ * @returns {boolean}
+ */
+function probeRectsEqual(a, b) {
+  const e = 0.51;
+  return Math.abs(a.width - b.width) < e && Math.abs(a.height - b.height) < e;
+}
+
+/** Cached: true when a bordered &lt;mrow&gt; inside &lt;math&gt; grows layout (border/padding path). */
+let mathmlCssLayoutSupportedCache;
+
+/** Cached: true when CSS positioning (the arrow polyfill's central layout mechanism) actually works on MathML mrow. */
+let mathmlArrowCssLayoutSupportedCache;
+
+/**
+ * Probe whether **position: absolute** on a nested MathML &lt;mrow&gt; is honored by layout
+ * (not just by computed style). Computed-style probes for `transform` or `position` pass in
+ * Firefox even when MathML layout ignores those rules, so we measure the side effect:
+ * an absolutely-positioned child is removed from flow and stops contributing to its
+ * parent's intrinsic width. The arrow polyfill's CSS depends on that mechanism (every
+ * `mrow.menclose-arrow` and arrow-head child uses `position: absolute`); without it the
+ * arrow heads/lines stack inline as visible garbage.
+ * @returns {boolean}
+ */
+function mathmlArrowCssLayoutSupported() {
+  if (mathmlArrowCssLayoutSupportedCache !== undefined) {
+    return mathmlArrowCssLayoutSupportedCache;
+  }
+  const outerCls = 'menclose-pos-probe-outer';
+  const absCls = 'menclose-pos-probe-abs';
+  const style = document.createElement('style');
+  style.textContent =
+    `mrow.${outerCls}{display:inline-block;position:relative;}` +
+    `mrow.${absCls}{position:absolute;top:0;left:0;}`;
+  document.head.appendChild(style);
+
+  const baseline = measureProbeMath(
+    `<mrow class="${outerCls}"><mtext>X</mtext></mrow>`
+  );
+  const withAbsChild = measureProbeMath(
+    `<mrow class="${outerCls}"><mtext>X</mtext><mrow class="${absCls}"><mtext>MMMMMMMM</mtext></mrow></mrow>`
+  );
+  style.remove();
+
+  // If position:absolute is honored, the wide MMMMMMMM child is taken out of flow and
+  // the outer width matches the baseline (just X). Allow a few px slack for sub-pixel
+  // rounding. If it is ignored, withAbsChild grows by ~MMMMMMMM width (tens of px).
+  mathmlArrowCssLayoutSupportedCache =
+    withAbsChild.width < baseline.width + 4;
+  return mathmlArrowCssLayoutSupportedCache;
+}
+
+/**
+ * Cached: true when CSS border (and by extension padding) on a MathML &lt;mrow&gt; affects layout.
+ * Prerequisite for the polyfill to render anything visible.
+ * @returns {boolean}
+ */
+function mathmlBorderLayoutSupported() {
+  if (mathmlCssLayoutSupportedCache !== undefined) {
+    return mathmlCssLayoutSupportedCache;
+  }
+  const plain = measureProbeMath('<mrow><mi>x</mi></mrow>');
+  const bordered = measureProbeMath(
+    '<mrow style="border:8px solid"><mi>x</mi></mrow>'
+  );
+  mathmlCssLayoutSupportedCache =
+    bordered.width > plain.width + 1 || bordered.height > plain.height + 1;
+  return mathmlCssLayoutSupportedCache;
+}
+
+/**
+ * Decide whether to replace native {@code <menclose>} with the CSS-based polyfill for this
+ * {@code notation} attribute value. Returns false when MathML CSS layout is insufficient (e.g.
+ * Firefox arrow path) or when the UA already implements the requested notations natively.
+ * @param {string} notationAttrValue raw {@code notation} attribute (space-separated tokens)
+ * @returns {boolean} {@code true} if the polyfill should run; {@code false} to leave the element unchanged
  */
 function useMencloseTransform(notationAttrValue) {
-  // Could use browser detection, but that's frowned on/not reliable over time
-  // As of 11/2020, the situation is:
-  //  chrome/edge -- no menclose support but MathML support if experimental features is on
-  //  firefox -- doesn't support arrows, CSS on MathML (hence this code won't work in Firefox), and problems with defaults
-  //  safari -- doesn't support radical, phasorangle, arrows CSS on MathML (hence this code won't work in Safari), and problems with defaults
+  if (!mathmlBorderLayoutSupported()) {
+    return false;
+  }
 
-  // Start by seeing if CSS on MathML elements works (try it on mrow since that's what the this transform uses)
-  // if (getWidthOf('<math display="block"><mrow><mi>x</mi></mrow></math>') === getWidthOf('<math display="block"><mrow style="border: 100px;"><mi>x</mi></mrow></math>')) {
-  //   console.log("CSS not supported on MathML element -- transform skipped.")
-  //   return false;   // CSS not supported -- transform won't work
-  // }
+  const rawTokens = notationAttrValue.trim().split(/\s+/).filter(Boolean);
+  if (
+    rawTokens.some((t) => TRANSFORM_HEAVY_NOTATIONS.has(t)) &&
+    !mathmlArrowCssLayoutSupported()
+  ) {
+    return false;
+  }
 
-  // Test if basic support of menclose
-  if (getWidthOf('<mi>x</mi>') === getWidthOf('<menclose notation="box"><mi>x</mi></menclose>')) {
+  // Test if basic support of menclose (box should add padding vs bare mi)
+  const miProbe = measureProbeMath('<mi>x</mi>');
+  const boxProbe = measureProbeMath('<menclose notation="box"><mi>x</mi></menclose>');
+  if (probeRectsEqual(miProbe, boxProbe)) {
     return true;    // doesn't have even basic support
   }
 
   // Could test all cases, but in practice it is phasorangle and arrows that are not implemented in Safari and Firefox
   //  (actually there are also RTL dir problems, but hopefully they will fix those)
   if (/arrow/.test(notationAttrValue)) {
-    if (getWidthOf('<math display="block"><mi>x</mi></math>') === 
-        getWidthOf('<math display="block"><menclose notation="rightarrow"><mi>x</mi></menclose></math>')) {
+    const arrowProbe = measureProbeMath('<menclose notation="rightarrow"><mi>x</mi></menclose>');
+    if (probeRectsEqual(miProbe, arrowProbe)) {
       return true;    // uses an arrow and not supported
     }
   }
   if (/phasorangle/.test(notationAttrValue)) {
-    if (getWidthOf('<math display="block"><mi>x</mi></math>') === 
-        getWidthOf('<math display="block"><menclose notation="phasorangle"><mi>x</mi></menclose></math>')) {
-      return true;    // uses an phasorangle and not supported
-    }   
+    const phasorProbe = measureProbeMath('<menclose notation="phasorangle"><mi>x</mi></menclose>');
+    if (probeRectsEqual(miProbe, phasorProbe)) {
+      return true;    // uses a phasorangle and not supported
+    }
   }
   return false;   // looks like all the notations are supported.
 }
 
 /**
- * 
- * @param {string[]} notationArray 
- * @returns {string[]} notationArray
+ * Deduplicate notation tokens and drop redundant ones (e.g. individual borders when {@code box}
+ * is present; strike tokens implied by a composite arrow notation per {@code ARROW_INFO}).
+ * @param {string[]} notationArray notation tokens from the element
+ * @returns {string[]} filtered list safe to iterate for drawing
  */
 function removeRedundantNotations(notationArray) {
   // remove repeated names
@@ -345,17 +443,20 @@ function removeRedundantNotations(notationArray) {
   // some more drawing optimizations -- this time using ARROW_INFO
   for (const [notation, values] of Object.entries(ARROW_INFO)) {
     const removeArray = values[3];
-    if (removeArray !== [''] && notationArray.includes(notation)) {
+    const hasMeaningfulRemovals = removeArray.some((x) => x !== '');
+    if (hasMeaningfulRemovals && notationArray.includes(notation)) {
       // if there is a 'remove' list and the entry key is a notation to draw...
-      notationArray = notationArray.filter( notation => !removeArray.includes(notation) );
+      notationArray = notationArray.filter(n => !removeArray.includes(n));
     }
   }
   return notationArray;
 }
 
 /**
- * 
- * @param {HTMLElement} element 
+ * Walk from {@code element} up to the enclosing {@code <math>} and return whether the nearest
+ * explicit {@code dir} is {@code ltr}. If no {@code dir} is found on that path, defaults to
+ * {@code true} (LTR).
+ * @param {Element} element starting node (e.g. a {@code menclose})
  * @returns {boolean}
  */
 function isDirLTR(element) {
@@ -371,10 +472,11 @@ function isDirLTR(element) {
 }
 
 /**
- * 
- * @param {HTMLElement} el 
- * @param {string[]} notationArray 
- * @returns {number} -- amount of padding in pixels
+ * Extra padding (in pixels) added around the menclose bounding box for arrow/strike layout,
+ * depending on whether rounded or circular borders need more clearance.
+ * @param {Element} el menclose element (used as font-size context for {@code em})
+ * @param {string[]} notationArray active notation tokens after filtering
+ * @returns {number} padding amount in CSS pixels
  */
 function padAmount(el, notationArray) {
   let padding = '0.467em';
@@ -383,10 +485,47 @@ function padAmount(el, notationArray) {
   }
   return convertToPx(el, padding); 
 }
+
+/** Presentation attributes that belong only to <menclose>, not the replacement <mrow>. */
+const MENCLOSE_ONLY_ATTR_NAMES = new Set(['notation']);
+
 /**
- * 
- * @param {HTMLElement} el  // menclose element
- * @returns  
+ * Copy presentation attributes from {@code <menclose>} onto the replacement {@code <mrow>},
+ * skipping {@code notation}; merge user {@code class} / {@code style} with the polyfill's
+ * {@code menclose} class and assembled inline styles.
+ * @param {Element} fromMenclose original menclose node
+ * @param {Element} toMrow replacement container mrow
+ * @param {string} computedStyle semicolon-separated CSS from {@link MENCLOSE_STYLE} assembly
+ * @returns {void}
+ */
+function copyMencloseAttrsToReplacementMrow(fromMenclose, toMrow, computedStyle) {
+  for (const { name, value } of [...fromMenclose.attributes]) {
+    const lower = name.toLowerCase();
+    if (MENCLOSE_ONLY_ATTR_NAMES.has(lower)) continue;
+    if (lower === 'class' || lower === 'style') continue;
+    if (lower.startsWith('xmlns')) continue;
+    toMrow.setAttribute(name, value);
+  }
+  const userClasses = (fromMenclose.getAttribute('class') || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  toMrow.setAttribute('class', ['menclose', ...userClasses].join(' '));
+
+  const userStyle = fromMenclose.getAttribute('style');
+  const parts = [userStyle?.trim(), computedStyle?.trim()].filter(Boolean);
+  if (parts.length) {
+    toMrow.setAttribute('style', parts.join('; '));
+  }
+}
+
+/**
+ * Transform a {@code <menclose>} into an {@code <mrow class="menclose">} with nested absolutely
+ * positioned {@code mrow} children (borders, strikes, arrows, phasor angle) per the active
+ * notation list. If {@link useMencloseTransform} is false for this notation, returns {@code el}
+ * unchanged.
+ * @param {Element} el menclose element to replace
+ * @returns {Element} replacement {@code mrow} or the original {@code el}
  */
 const transformMEnclose = (el) => {
   // Return an <mrow> element representing the menclose element (might have just one child).
@@ -397,18 +536,13 @@ const transformMEnclose = (el) => {
   //   the contents of the menclose.
   // Subsequent mrows inherit their size from the parent so that their border is the right size.
   // Exceptions are 'radical' and 'longdiv' notations.
-  
-  // Firefox (as of 11/2020) handles menclose (except arrows) and doesn't deal with the CSS properly on MathML elements
-  // if (!useMencloseTransform()) {
-  //   return el;
-  // }
 
   let notationAttrValue = el.getAttribute('notation') || '';
   if (!useMencloseTransform(notationAttrValue)) {
     return el;
   }
 
-  let notationArray = notationAttrValue.split(' ');
+  let notationArray = notationAttrValue.trim().split(/\s+/).filter(Boolean);
 
   // get rid of unknown names
   notationArray = notationArray.filter( notation => ALL_NOTATIONS.includes(notation) );
@@ -422,7 +556,7 @@ const transformMEnclose = (el) => {
   notationArray = removeRedundantNotations(notationArray);
 
   // handle rtl -- affects only 'radical' (which relies on msqrt) and 'phasorangle'
-  // if rtl, we change phasorangle to parosoranglertl and use the css rule
+  // if rtl, we change phasorangle to phasoranglertl and use the css rule
   if (notationArray.includes('phasorangle') && !isDirLTR(el)) {
     const i = notationArray.indexOf('phasorangle');
     notationArray[i] = 'phasoranglertl';
@@ -438,7 +572,6 @@ const transformMEnclose = (el) => {
 
   // create the mrow container that represents the menclose
   const mencloseMRow = document.createElementNS(MATHML_NS, 'mrow');
-  mencloseMRow.className = 'menclose';
   mencloseMRow.appendChild(childrenMRow);
 
   // deal with the oddball value of radical (use msqrt)
@@ -502,10 +635,10 @@ const transformMEnclose = (el) => {
         }
       }
     } else if (word === 'phasorangle' || word === 'phasoranglertl') {
-      const rectWidth = convertToPx(el, '.7em');
-      const rectHeight = rect.height;
-      wordMRow.style.width = `${Math.sqrt(rectWidth * rectWidth + rectHeight * rectHeight)}px`;    // hypotenuse
-      wordMRow.style.transform = `rotate(${word === 'phasoranglertl' ? '' : '-'}${Math.atan(rectHeight / rectWidth)}rad) translateY(0.067em)`;
+      const phasorWidth = convertToPx(el, '.7em');
+      const phasorHeight = rect.height;
+      wordMRow.style.width = `${Math.sqrt(phasorWidth * phasorWidth + phasorHeight * phasorHeight)}px`;    // hypotenuse
+      wordMRow.style.transform = `rotate(${word === 'phasoranglertl' ? '' : '-'}${Math.atan(phasorHeight / phasorWidth)}rad) translateY(0.067em)`;
     }
 
     let paddingStyle = MENCLOSE_STYLE[word] || '';
@@ -519,7 +652,7 @@ const transformMEnclose = (el) => {
     mencloseMRow.appendChild(wordMRow);
   });
 
-  mencloseMRow.setAttribute('style', mencloseStyle);
+  copyMencloseAttrsToReplacementMrow(el, mencloseMRow, mencloseStyle);
   return mencloseMRow;
 }
 
