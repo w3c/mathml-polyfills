@@ -9,8 +9,10 @@ See discussion on [wiki](https://github.com/w3c/mathml-polyfills/wiki/MathML-Pol
 ## Test pages
 
 * [acid-test.html](https://w3c.github.io/mathml-polyfills/acid-test.html) — combined examples for many polyfills (button to apply transforms)
+* [bevelled/index.html](https://w3c.github.io/mathml-polyfills/bevelled/index.html) — `bevelled` attribute on `mfrac`
 * [elem-math/index.html](https://w3c.github.io/mathml-polyfills/elem-math/index.html) — elementary math (`mstack`, `mlongdiv`, etc.)
 * [href/index.html](https://w3c.github.io/mathml-polyfills/href/index.html) — `href` on MathML elements
+* [mathvariant/index.html](https://w3c.github.io/mathml-polyfills/mathvariant/index.html) — `mathvariant` → Unicode math alphanumerics
 * [menclose/index.html](https://w3c.github.io/mathml-polyfills/menclose/index.html) — `menclose` notations
 * [mfenced/index.html](https://w3c.github.io/mathml-polyfills/mfenced/index.html) — `mfenced`
 * [mlabeledtr/index.html](https://w3c.github.io/mathml-polyfills/mlabeledtr/index.html) — `mlabeledtr`
