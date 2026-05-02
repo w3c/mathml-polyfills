@@ -26,33 +26,7 @@
   THE SOFTWARE.
 */
 
-import { _MathTransforms, convertToPx, MATHML_NS, cloneElementWithShadowRoot } from '../common/math-transforms.js'
-
-/**
- * Line-ascent and line-descent of mpadded's in-flow children (same approach as mpadded/mpadded.js getDimensions).
- * @param {HTMLElement} mpadded
- * @returns {{ height: number, depth: number }}
- */
-function innerLineMetricsOfMpadded(mpadded) {
-    const mrow = document.createElementNS(MATHML_NS, 'mrow');
-    mrow.appendChild(document.createElementNS(MATHML_NS, 'mspace'));
-    const cloneMpadded = cloneElementWithShadowRoot(mpadded);
-    for (let i = 0; i < cloneMpadded.children.length; i++) {
-        mrow.appendChild(cloneMpadded.children[i]);
-    }
-    cloneMpadded.appendChild(mrow);
-    mpadded.parentElement.replaceChild(cloneMpadded, mpadded);
-
-    const mspaceRect = mrow.firstElementChild.getBoundingClientRect();
-    const mpaddedRect = mrow.getBoundingClientRect();
-
-    cloneMpadded.parentElement.replaceChild(mpadded, cloneMpadded);
-
-    return {
-        height: mspaceRect.y - mpaddedRect.top,
-        depth: mpaddedRect.bottom - mspaceRect.y,
-    };
-}
+import { _MathTransforms, convertToPx, MATHML_NS, getMathDimensions } from '../common/math-transforms.js'
 
 /**
  * @param {'down' | 'up'} dir subscript baseline down vs superscript baseline up
@@ -67,7 +41,7 @@ function wrapScriptWithShift(scriptEl, shiftPx, dir) {
     parent.insertBefore(mpadded, scriptEl);
     mpadded.appendChild(scriptEl);
 
-    const inner = innerLineMetricsOfMpadded(mpadded);
+    const inner = getMathDimensions(mpadded);
     // Positive voffset moves ink toward line-over (up); subscript down => negative voffset and extra depth.
     const heightPx = Math.max(0, inner.height + (dir === 'up' ? shiftPx : 0));
     const depthPx = Math.max(0, inner.depth + (dir === 'down' ? shiftPx : 0));
