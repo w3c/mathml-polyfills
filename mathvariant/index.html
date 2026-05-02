@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>mathvariant tests (mathvariant/mathvariant.js)</title>
+  <script type="module">
+    import { _MathTransforms } from '../common/math-transforms.js';
+    import './mathvariant.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.mathvariant-polyfill-after').forEach((root) => {
+        _MathTransforms.transform(root);
+      });
+
+      const select = document.getElementById('math-font');
+      const apply = () => {
+        const value = select.value;
+        document.documentElement.style.setProperty('--math-font',
+          value === 'default' ? 'serif' : `"${value}", "Noto Naskh Arabic", serif`);
+      };
+      select.addEventListener('change', apply);
+      apply();
+    });
+  </script>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 1rem 1.5rem 2rem;
+    }
+
+    :root {
+      --math-font: "Stix Two Math", "Cambria Math", "Asana Math", "Noto Naskh Arabic", serif;
+    }
+
+    math {
+      font-family: var(--math-font);
+    }
+
+    .font-chooser {
+      margin: 0.75em 0 1.25em;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      flex-wrap: wrap;
+    }
+
+    .font-chooser label {
+      font-weight: bold;
+    }
+
+    .font-chooser select {
+      font: inherit;
+      padding: 0.25em 0.4em;
+    }
+
+    table.tests {
+      border-collapse: collapse;
+      margin: 1.25em 0;
+      width: max-content;
+      max-width: 100%;
+      table-layout: auto;
+    }
+
+    table.tests th,
+    table.tests td {
+      border: 1px solid #bbb;
+      padding: 0.5em 0.85em;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    table.tests th {
+      background: #f0f0f0;
+    }
+
+    table.tests td:first-child code {
+      overflow-wrap: anywhere;
+    }
+
+    caption.tests-caption {
+      font-weight: bold;
+      text-align: left;
+      margin-bottom: 0.5em;
+    }
+
+    p.serve-note {
+      border: 1px solid #c9a227;
+      background: #fffbeb;
+      padding: 0.75em 1em;
+      max-width: 50em;
+    }
+
+    code {
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+
+<body>
+  <h1><code>mathvariant</code> → Unicode math alphanumerics</h1>
+
+  <p class="serve-note">
+    Serve the repo root over HTTP (for example <code>python -m http.server 8080</code>) and open
+    <code>http://localhost:8080/mathvariant/index.html</code> so ES modules load.
+  </p>
+
+  <p>
+    The <strong>Before</strong> column is outside the transform scope; the <strong>After</strong> column runs
+    <code>mathvariant/mathvariant.js</code> via <code>_MathTransforms.transform</code>.
+    Supported elements match the selector <code>*[mathvariant]</code>; each row uses <code>mi</code> or <code>mn</code> as noted.
+    The polyfill replaces text with styled code points and removes <code>mathvariant</code> when every character mapped.
+  </p>
+
+  <div class="font-chooser">
+    <label for="math-font">Math font:</label>
+    <select id="math-font">
+      <option value="default">Browser default (serif)</option>
+      <option value="Stix Two Math" selected>STIX Two Math</option>
+      <option value="Cambria Math">Cambria Math</option>
+      <option value="Asana Math">Asana Math</option>
+      <option value="Latin Modern Math">Latin Modern Math</option>
+      <option value="Libertinus Math">Libertinus Math</option>
+      <option value="Fira Math">Fira Math</option>
+      <option value="GFS Neohellenic Math">GFS Neohellenic Math</option>
+      <option value="DejaVu Math TeX Gyre">DejaVu Math TeX Gyre</option>
+      <option value="TeX Gyre Pagella Math">TeX Gyre Pagella Math</option>
+      <option value="TeX Gyre Termes Math">TeX Gyre Termes Math</option>
+      <option value="TeX Gyre Bonum Math">TeX Gyre Bonum Math</option>
+      <option value="TeX Gyre Schola Math">TeX Gyre Schola Math</option>
+      <option value="XITS Math">XITS Math</option>
+      <option value="Noto Sans Math">Noto Sans Math</option>
+    </select>
+    <span style="font-size: 0.85em; color: #666;">(falls back to your browser's default math/serif font if the selection isn't installed)</span>
+  </div>
+
+  <table class="tests">
+    <caption class="tests-caption">All <code>mathvariant</code> values handled by this polyfill</caption>
+    <thead>
+      <tr>
+        <th>Markup</th>
+        <th>Before</th>
+        <th>After</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>&lt;mi mathvariant="normal"&gt;πx&lt;/mi&gt;</code> (no-op)</td>
+        <td class="before-math"><math><mi mathvariant="normal">πx</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="normal">πx</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="bold"&gt;ABαβ012&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="bold">ABαβ012</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="bold">ABαβ012</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="italic"&gt;ABCabch&lt;/mi&gt;</code> (maps <code>h</code> to U+210E)</td>
+        <td class="before-math"><math><mi mathvariant="italic">ABCabch</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="italic">ABCabch</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="bold-italic"&gt;ABΓγ&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="bold-italic">ABΓγ</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="bold-italic">ABΓγ</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="double-struck"&gt;CHNRZ&lt;/mi&gt;</code> + <code>&lt;mn mathvariant="double-struck"&gt;012&lt;/mn&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="double-struck">CHNRZ</mi><mn mathvariant="double-struck">012</mn></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="double-struck">CHNRZ</mi><mn mathvariant="double-struck">012</mn></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="bold-fraktur"&gt;Abcz&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="bold-fraktur">Abcz</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="bold-fraktur">Abcz</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="script"&gt;BEFeg&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="script">BEFeg</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="script">BEFeg</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="bold-script"&gt;Abcz&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="bold-script">Abcz</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="bold-script">Abcz</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="fraktur"&gt;CHIRZabc&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="fraktur">CHIRZabc</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="fraktur">CHIRZabc</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="sans-serif"&gt;Abz012&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="sans-serif">Abz012</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="sans-serif">Abz012</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="bold-sans-serif"&gt;AbzΓγ789&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="bold-sans-serif">AbzΓγ789</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="bold-sans-serif">AbzΓγ789</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="sans-serif-italic"&gt;Abcz&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="sans-serif-italic">Abcz</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="sans-serif-italic">Abcz</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="sans-serif-bold-italic"&gt;ΑΒΓαβγ&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="sans-serif-bold-italic">ΑΒΓαβγ</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="sans-serif-bold-italic">ΑΒΓαβγ</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="monospace"&gt;Abcz012&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="monospace">Abcz012</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="monospace">Abcz012</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="isolated"&gt;بتثج&lt;/mi&gt;</code> (Arabic math)</td>
+        <td class="before-math"><math><mi mathvariant="isolated">بتثج</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="isolated">بتثج</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="initial"&gt;بتثج&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="initial">بتثج</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="initial">بتثج</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="tailed"&gt;جحخس&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="tailed">جحخس</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="tailed">جحخس</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="looped"&gt;بتثج&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="looped">بتثج</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="looped">بتثج</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="stretched"&gt;بتثج&lt;/mi&gt;</code></td>
+        <td class="before-math"><math><mi mathvariant="stretched">بتثج</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="stretched">بتثج</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="chancery"&gt;ABCHWxyz&lt;/mi&gt;</code> (script + VS)</td>
+        <td class="before-math"><math><mi mathvariant="chancery">ABCHWxyz</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="chancery">ABCHWxyz</mi></math></td>
+      </tr>
+      <tr>
+        <td><code>&lt;mi mathvariant="roundhand"&gt;ABCHWxyz&lt;/mi&gt;</code> (script + VS)</td>
+        <td class="before-math"><math><mi mathvariant="roundhand">ABCHWxyz</mi></math></td>
+        <td class="mathvariant-polyfill-after"><math><mi mathvariant="roundhand">ABCHWxyz</mi></math></td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+
+</html>

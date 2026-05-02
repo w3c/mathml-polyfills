@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>bevelled mfrac tests (bevelled/bevelled.js)</title>
+  <script type="module">
+    import { _MathTransforms } from '../common/math-transforms.js';
+    import './bevelled.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.bevelled-polyfill-after').forEach((root) => {
+        _MathTransforms.transform(root);
+      });
+    });
+  </script>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 1rem 1.5rem 2rem;
+    }
+
+    math {
+      font-family: "Stix Two Math", "Cambria Math", "Asana Math", serif;
+    }
+
+    table.tests {
+      border-collapse: collapse;
+      margin: 1.25em 0;
+      max-width: 100%;
+    }
+
+    table.tests th,
+    table.tests td {
+      border: 1px solid #bbb;
+      padding: 0.65em 0.85em;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    table.tests th {
+      background: #f0f0f0;
+    }
+
+    .before-math,
+    .bevelled-polyfill-after {
+      outline: 1px dashed #888;
+      padding: 4px;
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    .before-math {
+      outline-color: #c65353;
+    }
+
+    .bevelled-polyfill-after {
+      outline-color: #1a5fb4;
+    }
+
+    caption.tests-caption {
+      font-weight: bold;
+      text-align: left;
+      margin-bottom: 0.5em;
+    }
+
+    p.serve-note {
+      border: 1px solid #c9a227;
+      background: #fffbeb;
+      padding: 0.75em 1em;
+      max-width: 50em;
+    }
+  </style>
+</head>
+
+<body>
+  <h1><code>mfrac[bevelled]</code> tests</h1>
+
+  <p class="serve-note">
+    Serve the repo root over HTTP (for example <code>python -m http.server 8080</code>) and open
+    <code>http://localhost:8080/bevelled/index.html</code> so ES modules load.
+  </p>
+
+  <p>
+    The first column is untransformed input.
+    The third column is transformed by <code>bevelled/bevelled.js</code> via
+    <code>_MathTransforms.transform</code>.
+  </p>
+  <p>
+    Note: the scriptlevel is incremented in the bevelled fraction, so the sizes of the nested parts should match on
+    both before and after transformation.
+  </p>
+
+  <table class="tests">
+    <caption class="tests-caption">Before vs after <code>_MathTransforms.transform</code></caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Before (native)</th>
+        <th scope="col">After (polyfill)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>mfrac bevelled="true"</code></td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mi>f</mi>
+              <mo>(</mo>
+              <mfrac bevelled="true">
+                <mrow>
+                  <mi>x</mi>
+                  <mo>+</mo>
+                  <mn>1</mn>
+                </mrow>
+                <mrow>
+                  <mi>x</mi>
+                  <mo>-</mo>
+                  <mn>1</mn>
+                </mrow>
+              </mfrac>
+              <mo>)</mo>
+              <mo>+</mo>
+              <mn>1</mn>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="bevelled-polyfill-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mi>f</mi>
+              <mo>(</mo>
+              <mfrac bevelled="true">
+                <mrow>
+                  <mi>x</mi>
+                  <mo>+</mo>
+                  <mn>1</mn>
+                </mrow>
+                <mrow>
+                  <mi>x</mi>
+                  <mo>-</mo>
+                  <mn>1</mn>
+                </mrow>
+              </mfrac>
+              <mo>)</mo>
+              <mo>+</mo>
+              <mn>1</mn>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>mfrac bevelled="true"</code></td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mi>f</mi>
+              <mo>(</mo>
+              <mfrac bevelled="true">
+                <mrow>
+                  <msup><mi>x</mi><mn>2</mn></msup>
+                  <mo>+</mo>
+                  <mn>1</mn>
+                </mrow>
+                <mrow>
+                  <msup><mi>x</mi><mn>2</mn></msup>
+                  <mo>-</mo>
+                  <mn>1</mn>
+                </mrow>
+              </mfrac>
+              <mo>)</mo>
+              <mo>-</mo>
+              <mn>1</mn>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="bevelled-polyfill-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mi>f</mi>
+              <mo>(</mo>
+              <mfrac bevelled="true">
+                <mrow>
+                  <msup><mi>x</mi><mn>2</mn></msup>
+                  <mo>+</mo>
+                  <mn>1</mn>
+                </mrow>
+                <mrow>
+                  <msup><mi>x</mi><mn>2</mn></msup>
+                  <mo>-</mo>
+                  <mn>1</mn>
+                </mrow>
+              </mfrac>
+              <mo>)</mo>
+              <mo>-</mo>
+              <mn>1</mn>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>mfrac bevelled="true"</code></td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mi>f</mi>
+              <mo>(</mo>
+              <mfrac bevelled="true">
+                <mrow>
+                  <msup>
+                    <mi>x</mi>
+                    <mfrac bevelled="true">
+                      <mn>2</mn>
+                      <mn>3</mn>
+                    </mfrac>
+                  </msup>
+                  <mo>+</mo>
+                  <mn>1</mn>
+                </mrow>
+                <mrow>
+                  <msup>
+                    <mi>x</mi>
+                    <mfrac bevelled="true">
+                      <mn>2</mn>
+                      <mn>3</mn>
+                    </mfrac>
+                  </msup>
+                  <mo>-</mo>
+                  <mn>1</mn>
+                </mrow>
+              </mfrac>
+              <mo>)</mo>
+              <mo>-</mo>
+              <mn>1</mn>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="bevelled-polyfill-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mi>f</mi>
+              <mo>(</mo>
+              <mfrac bevelled="true">
+                <mrow>
+                  <msup>
+                    <mi>x</mi>
+                    <mfrac bevelled="true">
+                      <mn>2</mn>
+                      <mn>3</mn>
+                    </mfrac>
+                  </msup>
+                  <mo>+</mo>
+                  <mn>1</mn>
+                </mrow>
+                <mrow>
+                  <msup>
+                    <mi>x</mi>
+                    <mfrac bevelled="true">
+                      <mn>2</mn>
+                      <mn>3</mn>
+                    </mfrac>
+                  </msup>
+                  <mo>-</mo>
+                  <mn>1</mn>
+                </mrow>
+              </mfrac>
+              <mo>)</mo>
+              <mo>-</mo>
+              <mn>1</mn>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>mfrac bevelled="false"</code></td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mfrac bevelled="false">
+                <mn>1</mn>
+                <mn>2</mn>
+              </mfrac>
+              <mo>-</mo>
+              <mn>1</mn>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="bevelled-polyfill-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mfrac bevelled="false">
+                <mn>1</mn>
+                <mn>2</mn>
+              </mfrac>
+              <mo>-</mo>
+              <mn>1</mn>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Nested <code>mfrac bevelled="true"</code></td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mfrac bevelled="true">
+                <mn>1</mn>
+                <mfrac bevelled="true">
+                  <mn>2</mn>
+                  <mn>3</mn>
+                </mfrac>
+              </mfrac>
+              <mo>-</mo>
+              <mn>1</mn>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="bevelled-polyfill-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mfrac bevelled="true">
+                <mn>1</mn>
+                <mfrac bevelled="true">
+                  <mn>2</mn>
+                  <mn>3</mn>
+                </mfrac>
+              </mfrac>
+              <mo>-</mo>
+              <mn>1</mn>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+
+</html>
