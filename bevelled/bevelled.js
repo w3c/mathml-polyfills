@@ -23,7 +23,7 @@
   THE SOFTWARE.
 */
 
-import { _MathTransforms, convertToPx, MATHML_NS } from '../common/math-transforms.js'
+import { _MathTransforms, convertToPx, MATHML_NS, measureInDetachedMath } from '../common/math-transforms.js'
 
 /**
  * MathML / HTML boolean for `bevelled` (ASCII case-insensitive; empty = true when attribute present).
@@ -53,40 +53,63 @@ const transformBevelled = (mfrac) => {
     const denominator = mfrac.children[1];
 
     // Return an <mrow> element representing the bevelled fraction.
-    // The numerator is shifted up 0.5em
+    // The numerator is shifted up 0.5em.
+    const shiftAmount = convertToPx(numerator, '0.5em');
 
-    // we can't know the height of the "/" without inserting it first, but the num/denom are known
-    // get an approximation of the height -- do before remove child from mfrac
-    let numeratorHeight = numerator.getBoundingClientRect().height;
-    let shiftAmount = convertToPx(numerator, "0.5em");
-    let height = Math.max(numeratorHeight, denominator.getBoundingClientRect().height) + shiftAmount;
+    const numeratorStyle = document.createElementNS(MATHML_NS, 'mstyle');
+    numeratorStyle.setAttribute('displaystyle', 'false');
+    numeratorStyle.setAttribute('scriptlevel', '+1');
+    numeratorStyle.appendChild(numerator);
 
-    let mrow = document.createElementNS(MATHML_NS, "mrow");
+    const denominatorStyle = document.createElementNS(MATHML_NS, 'mstyle');
+    denominatorStyle.setAttribute('displaystyle', 'false');
+    denominatorStyle.setAttribute('scriptlevel', '+1');
+    denominatorStyle.appendChild(denominator);
 
-    // create the numerator
-    let mpadded = document.createElementNS(MATHML_NS, "mpadded");
-    mpadded.setAttribute("height", `${numeratorHeight + shiftAmount}px`); // relative shift not in core
-    mpadded.setAttribute("voffset", `${shiftAmount}px`);
-    mpadded.appendChild(numerator);
+    // Measure each (in script style) so we can size the slash and the outer mpadded depth.
+    const numDims = measureInDetachedMath(numeratorStyle);
+    const denDims = measureInDetachedMath(denominatorStyle);
+    const height = Math.max(numDims.height, denDims.height) + shiftAmount;
+
+    const shiftedNumeratorHeight = numDims.height + shiftAmount;
+    const slashMaxSize = Math.max(
+        Math.max(shiftedNumeratorHeight, denDims.height),
+        Math.max(numDims.depth + shiftAmount, denDims.depth)
+    );
+
+    const mrow = document.createElementNS(MATHML_NS, 'mrow');
+
+    const mpadded = document.createElementNS(MATHML_NS, 'mpadded');
+    mpadded.setAttribute('height', `${shiftedNumeratorHeight}px`);
+    mpadded.setAttribute('depth', `${numDims.depth - shiftAmount}px`);
+    mpadded.setAttribute('voffset', `${shiftAmount}px`);
+    mpadded.appendChild(numeratorStyle);
     mrow.appendChild(mpadded);
 
-    // add the "/"
-    let slash = document.createElementNS(MATHML_NS, "mo");
-    slash.setAttribute("stretchy", "true");
-    slash.setAttribute("symmetric", "false");
-    slash.setAttribute("lspace", "0px");
-    slash.setAttribute("rspace", "0px");
-    // slash.setAttribute("maxsize", `${Math.round(0.95 * height)}px`);
+    const slash = document.createElementNS(MATHML_NS, 'mo');
+    slash.setAttribute('stretchy', 'true');
+    slash.setAttribute('maxsize', `${Math.round(slashMaxSize)}px`);
+    slash.setAttribute('symmetric', 'false');
+    slash.setAttribute('lspace', '0px');
+    slash.setAttribute('rspace', '0px');
 
-    // tuck the num and denom in a little -- base the amount on height
-    let inset = Math.round(-0.2 * height);
-    slash.setAttribute("style", `margin-left: ${inset}px; margin-right: ${inset}px`); 
+    // looks like a bug in Chrome (https://github.com/w3c/mathml-core/issues/323) that makes the slash too wide -- setting the margins compensates but makes Firefox look bad (too tight)
+    // const inset = Math.round(-0.02 * height);
+    // slash.setAttribute('style', `margin-left: ${inset}px; margin-right: ${inset}px`);
     slash.appendChild(document.createTextNode('/'));
     mrow.appendChild(slash);
 
-    // add the denominator
-    mrow.appendChild(denominator);
-    return mrow;
+    mrow.appendChild(denominatorStyle);
+
+    const mrowDims = measureInDetachedMath(mrow);
+
+    const outerMpadded = document.createElementNS(MATHML_NS, 'mpadded');
+    const downShift = shiftAmount / 2;
+    outerMpadded.setAttribute('voffset', `${-downShift}px`);
+    outerMpadded.setAttribute('height', `${Math.max(0, height - downShift)}px`);
+    outerMpadded.setAttribute('depth', `${mrowDims.depth - shiftAmount}px`);
+    outerMpadded.appendChild(mrow);
+    return outerMpadded;
 }
 
 _MathTransforms.add('mfrac[bevelled]', transformBevelled);
