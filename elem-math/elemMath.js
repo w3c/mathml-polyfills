@@ -35,16 +35,41 @@
 import { _MathTransforms, MATHML_NS } from '../common/math-transforms.js'
 
 const ELEM_MATH_CSS = `
-table.elem-math {
-    border-collapse: collapse;
-    border-spacing: 0px;
-}
-table.elem-math tr {
-    vertical-align: baseline;
+div.elem-math {
+    display: inline-grid;
+    grid-auto-flow: row;
+    /* Use baseline so plain-digit cells line up with merged-carry cells whose digit sits below the carry. */
+    align-items: baseline;
+    grid-auto-columns: max-content;
+    gap: 0;
 }
 
-td.curved-line {
+.elem-math-cell {
+    display: inline-block;
+    /* IMPORTANT: do not set 'align-self: stretch' on every cell -- that overrides 'align-items: baseline'
+       from the grid. Exception: cells that only draw a vertical rule (border-left/right) must stretch to
+       the row height so the rule meets rows where neighbors use border-bottom (msline); otherwise the
+       rule ends short by the border-bottom width. */
+    position: relative;
+    overflow: visible;
+}
+
+.elem-math-cell.elem-math-vrule-cell {
+    align-self: stretch;
+    box-sizing: border-box;
+}
+
+/* Empty rows added after underlines need explicit height (no content to give them one). */
+.elem-math-spacer {
+    align-self: stretch;
+    height: .5ex;
+}
+
+/* Bracket must be a child: abspos on the grid item itself is not placed in the cell (breaks vs table td). */
+.elem-math-cell .curved-line {
     position: absolute;
+    top: 0;
+    left: 0;
     padding-top: 0em;
     width: 0.75em;
     border: 0.3ex solid;  /* match border bottom */
@@ -56,14 +81,7 @@ td.curved-line {
     margin-right: 0.75em;
 }
 
-mtd.precedes-separator {
-    padding-right: 0 !important;    /* override an inline style */
-}
-
-mtd.separator {
-    padding-left: 0  !important;    /* override an inline style */
-    padding-right: 0 !important;    /* override an inline style */
-}
+/* .precedes-separator / .separator / .follows-separator: horizontal padding set in JS (expandMStackElement). */
 
 .carry {
     font-size: 60%;
@@ -226,7 +244,12 @@ class TableCell {
             if (typeof value !== "string") {
                 throw new Error("Elementary math mscarry isn't a 'string'");
             }
-            this.data = document.createTextNode(value);
+            /* Empty-text cells (e.g. <none/> inside an <msrow>) collapse to zero height,
+               which makes any border-bottom on the row break (the underline jumps up to
+               the baseline). Substitute a hair space so the cell gets normal line-height
+               and its border-bottom lines up with neighboring digit cells. NO_SPACE is the
+               same character used for padding cells, so column widths are unaffected. */
+            this.data = document.createTextNode(value === '' ? NO_SPACE : value);
         }
         this.carry = carry;                        // for multiple carries, 'data' is already built up -- value is last carry seen
         this.style = style || '';
@@ -500,8 +523,12 @@ class ElemMath {
         if (extraToAddOnRight !== 0) {
             if (extraToAddOnRight < 0) {
                 newRow.data = newRow.padOnRight(newRow.data, -extraToAddOnRight);
+                // padOnRight does not update nRight; keep alignment with carry row for processShifts
+                newRow.nRight = previousRow.nRight;
             } else {
                 previousRow.data = previousRow.padOnRight(previousRow.data, extraToAddOnRight);
+                previousRow.nRight += extraToAddOnRight;
+                newRow.nRight = previousRow.nRight;
             }
         }
 
@@ -979,7 +1006,6 @@ class ElemMath {
 
                 if (this.longdivstyle === 'stackedleftlinetop') {
                     divisorRow.data[divisorRow.data.length-1].style += `border-right: ${MSLINETHICKNESS_MEDIUM} solid ${mathcolor};`;
-                    divisorRow.data[divisorRow.data.length-1].style += `border-right: ${MSLINETHICKNESS_MEDIUM} solid ${mathcolor};`;divisorRow.data[divisorRow.data.length-1].data.style += 'position:relative';
                     divisorRow.addUnderlineToCells(-divisorRow.nRight, divisorRow.data.length, MSLINETHICKNESS_MEDIUM, mathcolor);
                 } else {
                     // add the ")" to the element (handled like a curved border with css)
@@ -1012,6 +1038,20 @@ class ElemMath {
             return;
         }
 
+        /**
+         * @param {TableCell} cell
+         * @param {string} extras space-separated class names to add
+         */
+        const mergeClasses = (cell, extras) => {
+            const set = new Set((cell.class || '').trim().split(/\s+/).filter(Boolean));
+            for (const c of extras.trim().split(/\s+/)) {
+                if (c) {
+                    set.add(c);
+                }
+            }
+            cell.class = [...set].join(' ');
+        };
+
         // scan each row for a separator (could be '' in some rows)
         // remove an the index from the set of separators if it is not a separator or an empty cell (if all empty cells, also delete)
         // if all the indices that are empty, don't count them -- could be a vertical line
@@ -1036,11 +1076,78 @@ class ElemMath {
         
         for (let iCol of separatorCols) {
             stackRows.forEach( row => {
-                row.data[iCol].class = "separator";
+                mergeClasses(row.data[iCol], "separator");
                 if (iCol > 0) {
-                    row.data[iCol-1].class = "precedes-separator";
+                    mergeClasses(row.data[iCol - 1], "precedes-separator");
                 }
             })
+        }
+
+        // Some separators may appear in columns that are not globally separator columns,
+        // especially in mixed-length rows. Mark comma and decimal point cells individually.
+        stackRows.forEach(row => {
+            for (let i = 0; i < row.data.length; i++) {
+                const text = row.data[i].data.textContent;
+                if (text === ',') {
+                    mergeClasses(row.data[i], 'separator separator-comma');
+                    if (i > 0) {
+                        mergeClasses(row.data[i - 1], 'precedes-separator');
+                    }
+                    if (i + 1 < row.data.length) {
+                        mergeClasses(row.data[i + 1], 'follows-separator');
+                    }
+                } else if (text === '.') {
+                    mergeClasses(row.data[i], 'separator separator-decimal');
+                    if (i > 0) {
+                        mergeClasses(row.data[i - 1], 'precedes-separator');
+                    }
+                    if (i + 1 < row.data.length) {
+                        mergeClasses(row.data[i + 1], 'follows-separator');
+                    }
+                }
+            }
+        });
+
+        /* Grid columns are sized to max-content of every cell in that column. If just one row in a column
+           has 'follows-separator' (pl=0), but another row in the same column has a normally-padded digit,
+           the column inflates to (digit + 2*charSpacing) and the comma-adjacent digit ends up far from
+           the comma (text-align:right inside a too-wide cell). Propagate 'follows-separator' to every
+           cell in such columns so the whole column collapses to (digit + charSpacing). */
+        const followsSepCols = new Set();
+        stackRows.forEach(row => {
+            for (let i = 0; i < row.data.length; i++) {
+                const cls = row.data[i].class;
+                if (cls && cls.split(/\s+/).includes('follows-separator')) {
+                    followsSepCols.add(i);
+                }
+            }
+        });
+        for (const iCol of followsSepCols) {
+            stackRows.forEach(row => {
+                if (iCol < row.data.length) {
+                    mergeClasses(row.data[iCol], 'follows-separator');
+                }
+            });
+        }
+
+        /* Same problem in reverse for the column that PRECEDES a separator: if any cell in the
+           column has 'precedes-separator' (pr=0), all cells in that column must as well, or
+           the column will be too wide and push the comma away. */
+        const precedesSepCols = new Set();
+        stackRows.forEach(row => {
+            for (let i = 0; i < row.data.length; i++) {
+                const cls = row.data[i].class;
+                if (cls && cls.split(/\s+/).includes('precedes-separator')) {
+                    precedesSepCols.add(i);
+                }
+            }
+        });
+        for (const iCol of precedesSepCols) {
+            stackRows.forEach(row => {
+                if (iCol < row.data.length) {
+                    mergeClasses(row.data[iCol], 'precedes-separator');
+                }
+            });
         }
     }
 
@@ -1057,7 +1164,38 @@ class ElemMath {
         let numberRegEx = /[-+]?\d*\.?\d*/g;
         const charSpacing = parseFloat(numberRegEx.exec(this.charSpacing)[0])/2.0 + this.charSpacing.slice(numberRegEx.lastIndex);
         this.charSpacing.slice(numberRegEx.lastIndex);
-        const cellStyle = `padding: .1ex ${charSpacing} 0 ${charSpacing}; text-align: ${this.charAlign};`;
+
+        /**
+         * Horizontal padding for digit cells; commas/decimals tightened here (not via stylesheet) so shadow/cascade cannot drop it.
+         * @param {TableCell} cellData
+         * @returns {{ boxStyle: string }}
+         */
+        const cellBoxStyle = (cellData) => {
+            const tokens = (cellData.class || '').trim().split(/\s+/).filter(Boolean);
+            const has = (/** @type {string} */ c) => tokens.includes(c);
+            if (has('curved-line')) {
+                return { boxStyle: `padding-top: .1ex; padding-right: 0; padding-bottom: 0; padding-left: 0;` };
+            }
+            let pl = charSpacing;
+            let pr = charSpacing;
+            if (has('separator')) {
+                pl = '0';
+                pr = '0';
+            }
+            if (has('precedes-separator')) {
+                pr = '0';
+            }
+            if (has('follows-separator')) {
+                pl = '0';
+            }
+            /* Repeating-decimal overscripts: <mo>.</mo> in an <msrow> — center in the column so the dot
+               sits above the digit (charalign:right pins it to the cell edge). Same for the radix point. */
+            const t = cellData.data.textContent;
+            const textAlign = t === '.' ? 'center' : this.charAlign;
+            return {
+                boxStyle: `padding-top: .1ex; padding-right: ${pr}; padding-bottom: 0; padding-left: ${pl}; text-align: ${textAlign};`,
+            };
+        };
 
         /** @type {TableRow[]} */
         let stackRows = [];
@@ -1075,52 +1213,85 @@ class ElemMath {
         // set a class for columns of separators so that they are narrower (looks better)
         this.shrinkSeparatorColumns(stackRows);
 
-        let table = document.createElement('table');
+        let table = document.createElement('div');
         table.setAttribute('class', 'elem-math');
+
+        const maxColumns = stackRows.reduce((max, row) => Math.max(max, row.data.length), 0);
+        if (maxColumns > 0) {
+            table.style.gridTemplateColumns = `repeat(${maxColumns}, max-content)`;
+        }
+
+        let rowIndex = 1;
         for (const row of stackRows) {
-            let htmlRow = document.createElement('tr');
-            if (row.style) {
-                htmlRow.setAttribute('style', row.style);
-            }
-            for (const cellData of row.data) {
-                let htmlTD = document.createElement('td');
+            for (let colIndex = 0; colIndex < row.data.length; colIndex++) {
+                const cellData = row.data[colIndex];
+                let htmlCell = document.createElement('div');
+                htmlCell.className = 'elem-math-cell';
+                /* Long division vertical rules (stacked*rightright, stackedleftleft, etc.) */
+                if (cellData.style && /(^|;)\s*border-(left|right):/.test(cellData.style)) {
+                    htmlCell.classList.add('elem-math-vrule-cell');
+                }
                 if (cellData.alignAt) {
                     let span = document.createElement('span');
                     span.style.display = cellData.alignAt === 1 ? 'inline-table' : 'inline-block';
                     span.appendChild(cellData.data);
                     cellData.data = span;
                 }
-                if (cellData.class === 'curved-line') {
+
+                const classTokens = (cellData.class || '').trim().split(/\s+/).filter(Boolean);
+                const isCurvedLine = classTokens.includes('curved-line');
+
+                if (isCurvedLine) {
+                    const curve = document.createElement('div');
+                    curve.className = 'curved-line';
+                    curve.textContent = NON_BREAKING_SPACE;
+                    htmlCell.appendChild(curve);
                     cellData.data.textContent = NON_BREAKING_SPACE;
+                    htmlCell.appendChild(cellData.data);
+                } else {
+                    htmlCell.appendChild(cellData.data);
                 }
 
-                htmlTD.appendChild(cellData.data);
-                if (cellData.class !== 'curved-line') {
-                    htmlTD.setAttribute('style', cellStyle + cellData.style);    // cellData.style so it overrides
-                }
-                if (cellData.class) {
-                    htmlTD.setAttribute('class', cellData.class);                           // could be undefined
-                }
-                htmlRow.appendChild(htmlTD);
-            }
-            table.appendChild(htmlRow);
-            if (row.addSpacingAfterRow) {
-                // can't put a margin on a table row or push it into the table cells above, so we add a dummy row here
-                // we need to continue any left/right border from the previous line
-                let newRow = document.createElement('tr');
-                newRow.style.height = '.5ex';
-
-                for (const cellData of row.data) {
-                    let newCell = document.createElement('td');
-                    if (/(border-left|border-right)/.test(cellData.style)) {
-                        // extract borders -- this assumes the code never uses 'border: 1 2 3 4;'
-                        const borders = cellData.style.match(/(border-left|border-right).*?;/g);
-                        newCell.setAttribute('style', borders);
+                const { boxStyle } = cellBoxStyle(cellData);
+                if (row.style || cellData.style || boxStyle) {
+                    const style = `${row.style || ''}${boxStyle}${cellData.style || ''}`;
+                    if (style) {
+                        htmlCell.setAttribute('style', style);
                     }
-                   newRow.appendChild(newCell); 
-                };
-                table.appendChild(newRow);
+                }
+                if (cellData.class && !isCurvedLine) {
+                    for (const cls of cellData.class.trim().split(/\s+/)) {
+                        if (cls) {
+                            htmlCell.classList.add(cls);
+                        }
+                    }
+                }
+                htmlCell.style.gridColumn = (colIndex + 1).toString();
+                htmlCell.style.gridRow = rowIndex.toString();
+                table.appendChild(htmlCell);
             }
+
+            if (row.addSpacingAfterRow) {
+                const spacerRow = rowIndex + 1;
+                for (let colIndex = 0; colIndex < row.data.length; colIndex++) {
+                    const cellData = row.data[colIndex];
+                    let newCell = document.createElement('div');
+                    newCell.className = 'elem-math-cell elem-math-spacer';
+                    if (/(border-left|border-right)/.test(cellData.style)) {
+                        newCell.classList.add('elem-math-vrule-cell');
+                        const borders = cellData.style.match(/(border-left|border-right).*?;/g);
+                        if (borders) {
+                            newCell.setAttribute('style', borders.join(''));
+                        }
+                    }
+                    newCell.style.gridColumn = (colIndex + 1).toString();
+                    newCell.style.gridRow = spacerRow.toString();
+                    table.appendChild(newCell);
+                }
+                rowIndex += 1;
+            }
+
+            rowIndex += 1;
         }
 
         return table;
