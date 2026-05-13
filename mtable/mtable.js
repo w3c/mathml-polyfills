@@ -33,9 +33,10 @@
  * the gap). `frame` uses an
  * `mtable` border; internal `rowlines` use a full-width `border-top` on each `mtr` (not per-`mtd`,
  * so dashed rules span the table). `columnlines` use `border-left` on `mtd`. When internal grid
- * lines are visible, row grids use `align-items: stretch`. Cells use `justify-self`/`align-self:
- * stretch` plus flex (`justify-content` / `align-items`) for `columnalign`/`rowalign` inside the
- * cell (MathML often ignores `text-align` on `mtd`). Without column `subgrid`, each row uses
+ * lines are visible, each `mtr` uses `align-items: stretch` so `mtd` boxes fill row tracks (column
+ * rules stay continuous); vertical `rowalign` is applied after layout by measuring baselines and
+ * setting `margin-top` on each cell’s leading `mrow` (see {@link scheduleLinedMtdVerticalLayout}).
+ * Without column `subgrid`, each row uses
  * `repeat(n, minmax(0,1fr))` so column widths match across rows. `columnwidth`, `equalrows`,
  * `equalcolumns`, `width`, and `align` drive grid templates and sizing; when `align` names a row,
  * a short post-layout pass may nudge the table with `transform: translateY` so the chosen row
@@ -259,6 +260,46 @@ function rowalignToAlignSelf(rowalign) {
 }
 
 /**
+ * True if {@code el} is a leading zero-sized {@code mspace} used as a baseline probe.
+ * @param {Element | null} el
+ * @returns {boolean}
+ */
+function isZeroBaselineProbe(el) {
+  if (!el || el.namespaceURI !== MATHML_NS || el.localName !== 'mspace') return false;
+  const w = normToken(el.getAttribute('width') ?? '0');
+  const h = normToken(el.getAttribute('height') ?? '0');
+  const d = normToken(el.getAttribute('depth') ?? '0');
+  return w === '0' && h === '0' && d === '0';
+}
+
+/**
+ * Insert a leading {@code <mspace width="0" height="0" depth="0"/>} in {@code mrow} when missing,
+ * so {@link runLinedMtdVerticalLayout} can read the row’s math baseline.
+ * @param {Element} mrow
+ * @returns {void}
+ */
+function ensureLeadingBaselineProbe(mrow) {
+  if (isZeroBaselineProbe(mrow.firstElementChild)) return;
+  const doc = mrow.ownerDocument;
+  if (!doc) return;
+  const sp = doc.createElementNS(MATHML_NS, 'mspace');
+  sp.setAttribute('width', '0');
+  sp.setAttribute('height', '0');
+  sp.setAttribute('depth', '0');
+  mrow.insertBefore(sp, mrow.firstChild);
+}
+
+/**
+ * @param {Element} mtd
+ * @returns {Element | null}
+ */
+function getFirstMrowChild(mtd) {
+  const el = mtd.firstElementChild;
+  if (!el || el.namespaceURI !== MATHML_NS || el.localName !== 'mrow') return null;
+  return el;
+}
+
+/**
  * Effective MathML {@code rowalign} for one cell: {@code mtable} list (one entry per row, last
  * repeated), then {@code mtr} list (one entry per column in that row, last repeated), then {@code mtd}.
  * @param {Element} mtd
@@ -364,8 +405,8 @@ function columnalignToTextAlign(columnalign) {
 }
 
 /**
- * {@code justify-content} on a flex {@code mtd} when stretched for grid lines (MathML often ignores
- * {@code text-align} on {@code mtd}).
+ * {@code justify-content} on a row-direction flex {@code mtd}, or {@code align-items} (cross axis)
+ * on a column-direction flex {@code mtd} when internal grid lines are visible.
  * @param {string} columnalign
  * @returns {string}
  */
@@ -374,19 +415,6 @@ function columnalignToJustifyContent(columnalign) {
   if (v === 'left') return 'flex-start';
   if (v === 'right') return 'flex-end';
   return 'center';
-}
-
-/**
- * {@code align-items} for {@code display: flex; flex-direction: row} on a stretched {@code mtd}.
- * @param {string} rowalign
- * @returns {string}
- */
-function rowalignToFlexAlignItems(rowalign) {
-  const v = normalizeEnum(rowalign, ROWALIGN_VALUES, 'baseline');
-  if (v === 'top') return 'flex-start';
-  if (v === 'bottom') return 'flex-end';
-  if (v === 'center') return 'center';
-  return 'baseline';
 }
 
 /**
@@ -401,19 +429,39 @@ function rowalignToFlexAlignItems(rowalign) {
  * element child, so the MathML inferred-mrow becomes explicit. Chrome drops the implicit row
  * (children render stacked) once an ancestor has {@code display: grid}, which the polyfill
  * sets on each {@code mtr}; an explicit {@code mrow} renders horizontally regardless.
+ *
+ * When there is exactly one MathML element child that is not already an {@code mrow}, wrap it in
+ * an {@code mrow} for the same reason.
+ *
+ * A leading zero {@code mspace} is inserted into each explicit {@code mrow} when missing so
+ * {@link runLinedMtdVerticalLayout} can read the math baseline when internal lines are on.
  * @param {Element} mtd
  * @returns {void}
  */
 function wrapMtdInferredMrow(mtd) {
   const elementKids = Array.from(mtd.children);
-  if (elementKids.length < 2) return;
-  const doc = mtd.ownerDocument;
-  if (!doc) return;
-  const mrow = doc.createElementNS(MATHML_NS, 'mrow');
-  while (mtd.firstChild) {
-    mrow.appendChild(mtd.firstChild);
+  if (elementKids.length >= 2) {
+    const doc = mtd.ownerDocument;
+    if (!doc) return;
+    const mrow = doc.createElementNS(MATHML_NS, 'mrow');
+    while (mtd.firstChild) {
+      mrow.appendChild(mtd.firstChild);
+    }
+    mtd.appendChild(mrow);
+  } else if (elementKids.length === 1) {
+    const only = elementKids[0];
+    if (only.namespaceURI === MATHML_NS && only.localName !== 'mrow') {
+      const doc = mtd.ownerDocument;
+      if (!doc) return;
+      const mrow = doc.createElementNS(MATHML_NS, 'mrow');
+      mtd.replaceChild(mrow, only);
+      mrow.appendChild(only);
+    }
   }
-  mtd.appendChild(mrow);
+  const inner = mtd.firstElementChild;
+  if (inner && inner.namespaceURI === MATHML_NS && inner.localName === 'mrow') {
+    ensureLeadingBaselineProbe(inner);
+  }
 }
 
 /**
@@ -632,18 +680,15 @@ function readMtableAlignLists(mtable) {
  * {@code justify-items: stretch}. With column subgrid, the outer {@code mtable} uses
  * {@code align-items: first baseline} by default, or {@code stretch} when {@code equalrows} is true
  * so each {@code mtr} fills {@code 1fr} row tracks (columnlines on {@code mtd} span the row).
- * Each {@code mtr} row grid uses {@code align-items: stretch} when internal grid lines are visible,
- * otherwise {@code first baseline}.
- * Each {@code mtd} gets {@code justify-self} from {@code columnalign} (including default {@code center}) and matching
- * {@code text-align} so content centers inside column tracks, and {@code align-self}
- * for vertical placement ({@code baseline} / {@code axis} use {@code align-self: baseline}; {@code axis}
- * also gets a composed {@code margin-top} (or {@code padding-top} when internal grid lines are
- * visible) with row spacing using the U+2212 axis-height probe, or an {@code ex} fallback).
- * When internal grid lines are visible, {@code justify-self: stretch} and {@code align-self: stretch}
- * keep column borders continuous; {@code display: flex} with {@code justify-content} /
- * {@code align-items} maps {@code columnalign} / {@code rowalign} (MathML ignores {@code text-align} on
- * many {@code mtd} implementations). {@link readMtableAlignLists} supplies {@code ['baseline']} /
- * {@code ['center']} when {@code mtable} omits those attributes.
+ * Each {@code mtr} row grid uses {@code align-items: stretch} when internal grid lines are visible
+ * so {@code mtd} boxes fill row tracks (continuous column rules). Vertical {@code rowalign} is
+ * applied after layout via {@link runLinedMtdVerticalLayout} (margin on the leading {@code mrow}).
+ * Each {@code mtd} gets {@code justify-self} / {@code text-align} from {@code columnalign} when lines
+ * are off; with lines, {@code display: flex; flex-direction: column} and {@code align-items} map
+ * horizontal placement (MathML often ignores {@code text-align} on {@code mtd}).
+ * {@code axis} also gets composed {@code padding-top} with row spacing (U+2212 probe or {@code ex} fallback).
+ * {@link readMtableAlignLists} supplies {@code ['baseline']} / {@code ['center']} when {@code mtable}
+ * omits those attributes.
  *
  * @param {Element} mtd
  * @param {number} rowIndex
@@ -654,8 +699,8 @@ function readMtableAlignLists(mtable) {
  * @param {boolean} cellMinWidthZero When true, set {@code min-width: 0} so {@code mtd} can shrink inside
  *   {@code minmax(0, 1fr)} tracks ({@code equalcolumns} or {@code columnwidth="fit"}). Omit otherwise so
  *   {@code auto} columns keep an intrinsic minimum width (avoids crushing MathML in narrow tracks).
- * @param {boolean} internalLinesVisible When true, stretch cells for grid lines and use flex for
- *   {@code columnalign}/{@code rowalign} inside the cell.
+ * @param {boolean} internalLinesVisible When true, stretch cells for grid lines and column flex; vertical
+ *   alignment is finalized by {@link scheduleLinedMtdVerticalLayout}.
  * @returns {void}
  */
 function applyCellAlignments(
@@ -689,15 +734,15 @@ function applyCellAlignments(
     parts.push('min-width: 0');
   }
   if (internalLinesVisible) {
+    parts.push('box-sizing: border-box');
     parts.push('justify-self: stretch');
     parts.push('align-self: stretch');
     parts.push('display: flex');
-    parts.push('flex-direction: row');
+    parts.push('flex-direction: column');
     parts.push('width: 100%');
     parts.push('height: 100%');
-    parts.push('box-sizing: border-box');
-    parts.push(`justify-content: ${columnalignToJustifyContent(ca)}`);
-    parts.push(`align-items: ${rowalignToFlexAlignItems(ra)}`);
+    parts.push('min-height: 0');
+    parts.push(`align-items: ${columnalignToJustifyContent(ca)}`);
   } else {
     parts.push(`justify-self: ${columnalignToJustifySelf(ca)}`);
     if (ra === 'top' || ra === 'bottom' || ra === 'center') {
@@ -1059,6 +1104,117 @@ function applyDisplaystyleDefault(mtable, hadDisplaystyleAttr) {
   mtable.setAttribute('displaystyle', on ? 'true' : 'false');
 }
 
+/** @type {WeakMap<Element, ResizeObserver>} */
+const linedMtableResizeObservers = new WeakMap();
+
+/**
+ * With visible internal lines, {@code mtr}/{@code mtd} stay stretched so column borders span the row;
+ * vertical {@code rowalign} is applied by setting {@code margin-top} on each cell’s leading {@code mrow}
+ * after layout (baseline/axis share a reference depth from a leading zero {@code mspace}).
+ * @param {Element} mtable
+ * @param {Element[]} rows
+ * @param {string[]} mtableRowalign
+ * @returns {void}
+ */
+function runLinedMtdVerticalLayout(mtable, rows, mtableRowalign) {
+  if (!mtable || !rows.length) return;
+
+  for (let r = 0; r < rows.length; r++) {
+    const mtr = rows[r];
+    const cells = Array.from(mtr.children).filter(
+      (n) => n.namespaceURI === MATHML_NS && n.localName === 'mtd'
+    );
+    for (const mtd of cells) {
+      const mrow = getFirstMrowChild(mtd);
+      if (mrow) mrow.style.marginTop = '0';
+    }
+  }
+  forceLayout(mtable);
+
+  for (let r = 0; r < rows.length; r++) {
+    const mtr = rows[r];
+    const cells = Array.from(mtr.children).filter(
+      (n) => n.namespaceURI === MATHML_NS && n.localName === 'mtd'
+    );
+    if (!cells.length) continue;
+
+    const innerHs = cells.map((mtd) => {
+      const cs = getComputedStyle(mtd);
+      const pt = parseFloat(cs.paddingTop) || 0;
+      const pb = parseFloat(cs.paddingBottom) || 0;
+      return Math.max(0, mtd.clientHeight - pt - pb);
+    });
+    const H = Math.max(...innerHs, 0);
+
+    /** @type {{ mrow: Element; ra: string; h: number; b: number }[]} */
+    const items = [];
+    let col = 0;
+    for (const mtd of cells) {
+      const ra = resolveEffectiveRowalign(mtd, r, col, mtableRowalign, mtr);
+      col += 1;
+      const mrow = getFirstMrowChild(mtd);
+      if (!mrow) continue;
+
+      const cs = getComputedStyle(mtd);
+      const borderTop = parseFloat(cs.borderTopWidth) || 0;
+      const padTop = parseFloat(cs.paddingTop) || 0;
+      const mtdRect = mtd.getBoundingClientRect();
+      const contentTopY = mtdRect.top + borderTop + padTop;
+      const mrowRect = mrow.getBoundingClientRect();
+      const h = mrowRect.height;
+      const probe = mrow.firstElementChild;
+      let b = 0;
+      if (isZeroBaselineProbe(probe)) {
+        b = probe.getBoundingClientRect().top - contentTopY;
+      } else if (h > 0) {
+        b = h * 0.75;
+      }
+      items.push({ mrow, ra, h, b });
+    }
+
+    let refBaseline = 0;
+    for (const it of items) {
+      if (it.ra === 'baseline' || it.ra === 'axis') {
+        refBaseline = Math.max(refBaseline, it.b);
+      }
+    }
+
+    for (const it of items) {
+      const { mrow, ra, h, b } = it;
+      let t = 0;
+      if (ra === 'top') t = 0;
+      else if (ra === 'bottom') t = Math.max(0, H - h);
+      else if (ra === 'center') t = Math.max(0, (H - h) / 2);
+      else if (ra === 'baseline' || ra === 'axis') t = Math.max(0, refBaseline - b);
+      mrow.style.marginTop = `${t}px`;
+    }
+  }
+  forceLayout(mtable);
+}
+
+/**
+ * @param {Element} mtable
+ * @param {Element[]} rows
+ * @param {string[]} mtableRowalign
+ * @returns {void}
+ */
+function scheduleLinedMtdVerticalLayout(mtable, rows, mtableRowalign) {
+  const prev = linedMtableResizeObservers.get(mtable);
+  if (prev) {
+    prev.disconnect();
+    linedMtableResizeObservers.delete(mtable);
+  }
+  const run = () => runLinedMtdVerticalLayout(mtable, rows, mtableRowalign);
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(() => {
+      requestAnimationFrame(run);
+    });
+    ro.observe(mtable);
+    linedMtableResizeObservers.set(mtable, ro);
+  }
+  requestAnimationFrame(() => requestAnimationFrame(run));
+}
+
 /**
  * Apply MathML 4 table presentation attributes using CSS on {@code mtable}, {@code mtr}, and {@code mtd}.
  * Per-gap {@code rowspacing} / {@code columnspacing} use cell margins (grid row-gap/column-gap are uniform).
@@ -1103,7 +1259,6 @@ export function applyMtablePresentationAttrsWithCss(mtable) {
   const columnlines = parseLineList(mtable.getAttribute('columnlines'), 'none');
   const internalLinesVisible =
     lineListHasVisible(columnlines) || lineListHasVisible(rowlines);
-  const mtrAlignItems = internalLinesVisible ? 'stretch' : 'first baseline';
   // With subgrid, `mtable` row tracks can be taller than content (`equalrows` uses `1fr`). Baseline
   // alignment of `mtr` items leaves the row box short, so `mtd` borders (columnlines) do not span
   // the track — use stretch so each `mtr` fills its row when heights are equalized.
@@ -1120,11 +1275,12 @@ export function applyMtablePresentationAttrsWithCss(mtable) {
       `display: inline-grid; vertical-align: baseline; grid-template-columns: ${gridCols}; grid-template-rows: ${gridRows}; row-gap: 0; column-gap: 0; justify-items: stretch; align-items: ${mtableOuterAlignItems};`
     );
     for (let i = 0; i < rows.length; i++) {
+      const mtrRowAlignItems = internalLinesVisible ? 'stretch' : 'first baseline';
       appendInlineStyle(
         rows[i],
         `display: grid; grid-column: 1 / -1; grid-row: ${
           i + 1
-        }; grid-template-columns: subgrid; grid-template-rows: auto; justify-items: stretch; align-items: ${mtrAlignItems};`
+        }; grid-template-columns: subgrid; grid-template-rows: auto; justify-items: stretch; align-items: ${mtrRowAlignItems};`
       );
     }
   } else {
@@ -1133,11 +1289,12 @@ export function applyMtablePresentationAttrsWithCss(mtable) {
       `display: inline-grid; vertical-align: baseline; grid-template-columns: minmax(0, auto); grid-template-rows: ${gridRows}; row-gap: 0; column-gap: 0;`
     );
     for (let i = 0; i < rows.length; i++) {
+      const mtrRowAlignItems = internalLinesVisible ? 'stretch' : 'first baseline';
       appendInlineStyle(
         rows[i],
         `display: grid; grid-template-columns: ${gridColsPerMtr}; grid-column: 1 / -1; grid-row: ${
           i + 1
-        }; justify-items: stretch; align-items: ${mtrAlignItems};`
+        }; justify-items: stretch; align-items: ${mtrRowAlignItems};`
       );
     }
   }
@@ -1224,6 +1381,10 @@ export function applyMtablePresentationAttrsWithCss(mtable) {
       cellMinWidthZero,
       internalLinesVisible
     );
+  }
+
+  if (internalLinesVisible) {
+    scheduleLinedMtdVerticalLayout(mtable, rows, mtableRowalign);
   }
 
   return mtable;
