@@ -47,9 +47,10 @@
  * does not appear clipped. The same mechanism applies to whole-table `align` (no row index):
  * sibling baseline (or axis) drives top / bottom / center / baseline / axis placement.
  *
- * Cell alignment follows MathML defaults (`rowalign` baseline, `columnalign` center) using
- * `align-items` / `justify-items` on the row grid, with per-cell `align-self` / `justify-self`
- * / `text-align` when needed. `rowalign="axis"` matches baseline alignment of the row grid plus a downward
+ * Cell alignment follows MathML defaults (`rowalign` baseline, `columnalign` center) and
+ * inheritance from {@code mtable} → {@code mtr} → {@code mtd} for both attributes (space- or
+ * comma-separated lists; ASCII case-insensitive tokens), with per-cell CSS from the resolved values.
+ * `rowalign="axis"` matches baseline alignment of the row grid plus a downward
  * shift by the math axis height (measured from an `mo` with U+2212, with `ex` fallback) so axis
  * rows sit lower than baseline rows,
  * per MathML baseline vs axis semantics. Multi-child `mtd`s get an explicit `<mrow>`
@@ -114,6 +115,7 @@ function normToken(s) {
 }
 
 /**
+ * Split a MathML-style attribute list on whitespace (commas become spaces first).
  * @param {string | null | undefined} raw
  * @returns {string[]}
  */
@@ -121,6 +123,7 @@ function parseSpaceList(raw) {
   if (raw == null || String(raw).trim() === '') return [];
   return String(raw)
     .trim()
+    .replace(/,/g, ' ')
     .split(/\s+/)
     .filter(Boolean);
 }
@@ -248,15 +251,18 @@ export function getNativeMtablePresentationAttrsSupport() {
 }
 
 /**
+ * Vertical placement for {@code display:flex; flex-direction: column} on {@code mtd} when the cell
+ * is stretched in the row grid (avoids {@code align-self: end} fighting {@code align-items: first baseline}
+ * on {@code mtr} for tall cells).
  * @param {string} rowalign
  * @returns {string}
  */
-function rowalignToAlignSelf(rowalign) {
+function rowalignToFlexMainJustify(rowalign) {
   const v = normalizeEnum(rowalign, ROWALIGN_VALUES, 'baseline');
-  if (v === 'top') return 'start';
-  if (v === 'bottom') return 'end';
+  if (v === 'top') return 'flex-start';
+  if (v === 'bottom') return 'flex-end';
   if (v === 'center') return 'center';
-  return 'baseline';
+  return 'flex-start';
 }
 
 /**
@@ -301,7 +307,8 @@ function getFirstMrowChild(mtd) {
 
 /**
  * Effective MathML {@code rowalign} for one cell: {@code mtable} list (one entry per row, last
- * repeated), then {@code mtr} list (one entry per column in that row, last repeated), then {@code mtd}.
+ * repeated), then {@code mtr} list (one entry per column in that row, last repeated), then {@code mtd}
+ * (list applies to the cell; a single-column {@code mtd} uses the first entry).
  * @param {Element} mtd
  * @param {number} rowIndex
  * @param {number} colIndex
@@ -329,6 +336,38 @@ function resolveEffectiveRowalign(mtd, rowIndex, colIndex, mtableRowalign, mtr) 
     }
   }
   return normalizeEnum(ra, ROWALIGN_VALUES, 'baseline');
+}
+
+/**
+ * Effective MathML {@code columnalign} for one cell: {@code mtable} list (one entry per column, last
+ * repeated), then {@code mtr} list (one entry per column in that row, last repeated), then {@code mtd}
+ * (list applies to the cell; a single-column {@code mtd} uses the first entry).
+ * @param {Element} mtd
+ * @param {number} colIndex
+ * @param {string[]} mtableColumnalign
+ * @param {Element | null} mtr
+ * @returns {string}
+ */
+function resolveEffectiveColumnalign(mtd, colIndex, mtableColumnalign, mtr) {
+  let ca = pickListEntry(mtableColumnalign, colIndex, 'center');
+  if (mtr) {
+    const mtrCaList = parseSpaceList(mtr.getAttribute('columnalign'));
+    if (mtrCaList.length) {
+      ca = normalizeEnum(
+        pickListEntry(mtrCaList, colIndex, ca),
+        COLUMNALIGN_VALUES,
+        ca
+      );
+    }
+  }
+  const mtdCaRaw = mtd.getAttribute('columnalign');
+  if (mtdCaRaw != null && String(mtdCaRaw).trim() !== '') {
+    const mtdCaList = parseSpaceList(mtdCaRaw);
+    if (mtdCaList.length) {
+      ca = normalizeEnum(pickListEntry(mtdCaList, 0, ca), COLUMNALIGN_VALUES, ca);
+    }
+  }
+  return normalizeEnum(ca, COLUMNALIGN_VALUES, 'center');
 }
 
 /**
@@ -684,8 +723,11 @@ function readMtableAlignLists(mtable) {
  * so {@code mtd} boxes fill row tracks (continuous column rules). Vertical {@code rowalign} is
  * applied after layout via {@link runLinedMtdVerticalLayout} (margin on the leading {@code mrow}).
  * Each {@code mtd} gets {@code justify-self} / {@code text-align} from {@code columnalign} when lines
- * are off; with lines, {@code display: flex; flex-direction: column} and {@code align-items} map
- * horizontal placement (MathML often ignores {@code text-align} on {@code mtd}).
+ * are off; for {@code rowalign} {@code top}/{@code center}/{@code bottom} without lines, {@code mtd} uses
+ * {@code align-self: stretch} with {@code display: flex; flex-direction: column} and {@code justify-content}
+ * so math sits at the top/center/bottom inside the row track (grid {@code align-items: first baseline} on
+ * {@code mtr} otherwise fights {@code align-self: end} for tall cells). With lines, {@code display: flex}
+ * and {@code align-items} map horizontal placement (MathML often ignores {@code text-align} on {@code mtd}).
  * {@code axis} also gets composed {@code padding-top} with row spacing (U+2212 probe or {@code ex} fallback).
  * {@link readMtableAlignLists} supplies {@code ['baseline']} / {@code ['center']} when {@code mtable}
  * omits those attributes.
@@ -714,21 +756,7 @@ function applyCellAlignments(
   internalLinesVisible
 ) {
   const ra = resolveEffectiveRowalign(mtd, rowIndex, colIndex, mtableRowalign, mtr);
-  let ca = pickListEntry(mtableColumnalign, colIndex, 'center');
-  if (mtr) {
-    const mtrCaList = parseSpaceList(mtr.getAttribute('columnalign'));
-    if (mtrCaList.length) {
-      ca = normalizeEnum(pickListEntry(mtrCaList, colIndex, ca), COLUMNALIGN_VALUES, ca);
-    }
-  }
-  const mtdCaRaw = mtd.getAttribute('columnalign');
-  if (mtdCaRaw != null && String(mtdCaRaw).trim() !== '') {
-    const mtdCaList = parseSpaceList(mtdCaRaw);
-    if (mtdCaList.length) {
-      ca = normalizeEnum(pickListEntry(mtdCaList, 0, ca), COLUMNALIGN_VALUES, ca);
-    }
-  }
-  ca = normalizeEnum(ca, COLUMNALIGN_VALUES, 'center');
+  const ca = resolveEffectiveColumnalign(mtd, colIndex, mtableColumnalign, mtr);
   const parts = [];
   if (cellMinWidthZero) {
     parts.push('min-width: 0');
@@ -746,7 +774,14 @@ function applyCellAlignments(
   } else {
     parts.push(`justify-self: ${columnalignToJustifySelf(ca)}`);
     if (ra === 'top' || ra === 'bottom' || ra === 'center') {
-      parts.push(`align-self: ${rowalignToAlignSelf(ra)}`);
+      parts.push('align-self: stretch');
+      parts.push('display: flex');
+      parts.push('flex-direction: column');
+      parts.push('width: 100%');
+      parts.push('height: 100%');
+      parts.push('min-height: 0');
+      parts.push(`justify-content: ${rowalignToFlexMainJustify(ra)}`);
+      parts.push(`align-items: ${columnalignToJustifyContent(ca)}`);
     } else {
       parts.push('align-self: baseline');
     }
