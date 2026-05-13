@@ -710,6 +710,157 @@
     </tbody>
   </table>
 
+  <h2><code>mtr</code> <code>rowalign</code> and <code>columnalign</code></h2>
+  <p class="intro">Per MathML 4, <code>mtr</code> may set <code>rowalign</code> and <code>columnalign</code> (space- or comma-separated lists, one token per column, last repeated) to override the enclosing <code>mtable</code> for that row only; <code>mtd</code> can override again.</p>
+  <table class="mtable-sweep">
+    <caption><code>mtr</code> overrides <code>mtable</code></caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>mtable</code> <code>rowalign="center"</code> <code>columnalign="right"</code>; second <code>mtr</code> uses <code>rowalign="top, baseline, bottom"</code> and <code>columnalign="left center right"</code>.</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable rowalign="center" columnalign="right">
+              <mtr>
+                <mtd><mi>a</mi></mtd>
+                <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
+                <mtd><mi>z</mi></mtd>
+              </mtr>
+              <mtr rowalign="top, baseline, bottom" columnalign="left center right">
+                <mtd><mi>x</mi></mtd>
+                <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
+                <mtd><msqrt><mi>t</mi></msqrt></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable rowalign="center" columnalign="right">
+                <mtr>
+                  <mtd><mi>a</mi></mtd>
+                  <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
+                  <mtd><mi>z</mi></mtd>
+                </mtr>
+                <mtr rowalign="top, baseline, bottom" columnalign="left center right">
+                  <mtd><mi>x</mi></mtd>
+                  <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
+                  <mtd><msqrt><mi>t</mi></msqrt></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3><code>mtable</code> → <code>mtr</code> → <code>mtd</code></h3>
+  <p class="intro"><code>mtable</code> sets <code>rowalign="bottom"</code> and <code>columnalign="right"</code> (lists repeat per row / column). <br>
+    Each <code>mtr</code> overrides with its own <code>rowalign</code> / <code>columnalign</code> lists <br>
+    Selected <code>mtd</code> elements override again. <br>
+    Each cell is prefixed with <code>(r, c)</code> for the resolved alignment (<code>bot</code> for bottom; otherwise the first letter of <code>rowalign</code> / <code>columnalign</code>).</p>
+  <table class="mtable-sweep">
+    <caption>Inherited alignment overrides</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Defaults on <code>mtable</code>; per-row lists on <code>mtr</code>; <code>mtd</code> overrides as in the list below.<br>
+           Each cell starts with <code>(r, c)</code>, telling what the <code>rowalign</code> / <code>columnalign</code> should be.<br>
+           The first letter of the attr value is used, except <code>bot</code> = bottom.</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable rowalign="bottom" columnalign="right">
+              <mtr rowalign="top baseline bottom" columnalign="left center right">
+                <mtd rowalign="baseline" columnalign="right"><mrow><mtext>(b, r)</mtext><mspace width="0.25em"/><msub><mi>Q</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><mi>c</mi><mfrac><mn>2</mn><mn>3</mn></mfrac><mo>+</mo><mi>y</mi></mrow></mfrac></mrow></mtd>
+                <mtd><mrow><mtext>(b, c)</mtext><mspace width="0.25em"/><mo>−</mo><mfrac><mrow><msqrt><mi>x</mi></msqrt></mrow><mn>4</mn></mfrac></mrow></mtd>
+                <mtd><mrow><mtext>(bot, r)</mtext><mspace width="0.25em"/><mi>x</mi></mrow></mtd>
+              </mtr>
+              <mtr rowalign="baseline center center" columnalign="right center left">
+                <mtd><mrow><mtext>(b, r)</mtext><mspace width="0.25em"/><mi>k</mi><mo>+</mo><mi>k</mi></mrow></mtd>
+                <mtd><mrow><mtext>(b, c)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac><mo>+</mo><mi>y</mi></mrow></mfrac></mrow></mtd>
+                <mtd rowalign="center" columnalign="center"><mrow><mtext>(c, c)</mtext><mspace width="0.25em"/><msup><mi>n</mi><mn>2</mn></msup></mrow></mtd>
+              </mtr>
+              <mtr rowalign="baseline axis center" columnalign="left center right">
+                <mtd><mrow><mtext>(b, l)</mtext><mspace width="0.25em"/><mi>u</mi></mrow></mtd>
+                <mtd rowalign="top" columnalign="left"><mrow><mtext>(t, l)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mi>t</mi></mfrac></mrow></mtd>
+                <mtd><mrow><mtext>(c, r)</mtext><mspace width="0.25em"/><mi>r</mi><mo>+</mo><mi>s</mi><mo>+</mo><mi>t</mi><mo>+</mo><mi>u</mi><mo>+</mo><mi>v</mi></mrow></mtd>
+              </mtr>
+              <mtr rowalign="bottom top baseline" columnalign="center left right">
+                <mtd><mrow><mtext>(bot, c)</mtext><mspace width="0.25em"/><mrow><mfrac><msup><mi>x</mi><mn>2</mn></msup><mn>3</mn></mfrac><mo>+</mo><mi>y</mi></mrow></mrow></mtd>
+                <mtd><mrow><mtext>(t, l)</mtext><mspace width="0.25em"/><msubsup><mi>X</mi><mi>i</mi><mrow><mn>2</mn><mo>+</mo><mn>1</mn></mrow></msubsup></mrow></mtd>
+                <mtd><mrow><mtext>(b, r)</mtext><mspace width="0.25em"/><mi>p</mi></mrow></mtd>
+              </mtr>
+              <mtr rowalign="top baseline bottom" columnalign="right left center">
+                <mtd><mrow><mtext>(t, r)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow></mfrac></mrow></mtd>
+                <mtd><mrow><mtext>(b, l)</mtext><mspace width="0.25em"/><msub><mi>L</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><mi>d</mi></mrow></mtd>
+                <mtd rowalign="bottom" columnalign="left"><mrow><mtext>(bot, l)</mtext><mspace width="0.25em"/><mi>g</mi></mrow></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable rowalign="bottom" columnalign="right">
+                <mtr rowalign="top baseline bottom" columnalign="left center right">
+                  <mtd rowalign="baseline" columnalign="right"><mrow><mtext>(b, r)</mtext><mspace width="0.25em"/><msub><mi>Q</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><mi>c</mi><mfrac><mn>2</mn><mn>3</mn></mfrac><mo>+</mo><mi>y</mi></mrow></mfrac></mrow></mtd>
+                  <mtd><mrow><mtext>(b, c)</mtext><mspace width="0.25em"/><mo>−</mo><mfrac><mrow><msqrt><mi>x</mi></msqrt></mrow><mn>4</mn></mfrac></mrow></mtd>
+                  <mtd><mrow><mtext>(bot, r)</mtext><mspace width="0.25em"/><mi>x</mi></mrow></mtd>
+                </mtr>
+                <mtr rowalign="baseline center center" columnalign="right center left">
+                  <mtd><mrow><mtext>(b, r)</mtext><mspace width="0.25em"/><mi>k</mi><mo>+</mo><mi>k</mi></mrow></mtd>
+                  <mtd><mrow><mtext>(b, c)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac><mo>+</mo><mi>y</mi></mrow></mfrac></mrow></mtd>
+                  <mtd rowalign="center" columnalign="center"><mrow><mtext>(c, c)</mtext><mspace width="0.25em"/><msup><mi>n</mi><mn>2</mn></msup></mrow></mtd>
+                </mtr>
+                  <mtr rowalign="baseline axis center" columnalign="left center right">
+                  <mtd><mrow><mtext>(b, l)</mtext><mspace width="0.25em"/><mi>u</mi></mrow></mtd>
+                  <mtd rowalign="top" columnalign="left"><mrow><mtext>(t, l)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mi>t</mi></mfrac></mrow></mtd>
+                  <mtd><mrow><mtext>(c, r)</mtext><mspace width="0.25em"/><mi>r</mi><mo>+</mo><mi>s</mi><mo>+</mo><mi>t</mi><mo>+</mo><mi>u</mi><mo>+</mo><mi>v</mi></mrow></mtd>
+                </mtr>
+                <mtr rowalign="bottom top baseline" columnalign="center left right">
+                  <mtd><mrow><mtext>(bot, c)</mtext><mspace width="0.25em"/><mrow><mfrac><msup><mi>x</mi><mn>2</mn></msup><mn>3</mn></mfrac><mo>+</mo><mi>y</mi></mrow></mrow></mtd>
+                  <mtd><mrow><mtext>(t, l)</mtext><mspace width="0.25em"/><msubsup><mi>X</mi><mi>i</mi><mrow><mn>2</mn><mo>+</mo><mn>1</mn></mrow></msubsup></mrow></mtd>
+                  <mtd><mrow><mtext>(b, r)</mtext><mspace width="0.25em"/><mi>p</mi></mrow></mtd>
+                </mtr>
+                <mtr rowalign="top baseline bottom" columnalign="right left center">
+                  <mtd><mrow><mtext>(t, r)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow></mfrac></mrow></mtd>
+                  <mtd><mrow><mtext>(b, l)</mtext><mspace width="0.25em"/><msub><mi>L</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><mi>d</mi></mrow></mtd>
+                  <mtd rowalign="bottom" columnalign="left"><mrow><mtext>(bot, l)</mtext><mspace width="0.25em"/><mi>g</mi></mrow></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          <p style="margin:0.75em 0 0;font-size:0.92em"><strong>Override map</strong> (row 0 = top of <code>mtable</code>):</p>
+          <ul style="margin:0.35em 0 0 1.25em;font-size:0.92em">
+            <li><strong>Row 0</strong> — <code>mtr</code>: <code>rowalign="top baseline bottom"</code>, <code>columnalign="left center right"</code>; <code>mtd</code> (0,0): <code>rowalign="axis"</code>, <code>columnalign="right"</code>.</li>
+            <li><strong>Row 1</strong> — <code>mtr</code>: <code>rowalign="center"</code> (×3), <code>columnalign="right center left"</code>; <code>mtd</code> (1,2): <code>columnalign="center"</code>.</li>
+            <li><strong>Row 2</strong> — <code>mtr</code>: <code>rowalign="baseline axis center"</code>, <code>columnalign="left center right"</code>; <code>mtd</code> (2,1): <code>rowalign="top"</code>, <code>columnalign="left"</code>.</li>
+            <li><strong>Row 3</strong> — <code>mtr</code> only: <code>rowalign="bottom top baseline"</code>, <code>columnalign="center left right"</code>.</li>
+            <li><strong>Row 4</strong> — <code>mtr</code>: <code>rowalign="top baseline bottom"</code>, <code>columnalign="right left center"</code>; <code>mtd</code> (4,2): <code>rowalign="center"</code>, <code>columnalign="left"</code>.</li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
   <h2><code>columnalign</code></h2>
   <p class="intro">Three rows; <code>columnalign="left center right"</code>; columns have very different widths.</p>
   <table class="mtable-sweep">
