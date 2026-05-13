@@ -298,7 +298,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><code>align="baseline,1"</code></td>
+        <td><code>align="baseline,1"</code> and <br> <code>align="baseline, 2"</code></td>
         <td>
           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
             <mrow>
@@ -307,31 +307,7 @@
                 <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
                 <mtr><mtd><mi>r</mi></mtd></mtr>
               </mtable>
-              <mo>−</mo><mi>x</mi>
-            </mrow>
-          </math>
-        </td>
-        <td>
-          <div class="mtable-test-polyfill-root">
-            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-              <mrow>
-                <mi>x</mi><mo>−</mo>
-                <mtable align="baseline, 1">
-                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
-                  <mtr><mtd><mi>r</mi></mtd></mtr>
-                </mtable>
-                <mo>−</mo><mi>x</mi>
-              </mrow>
-            </math>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td><code>align="baseline, 2"</code></td>
-        <td>
-          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            <mrow>
-              <mi>x</mi><mo>−</mo>
+              <mo>−</mo><mi>x</mi><mo>−</mo>
               <mtable align="baseline, 2">
                 <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
                 <mtr><mtd><mi>r</mi></mtd></mtr>
@@ -345,47 +321,24 @@
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
               <mrow>
                 <mi>x</mi><mo>−</mo>
+                <mtable align="baseline,1">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                <mo>−</mo><mi>x</mi><mo>−</mo>
                 <mtable align="baseline, 2">
                   <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
                   <mtr><mtd><mi>r</mi></mtd></mtr>
                 </mtable>
-                <mo>−</mo><mi>x</mi>
+                  <mo>−</mo><mi>x</mi>
               </mrow>
             </math>
           </div>
         </td>
       </tr>
       <tr>
-        <td><code>align="baseline, -1"</code></td>
-        <td>
-          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            <mrow>
-              <mi>x</mi><mo>−</mo>
-              <mtable align="baseline, -1">
-                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
-                <mtr><mtd><mi>r</mi></mtd></mtr>
-              </mtable>
-              <mo>−</mo><mi>x</mi>
-            </mrow>
-          </math>
-        </td>
-        <td>
-          <div class="mtable-test-polyfill-root">
-            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-              <mrow>
-                <mi>x</mi><mo>−</mo>
-                <mtable align="baseline, -1">
-                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
-                  <mtr><mtd><mi>r</mi></mtd></mtr>
-                </mtable>
-                <mo>−</mo><mi>x</mi>
-              </mrow>
-            </math>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td><code>align="baseline, -2"</code></td>
+        <td><code>align="baseline,-2"</code> and <br> <code>align="baseline, -1"</code><br>
+            (should display the same as above row)</td>
         <td>
           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
             <mrow>
@@ -394,7 +347,12 @@
                 <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
                 <mtr><mtd><mi>r</mi></mtd></mtr>
               </mtable>
-              <mo>−</mo><mi>x</mi>
+              <mo>−</mo><mi>x</mi><mo>−</mo>
+              <mtable align="baseline, -1">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+            <mo>−</mo><mi>x</mi>
             </mrow>
           </math>
         </td>
@@ -407,12 +365,19 @@
                   <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
                   <mtr><mtd><mi>r</mi></mtd></mtr>
                 </mtable>
-                <mo>−</mo><mi>x</mi>
+                <mo>−</mo><mi>x</mi><mo>−</mo>
+                <mtable align="baseline, -1">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                  <mo>−</mo><mi>x</mi>
               </mrow>
             </math>
           </div>
         </td>
-      </tr>        <td><code>align="axis,1"</code></td>
+      </tr>
+      <tr>
+        <td><code>align="axis,1"</code> and <br> <code>align="axis,2"</code></td>
         <td>
           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
             <mrow>
@@ -421,32 +386,8 @@
                 <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
                 <mtr><mtd><mi>r</mi></mtd></mtr>
               </mtable>
-              <mo>−</mo><mi>x</mi>
-            </mrow>
-          </math>
-        </td>
-        <td>
-          <div class="mtable-test-polyfill-root">
-            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-              <mrow>
-                <mi>x</mi><mo>−</mo>
-                <mtable align="axis, 1">
-                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
-                  <mtr><mtd><mi>r</mi></mtd></mtr>
-                </mtable>
-                <mo>−</mo><mi>x</mi>
-              </mrow>
-            </math>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td><code>align="axis, 2"</code></td>
-        <td>
-          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            <mrow>
-              <mi>x</mi><mo>−</mo>
-              <mtable align="axis, 2">
+              <mo>−</mo><mi>x</mi><mo>−</mo>
+              <mtable align="axis,2">
                 <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
                 <mtr><mtd><mi>r</mi></mtd></mtr>
               </mtable>
@@ -459,27 +400,38 @@
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
               <mrow>
                 <mi>x</mi><mo>−</mo>
-                <mtable align="axis, 2">
+                <mtable align="axis,1">
                   <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
                   <mtr><mtd><mi>r</mi></mtd></mtr>
                 </mtable>
-                <mo>−</mo><mi>x</mi>
+                <mo>−</mo><mi>x</mi><mo>−</mo>
+                <mtable align="axis,2">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                  <mo>−</mo><mi>x</mi>
               </mrow>
             </math>
           </div>
         </td>
       </tr>
       <tr>
-        <td><code>align="axis, -1"</code></td>
+        <td><code>align="axis,-2"</code> and <br> <code>align="axis,-1"</code><br>
+            (should display the same as above row)</td>
         <td>
           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
             <mrow>
               <mi>x</mi><mo>−</mo>
-              <mtable align="axis, -1">
+              <mtable align="axis,-2">
                 <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
                 <mtr><mtd><mi>r</mi></mtd></mtr>
               </mtable>
-              <mo>−</mo><mi>x</mi>
+              <mo>−</mo><mi>x</mi><mo>−</mo>
+              <mtable align="axis,-1">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+            <mo>−</mo><mi>x</mi>
             </mrow>
           </math>
         </td>
@@ -488,40 +440,16 @@
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
               <mrow>
                 <mi>x</mi><mo>−</mo>
-                <mtable align="axis, -1">
+                <mtable align="axis,-2">
                   <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
                   <mtr><mtd><mi>r</mi></mtd></mtr>
                 </mtable>
-                <mo>−</mo><mi>x</mi>
-              </mrow>
-            </math>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td><code>align="axis, -2"</code></td>
-        <td>
-          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            <mrow>
-              <mi>x</mi><mo>−</mo>
-              <mtable align="axis, -2">
-                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
-                <mtr><mtd><mi>r</mi></mtd></mtr>
-              </mtable>
-              <mo>−</mo><mi>x</mi>
-            </mrow>
-          </math>
-        </td>
-        <td>
-          <div class="mtable-test-polyfill-root">
-            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-              <mrow>
-                <mi>x</mi><mo>−</mo>
-                <mtable align="axis, -2">
+                <mo>−</mo><mi>x</mi><mo>−</mo>
+                <mtable align="axis,-1">
                   <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
                   <mtr><mtd><mi>r</mi></mtd></mtr>
                 </mtable>
-                <mo>−</mo><mi>x</mi>
+                  <mo>−</mo><mi>x</mi>
               </mrow>
             </math>
           </div>
@@ -795,23 +723,23 @@
     </thead>
     <tbody>
       <tr>
-        <td>Left, center, and right alignment per column (each cell: several <code>mi</code>/<code>mo</code>/<code>mn</code> etc., no <code>mtext</code>).</td>
+        <td>Left, center, and right alignment per column</td>
         <td>
           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
             <mtable columnalign="left center right">
               <mtr>
-                <mtd><mrow><mi>w</mi><mo>+</mo><mi>w</mi><mo>+</mo><mi>w</mi><mo>+</mo><mi>w</mi></mrow></mtd>
-                <mtd><mrow><mi>m</mi><mo>+</mo><mi>i</mi><mo>+</mo><mi>d</mi></mrow></mtd>
+                <mtd><mrow><mi>w</mi><mo>+</mo><mi>w</mi><mo>+</mo><mi>w</mi></mrow></mtd>
+                <mtd><mi>m</mi></mtd>
                 <mtd><mrow><msub><mi>Z</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>y</mi><mo>+</mo><mi>k</mi></mrow></mtd>
               </mtr>
               <mtr>
                 <mtd><mrow><msqrt><mi>x</mi></msqrt><mo>+</mo><mn>1</mn><mo>+</mo><mi>s</mi></mrow></mtd>
-                <mtd><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>+</mo><mi>t</mi><mo>+</mo><mi>e</mi><mo>+</mo><mi>x</mi><mo>+</mo><mi>t</mi></mrow></mtd>
-                <mtd><mrow><mi>w</mi><mo>+</mo><mi>i</mi><mo>+</mo><mi>d</mi><mo>+</mo><mi>e</mi><mo>+</mo><mi>w</mi><mo>+</mo><mi>i</mi><mo>+</mo><mi>d</mi><mo>+</mo><mi>e</mi></mrow></mtd>
+                <mtd><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>+</mo><mi>t</mi><mi>x</mi><mo>+</mo><mi>t</mi></mrow></mtd>
+                <mtd><mrow><mi>w</mi><mo>+</mo><mi>i</mi><mo>+</mo><mi>d</mi><mi>i</mi><mo>+</mo><mi>d</mi><mo>+</mo><mi>e</mi></mrow></mtd>
               </mtr>
               <mtr>
-                <mtd><mrow><mi>a</mi><mo>+</mo><mi>a</mi><mo>+</mo><mi>a</mi></mrow></mtd>
-                <mtd><mrow><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi></mrow></mtd>
+                <mtd><mi>x</mi><mo>−</mo><mi>a</mi></mtd>
+                <mtd><mfrac><mrow><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi></mrow><msubsup><mi>b</mi><mn>0</mn><mn>2</mn></msubsup></mfrac></mtd>
                 <mtd><mrow><mi>i</mi><mo>&#x22C5;</mo><mi>i</mi><mo>+</mo><mn>0</mn></mrow></mtd>
               </mtr>
             </mtable>
@@ -822,18 +750,18 @@
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
               <mtable columnalign="left center right">
                 <mtr>
-                  <mtd><mrow><mi>w</mi><mo>+</mo><mi>w</mi><mo>+</mo><mi>w</mi><mo>+</mo><mi>w</mi></mrow></mtd>
-                  <mtd><mrow><mi>m</mi><mo>+</mo><mi>i</mi><mo>+</mo><mi>d</mi></mrow></mtd>
+                  <mtd><mrow><mi>w</mi><mo>+</mo><mi>w</mi><mo>+</mo><mi>w</mi></mrow></mtd>
+                  <mtd><mi>m</mi></mtd>
                   <mtd><mrow><msub><mi>Z</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>y</mi><mo>+</mo><mi>k</mi></mrow></mtd>
                 </mtr>
                 <mtr>
                   <mtd><mrow><msqrt><mi>x</mi></msqrt><mo>+</mo><mn>1</mn><mo>+</mo><mi>s</mi></mrow></mtd>
-                  <mtd><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>+</mo><mi>t</mi><mo>+</mo><mi>e</mi><mo>+</mo><mi>x</mi><mo>+</mo><mi>t</mi></mrow></mtd>
-                  <mtd><mrow><mi>w</mi><mo>+</mo><mi>i</mi><mo>+</mo><mi>d</mi><mo>+</mo><mi>e</mi><mo>+</mo><mi>w</mi><mo>+</mo><mi>i</mi><mo>+</mo><mi>d</mi><mo>+</mo><mi>e</mi></mrow></mtd>
+                  <mtd><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>+</mo><mi>t</mi><mi>x</mi><mo>+</mo><mi>t</mi></mrow></mtd>
+                  <mtd><mrow><mi>w</mi><mo>+</mo><mi>i</mi><mo>+</mo><mi>d</mi><mi>i</mi><mo>+</mo><mi>d</mi><mo>+</mo><mi>e</mi></mrow></mtd>
                 </mtr>
                 <mtr>
-                  <mtd><mrow><mi>a</mi><mo>+</mo><mi>a</mi><mo>+</mo><mi>a</mi></mrow></mtd>
-                  <mtd><mrow><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi></mrow></mtd>
+                  <mtd><mi>x</mi><mo>−</mo><mi>a</mi></mtd>
+                  <mtd><mfrac><mrow><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi></mrow><msubsup><mi>b</mi><mn>0</mn><mn>2</mn></msubsup></mfrac></mtd>
                   <mtd><mrow><mi>i</mi><mo>&#x22C5;</mo><mi>i</mi><mo>+</mo><mn>0</mn></mrow></mtd>
                 </mtr>
               </mtable>
@@ -1389,7 +1317,7 @@
                 </mtd>
                 <mtd>
                   <mrow>
-                    <msubsup><mo>&#x222B;</mo><mn>0</mn><mn>1</mn></msubsup>
+                    <msubsup><mo>&#x222B;</mo><mn>0</mn><mfrac><mn>3</mn><mn>2</mn></mfrac></msubsup>
                     <mi>x</mi><mi>d</mi><mi>x</mi>
                   </mrow>
                 </mtd>
@@ -1414,7 +1342,7 @@
                   </mtd>
                   <mtd>
                     <mrow>
-                      <msubsup><mo>&#x222B;</mo><mn>0</mn><mn>1</mn></msubsup>
+                      <msubsup><mo>&#x222B;</mo><mn>0</mn><mfrac><mn>3</mn><mn>2</mn></mfrac></msubsup>
                       <mi>x</mi><mi>d</mi><mi>x</mi>
                     </mrow>
                   </mtd>
@@ -1442,7 +1370,7 @@
                 </mtd>
                 <mtd>
                   <mrow>
-                    <msubsup><mo>&#x222B;</mo><mn>0</mn><mn>1</mn></msubsup>
+                    <msubsup><mo>&#x222B;</mo><mn>0</mn><mfrac><mn>3</mn><mn>2</mn></mfrac></msubsup>
                     <mi>x</mi><mi>d</mi><mi>x</mi>
                   </mrow>
                 </mtd>
@@ -1467,7 +1395,7 @@
                   </mtd>
                   <mtd>
                     <mrow>
-                      <msubsup><mo>&#x222B;</mo><mn>0</mn><mn>1</mn></msubsup>
+                      <msubsup><mo>&#x222B;</mo><mn>0</mn><mfrac><mn>3</mn><mn>2</mn></mfrac></msubsup>
                       <mi>x</mi><mi>d</mi><mi>x</mi>
                     </mrow>
                   </mtd>
