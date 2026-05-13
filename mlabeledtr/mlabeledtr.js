@@ -21,6 +21,7 @@
 */
 
 import { _MathTransforms, cloneElementWithShadowRoot } from '../common/math-transforms.js'
+import { applyMtablePresentationAttrsWithCss } from '../mtable/mtable.js'
 
 const namespaceURI = "http://www.w3.org/1998/Math/MathML";
 
@@ -118,7 +119,7 @@ const transformMtable = (mtable) => {
   let newTable = makeTableSquare(cloneElementWithShadowRoot(mtable))
   handleLabeledRows(newTable);
 
-  // FIX: handle attrs
+  applyMtablePresentationAttrsWithCss(newTable);
   return newTable;
 }
 
