@@ -26,45 +26,19 @@
   THE SOFTWARE.
 */
 
-import { _MathTransforms, cloneElementWithShadowRoot, MATHML_NS } from '../common/math-transforms.js'
+import { _MathTransforms, getMathDimensions } from '../common/math-transforms.js'
 
-/**
- * @param {HTMLElement} mpadded
- * @returns {{width:number, height: number: depth: number}}
- */
-function getDimensions(mpadded) {
-    // Create an mrow around the children of 'mpadded' and add a zero height/depth mspace to them.
-    // the y/top/bottom of the mspace is the baseline, so we can find height/depth of el
-    // undo the changes to the DOM and return the values
-    // Note: the mspace should not cause reflow, so the change/undo hopefully is somewhat efficient
-    const mrow = document.createElementNS(MATHML_NS, 'mrow');
-    mrow.appendChild( document.createElementNS(MATHML_NS, 'mspace') );
-    const cloneMpadded = cloneElementWithShadowRoot(mpadded);
-    for (let i = 0; i < cloneMpadded.children.length; i++) {
-        mrow.appendChild(cloneMpadded.children[i]);    // removed from clone and added to mrow
-    }
-    cloneMpadded.appendChild(mrow);
-    mpadded.parentElement.replaceChild(cloneMpadded, mpadded);      // should not be reflow
-
-    const mspaceRect = mrow.firstElementChild.getBoundingClientRect();
-    const mpaddedRect = mrow.getBoundingClientRect();
-
-    cloneMpadded.parentElement.replaceChild(mpadded, cloneMpadded);      // restore original structure; should not reflow
-    return {
-        width: mpaddedRect.width,
-        height: mspaceRect.y - mpaddedRect.top,
-        depth: mpaddedRect.bottom - mspaceRect.y
-    };
-}
 /**
  * @param {HTMLElement} el
  * @param {string} attr
  * @param {'width'|'height'|'depth'} dimension
- * @param {{width:number, height: number: depth: number}} dimensions
+ * @param {{ width: number, height: number, depth: number }} dimensions
  * @returns {boolean}
  */
 function replacePseudoAttr(el, attr, dimension, dimensions) {
-    const attrValue = el.getAttribute(attr).toLowerCase();
+    const raw = el.getAttribute(attr);
+    if (raw == null) return false;
+    const attrValue = raw.toLowerCase();
     if (attrValue.includes(dimension)) {
         const floatVal = parseFloat(attrValue) * dimensions[dimension] / (attrValue.includes('%') ? 100.0 : 1.0);
         el.setAttribute(attr, floatVal.toFixed(1) + 'px');
@@ -75,9 +49,9 @@ function replacePseudoAttr(el, attr, dimension, dimensions) {
 
 /**
  * @param {HTMLElement} el
- * @param {attr} align
- * @param {{width:number, height: number: depth: number}} dimensions
- * @returns {boolean}       // true if handled
+ * @param {string} attr
+ * @param {{ width: number, height: number, depth: number }} dimensions
+ * @returns {boolean} true if handled
  */
 function handleAttr(el, attr, dimensions) {
     if (!el.hasAttribute(attr)) {
@@ -103,7 +77,7 @@ function handleAttr(el, attr, dimensions) {
 const transformMpadded = (el) => {
     // if the attr value contains a pseudo-unit (width, height, depth),
     // these are converted to pixels
-    const dimensions = getDimensions(el);       // do this before changing the attr values
+    const dimensions = getMathDimensions(el);       // do this before changing the attr values
 
     handleAttr(el, 'width', dimensions);
     handleAttr(el, 'height', dimensions);

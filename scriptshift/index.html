@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>scriptshift tests</title>
+  <meta charset="utf-8" />
+  <script type="module">
+    import { _MathTransforms } from '../common/math-transforms.js'
+    import './scriptshift.js'
+    document.head.appendChild(_MathTransforms.getCSSStyleSheet())
+
+    window.addEventListener('DOMContentLoaded', () => {
+      _MathTransforms.transform(document.body)
+    })
+  </script>
+  <style>
+    math {
+      font-family: "Stix Two Math", "Cambria Math", "Asana Math", serif;
+      border: 1px solid #1a5fb4;
+      box-sizing: border-box;
+      width: fit-content;
+      max-width: 100%;
+      padding: 1px 2px;
+    }
+
+    table.tests {
+      border-collapse: collapse;
+      margin: 1.5em 0;
+    }
+
+    table.tests th,
+    table.tests td {
+      border: 1px solid #ccc;
+      padding: 0.75em 1em;
+      vertical-align: middle;
+      text-align: left;
+    }
+
+    table.tests th {
+      background: #f5f5f5;
+    }
+
+    caption {
+      font-weight: bold;
+      text-align: left;
+      margin-bottom: 0.5em;
+    }
+
+    p.serve-note {
+      border: 1px solid #c9a227;
+      background: #fffbeb;
+      padding: 0.75em 1em;
+      max-width: 50em;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>scriptshift</h1>
+
+  <p class="serve-note">
+    This page uses <code>&lt;script type=&quot;module&quot;&gt;</code> with relative <code>import</code> paths.
+    Browsers usually block those imports from the <code>file://</code> URL, so the polyfill will not run if you open this file directly from disk.
+    Serve the repository root over HTTP and open this page from there, for example:
+    <code>python -m http.server 8080</code> then visit
+    <code>http://localhost:8080/scriptshift/index.html</code>.
+  </p>
+
+  <p>
+    Tests for the <code>scriptshift.js</code> polyfill:
+    <a href="https://www.w3.org/TR/mathml4/#presm_scrlim">MathML 4</a>
+    <code>subscriptshift</code> / <code>superscriptshift</code> on
+    <code>msub</code>, <code>msup</code>, and <code>msubsup</code>.
+    Each row compares the default (no shift attribute) with a shifted script after
+    <code>_MathTransforms.transform</code> runs.
+    The blue border is tight and indicates the MathML element's bounding box.
+  </p>
+
+  <table class="tests">
+    <caption><code>msub</code> — subscript baseline shifted down</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">No <code>subscriptshift</code> (reference)</th>
+        <th scope="col"><code>subscriptshift="0.5em"</code> (polyfilled)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Simple subscript</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msub>
+              <mi>x</mi>
+              <mn>0</mn>
+            </msub>
+          </math>
+        </td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msub subscriptshift="0.5em">
+              <mi>x</mi>
+              <mn>0</mn>
+            </msub>
+          </math>
+        </td>
+      </tr>
+      <tr>
+        <td>Nested subscript (<i>i</i> sub <i>j</i>)</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msub>
+              <mi>A</mi>
+              <msub>
+                <mi>i</mi>
+                <mi>j</mi>
+              </msub>
+            </msub>
+          </math>
+        </td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msub subscriptshift="0.5em">
+              <mi>A</mi>
+              <msub>
+                <mi>i</mi>
+                <mi>j</mi>
+              </msub>
+            </msub>
+          </math>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="tests">
+    <caption><code>msup</code> — superscript baseline shifted up</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">No <code>superscriptshift</code> (reference)</th>
+        <th scope="col"><code>superscriptshift="0.5em"</code> (polyfilled)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Simple superscript</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msup>
+              <mi>x</mi>
+              <mn>2</mn>
+            </msup>
+          </math>
+        </td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msup superscriptshift="0.5em">
+              <mi>x</mi>
+              <mn>2</mn>
+            </msup>
+          </math>
+        </td>
+      </tr>
+      <tr>
+        <td><i>e</i> to the <i>t</i> squared (nested superscript)</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msup>
+              <mi>e</mi>
+              <msup>
+                <mi>t</mi>
+                <mn>2</mn>
+              </msup>
+            </msup>
+          </math>
+        </td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msup superscriptshift="0.5em">
+              <mi>e</mi>
+              <msup>
+                <mi>t</mi>
+                <mn>2</mn>
+              </msup>
+            </msup>
+          </math>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="tests">
+    <caption><code>msubsup</code> — sub down and super up</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">No shift attrs (reference)</th>
+        <th scope="col">Both shifts (polyfilled)</th>
+        <th scope="col">Sub only / super only</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Integral-style limits</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msubsup>
+              <mo>&#x222B;</mo>
+              <mn>0</mn>
+              <mn>1</mn>
+            </msubsup>
+          </math>
+        </td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msubsup subscriptshift="0.5em" superscriptshift="0.5em">
+              <mo>&#x222B;</mo>
+              <mn>0</mn>
+              <mn>1</mn>
+            </msubsup>
+          </math>
+        </td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msubsup subscriptshift="0.5em">
+              <mi>x</mi>
+              <mn>a</mn>
+              <mn>b</mn>
+            </msubsup>
+          </math>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msubsup superscriptshift="0.5em">
+              <mi>y</mi>
+              <mn>c</mn>
+              <mn>d</mn>
+            </msubsup>
+          </math>
+        </td>
+      </tr>
+      <tr>
+        <td>Variable with sub/sup pair</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msubsup>
+              <mi>X</mi>
+              <mi>i</mi>
+              <mi>j</mi>
+            </msubsup>
+          </math>
+        </td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msubsup subscriptshift="0.5em" superscriptshift="0.5em">
+              <mi>X</mi>
+              <mi>i</mi>
+              <mi>j</mi>
+            </msubsup>
+          </math>
+        </td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msubsup subscriptshift="0.5em">
+              <mi>Z</mi>
+              <mn>1</mn>
+              <mn>2</mn>
+            </msubsup>
+          </math>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <msubsup superscriptshift="0.5em">
+              <mi>W</mi>
+              <mn>3</mn>
+              <mn>4</mn>
+            </msubsup>
+          </math>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Pixel lengths</h2>
+  <p>Sanity check with absolute lengths:</p>
+  <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+    <mrow>
+      <msub subscriptshift="6px">
+        <mi>p</mi>
+        <mn>1</mn>
+      </msub>
+      <mo>,</mo>
+      <msup superscriptshift="6px">
+        <mi>p</mi>
+        <mn>2</mn>
+      </msup>
+      <mo>,</mo>
+      <msubsup subscriptshift="5px" superscriptshift="5px">
+        <mi>p</mi>
+        <mn>3</mn>
+        <mn>4</mn>
+      </msubsup>
+    </mrow>
+  </math>
+</body>
+
+</html>

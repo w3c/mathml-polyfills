@@ -108,6 +108,59 @@
         </tr>
         <tr>
             <td>
+                semantics — presentation already first
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <semantics>
+                        <mrow>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mn>1</mn>
+                        </mrow>
+                        <annotation encoding="text/plain">a plus one</annotation>
+                    </semantics>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                semantics — annotation first; polyfill moves presentation first
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <semantics>
+                        <annotation encoding="text/plain">a plus one</annotation>
+                        <mrow>
+                            <mi>a</mi>
+                            <mo>+</mo>
+                            <mn>1</mn>
+                        </mrow>
+                    </semantics>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                semantics — presentation in annotation-xml (MathML-Presentation)
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <semantics>
+                        <annotation encoding="application/x-tex">a+1</annotation>
+                        <annotation-xml encoding="MathML-Presentation">
+                            <mrow>
+                                <mi>a</mi>
+                                <mo>+</mo>
+                                <mn>1</mn>
+                            </mrow>
+                        </annotation-xml>
+                    </semantics>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
                 under/over scripts with an mo that should be displayed as an accent
             </td>
             <td>
@@ -283,6 +336,35 @@
                     <mo>)</mo>
                     <mo>+</mo>
                     <mn>1</mn>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                bevelled=&quot;false&quot; (must stay stacked, not linearized)
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mfrac bevelled="false">
+                        <mn>1</mn>
+                        <mn>2</mn>
+                    </mfrac>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                nested bevelled mfrac
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mfrac bevelled="true">
+                        <mn>1</mn>
+                        <mfrac bevelled="true">
+                            <mn>2</mn>
+                            <mn>3</mn>
+                        </mfrac>
+                    </mfrac>
                 </math>
             </td>
         </tr>
@@ -677,6 +759,77 @@
             </td>
         </tr>
      </table>
+
+    <h2>scriptshift (subscriptshift / superscriptshift)</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(scriptshift)">Apply Transform</button>
+    </label>
+    <table id="scriptshift">
+        <tr>
+            <th>Description</th>
+            <th>Math example</th>
+        </tr>
+        <tr>
+            <td>
+                <code>msub</code> with <code>subscriptshift="0.5em"</code> (polyfill wraps script in <code>mpadded</code>)
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <msub subscriptshift="0.5em">
+                        <mi>x</mi>
+                        <mn>0</mn>
+                    </msub>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>msup</code> with <code>superscriptshift="0.5em"</code>
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <msup superscriptshift="0.5em">
+                        <mi>e</mi>
+                        <msup>
+                            <mi>t</mi>
+                            <mn>2</mn>
+                        </msup>
+                    </msup>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <code>msubsup</code> with both <code>subscriptshift</code> and <code>superscriptshift</code>
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <msubsup subscriptshift="0.35em" superscriptshift="0.35em">
+                        <mi>x</mi>
+                        <mn>1</mn>
+                        <mn>2</mn>
+                    </msubsup>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Nested subscript: <code>msub</code> with <code>subscriptshift="0.4em"</code> on inner <code>msub</code>
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <msub>
+                        <mi>A</mi>
+                        <msub subscriptshift="0.4em">
+                            <mi>i</mi>
+                            <mi>j</mi>
+                        </msub>
+                    </msub>
+                </math>
+            </td>
+        </tr>
+    </table>
 
     <h2>Linebreaks in Display MathML</h2>
     <label>

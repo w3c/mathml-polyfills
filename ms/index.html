@@ -1,91 +1,171 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Test ms polyfill</title>
-    <meta charset="utf-8"/>
-    <script type="module" src="ms.js"> </script>
-    <style>
-      ol li {
-        margin-top: 2ex;
-      }
-      th, td {
-        padding-left: 5px;
-        padding-right: 5px;
-        text-align: center;
-      }
-      p.not-implemented {
-        background-color: indianred;
-      }
+<html lang="en">
 
-      /* numbering headings */
-      body { counter-reset: H1; } 	/* Create the counter for H1 */
-      h1:before {
-        content: counter(H1) ". "; 	/* Print the H1 number */
-        counter-increment: H1; 	/* Add 1 to next H1 */
-      }
-      h1 { counter-reset: H2; }
-      h2:before {
-        content: counter(H1) "." counter(H2) " ";
-        counter-increment: H2;
-      }
-      h2 { counter-reset: H3; }
-      h3:before {
-        content: counter(H1) "." counter(H2) "." counter(H3) " ";
-        counter-increment:H3;
-      }
-      h3 { counter-reset: H4; }
-      h4:before {
-        content: counter(H1) "." counter(H2) "." counter(H3) "." counter(H4) " ";
-        counter-increment:H4;
-      }
-    </style>
+<head>
+  <meta charset="utf-8" />
+  <title>ms tests (ms/ms.js)</title>
+  <script type="module">
+    import { _MathTransforms } from '../common/math-transforms.js';
+    import './ms.js';
 
-     <!-- these probably belong elsewhere as they really belong to the .js file -->
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.ms-polyfill-after').forEach((root) => {
+        _MathTransforms.transform(root);
+      });
+    });
+  </script>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 1rem 1.5rem 2rem;
+    }
 
-  </head>
-  <body>
-    <p>This page contains some tests for the <a href=https://w3c.github.io/mathml/#presm_ms>MathML ms element</a>.
-      These are rendered via the 'ms.js' polyfill. The polyfill adds the quote marks to the content because the
-      lquote and rquote attributes are not part of core. It also escapes the quoting chars.
-    </p>
+    math {
+      font-family: "Stix Two Math", "Cambria Math", "Asana Math", serif;
+    }
 
-    <h1>Values for lquote/rquote</h1>
-    <h2>String with default values</h2>
-    <p>Simple string should have '&quot;' around it.</p>
-    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-      <ms>  A   string </ms>
-    </math>
-    <p>String with quotes (which should be escaped)</p>
-    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-      <ms> A string has &quot;s around it.</ms>
-    </math>
-    <h2>Open/close quotes given for the values for lquote/rquote</h2>
-    <p>Simple string should have '&quot;' around it.</p>
-    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-      <ms lquote="“" rquote="”">A string</ms>
-    </math>
-    <p>String with quotes (which should be escaped)</p>
-    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-      <ms lquote="“" rquote="”">A string has “ ”s around it.</ms>
-    </math>
-    <p>String with Guillemets, which are used in French and some other languages (should be escaped).
-      Used in computer languages??? It provides a different test case nonetheless.</p>
-    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-      <ms lquote="«" rquote="»">A string has «...»s around it.</ms>
-    </math>
-    <h1>Values for dir/direction</h1>
-    <p>Nothing should change when doing rtl because the renderer should reverse the entire string. Hence the lquote remains the first
-      character in the string. If the renderer handles rtl, the entire string (with quotes) will be reversed; otherwise it will look the same.
-    </p>
-    <h2>Open/close quotes given for the values for lquote/rquote with dir='rtl' on math element</h2>
-    <p>String with quotes (which should be escaped)</p>
-    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir='rtl'>
-      <ms lquote="“" rquote="”">A string has “ ”s around it.</ms>
-    </math>
-    <h2>Open/close quotes given for the values for lquote/rquote with inline style 'rtl' on ms</h2>
-    <p>String with quotes (which should be escaped)</p>
-    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" dir='rtl'>
-      <ms lquote="“" rquote="”"  style='direction: rtl;'>A string has “ ”s around it.</ms>
-    </math>
-  </body>
+    table.tests {
+      border-collapse: collapse;
+      margin: 1.25em 0;
+      max-width: 100%;
+    }
+
+    table.tests th,
+    table.tests td {
+      border: 1px solid #bbb;
+      padding: 0.65em 0.85em;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    table.tests th {
+      background: #f0f0f0;
+    }
+
+    .before-math,
+    .ms-polyfill-after {
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    caption.tests-caption {
+      font-weight: bold;
+      text-align: left;
+      margin-bottom: 0.5em;
+    }
+
+    p.serve-note {
+      border: 1px solid #c9a227;
+      background: #fffbeb;
+      padding: 0.75em 1em;
+      max-width: 50em;
+    }
+  </style>
+</head>
+
+<body>
+  <h1><code>ms</code> → <code>mtext</code> tests</h1>
+
+  <p class="serve-note">
+    Serve the repo root over HTTP (for example <code>python -m http.server 8080</code>) and open
+    <code>http://localhost:8080/ms/index.html</code> so ES modules load.
+  </p>
+
+  <p>
+    The <strong>Before</strong> column is outside the transform scope; the <strong>After</strong> column runs
+    <code>ms/ms.js</code> via <code>_MathTransforms.transform</code>.
+    The polyfill replaces each <code>ms</code> with <code>mtext</code> whose text is
+    <code>lquote + content + rquote</code> (default quotes are U+0022).
+  </p>
+
+  <table class="tests">
+    <caption class="tests-caption">Before vs after <code>_MathTransforms.transform</code></caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Before (native)</th>
+        <th scope="col">After (polyfill)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <code>&lt;ms&gt;hello&lt;/ms&gt;</code> — default <code>lquote</code> / <code>rquote</code>
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <ms>hello</ms>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="ms-polyfill-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <ms>hello</ms>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>&lt;ms&gt;normal &amp;quot;s&lt;/ms&gt;</code> — inner quote escaped in markup (from acid-test)
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <ms>normal &quot;s</ms>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="ms-polyfill-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <ms>normal &quot;s</ms>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>&lt;ms lquote="&#x201c;" rquote="&#x201d;"&gt;open/close quotes&lt;/ms&gt;</code>
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <ms lquote="&#x201c;" rquote="&#x201d;">open/close quotes</ms>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="ms-polyfill-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <ms lquote="&#x201c;" rquote="&#x201d;">open/close quotes</ms>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>&lt;ms lquote="'" rquote="'"&gt;apostrophe&lt;/ms&gt;</code> — same left and right delimiter
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <ms lquote="'" rquote="'">apostrophe</ms>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="ms-polyfill-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <ms lquote="'" rquote="'">apostrophe</ms>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+
 </html>

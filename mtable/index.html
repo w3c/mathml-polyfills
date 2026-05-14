@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>mtable MathML 4 attributes (mtable/mtable.js)</title>
+  <script type="module">
+    import { _MathTransforms } from '../common/math-transforms.js';
+    import { getNativeMtablePresentationAttrsSupport, getNativeMlabeledtrSideLayoutSupport } from './mtable.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const banner = document.getElementById('mtable-polyfill-support-banner');
+      const spacingNative = getNativeMtablePresentationAttrsSupport();
+      const mlabeledtrSideNative = getNativeMlabeledtrSideLayoutSupport();
+      if (banner) {
+        const probeLine =
+          '<code>mtable</code> attribute polyfill is ' +
+          (spacingNative ? '<strong>not active</strong>' : '<strong>active</strong>')  + '<br>' +
+          (mlabeledtrSideNative ? '' : 'labeled rows (<code>mlabeledtr</code>) are rewritten to nested <code>mtable</code> when present)' );
+        banner.classList.add('mtable-support-banner--polyfill');
+        banner.innerHTML = probeLine;
+      }
+
+      document.querySelectorAll('.mtable-test-polyfill-root').forEach((root) => {
+        _MathTransforms.transform(root);
+      });
+
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          document.querySelectorAll('.mtable-test-polyfill-root mtd[data-expected]').forEach((el) => {
+            if (el.getAttribute('data-expected') !== el.getAttribute('intent')) {
+              console.error(
+                'intent mismatch: expected',
+                el.getAttribute('data-expected'),
+                'got',
+                el.getAttribute('intent')
+              );
+            }
+          });
+        }, 0);
+      });
+    });
+  </script>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 1rem 1.5rem 2rem;
+      line-height: 1.45;
+    }
+
+    math {
+      font-family: "STIX Two Math", "Cambria Math", "Asana Math", serif;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin: 1.5rem 0 0.5rem;
+    }
+
+    p.intro {
+      max-width: 52rem;
+      margin: 0.5rem 0 1rem;
+    }
+
+    code {
+      font-size: 0.92em;
+    }
+
+    table.mtable-sweep {
+      border-collapse: collapse;
+      margin: 1em 0 1.5em 0;
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    table.mtable-sweep th,
+    table.mtable-sweep td {
+      border: 1px solid #ccc;
+      padding: 0.75em 1em;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    table.mtable-sweep th {
+      background: #f5f5f5;
+    }
+
+    table.mtable-sweep caption {
+      font-weight: bold;
+      text-align: left;
+      margin-bottom: 0.5em;
+    }
+
+    table.mtable-sweep td:nth-child(2),
+    table.mtable-sweep td:nth-child(3) {
+      overflow-x: auto;
+      max-width: min(36rem, 90vw);
+    }
+
+    /* Widen specific cells where the polyfill table must not clip (e.g. labeled row + wide math). */
+    table.mtable-sweep td.mtable-sweep-td-overflow-visible {
+      overflow: visible;
+      max-width: none;
+    }
+
+    .mtable-support-banner {
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 1.1rem 1.35rem;
+      margin: 0 0 1.35rem;
+      border-radius: 8px;
+      max-width: 56rem;
+      line-height: 1.4;
+    }
+
+    .mtable-support-banner code {
+      font-weight: 600;
+    }
+
+    .mtable-support-banner--polyfill {
+      background: #fff3cd;
+      border: 3px solid #c9a227;
+      color: #3d3300;
+    }
+
+    .mtable-support-banner--native {
+      background: #d1ecf1;
+      border: 3px solid #1f7a8c;
+      color: #0a3038;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="mtable-polyfill-support-banner" class="mtable-support-banner" role="status" aria-live="polite"></div>
+  <h1>mtable</h1>
+  <p class="intro">Tests for MathML 4 <code>mtable</code> presentation attributes via <code>mtable/mtable.js</code>.
+    Each row repeats the same MathML twice: the middle column is outside any polyfill wrapper (native
+    <code>mtable</code>); the right column is wrapped in <code>mtable-test-polyfill-root</code> and processed with
+    <code>_MathTransforms.transform</code> so you can compare native rendering with the polyfill. Unless a case is
+    explicitly a 0×0 or 1×1 table, every <code>mtable</code> here has at least two non-empty rows or two non-empty
+    columns. <a href="#mlabeledtr"><code>mlabeledtr</code></a> tests are at the end of the page.</p>
+
+  <h2><code>align</code> (whole table)</h2>
+  <p class="intro">Baseline reference <code>x</code> on both sides of the table in each row.</p>
+  <table class="mtable-sweep">
+    <caption><code>align</code> values</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>align="top"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mi>x</mi><mo>−</mo>
+              <mtable align="top">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+              <mo>−</mo><mi>x</mi>
+            </mrow>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mi>x</mi><mo>−</mo>
+                <mtable align="top">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                <mo>−</mo><mi>x</mi>
+              </mrow>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>align="bottom"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mi>x</mi><mo>−</mo>
+              <mtable align="bottom">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+              <mo>−</mo><mi>x</mi>
+            </mrow>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mi>x</mi><mo>−</mo>
+                <mtable align="bottom">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                <mo>−</mo><mi>x</mi>
+              </mrow>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>align="center"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mi>x</mi><mo>−</mo>
+              <mtable align="center">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+              <mo>−</mo><mi>x</mi>
+            </mrow>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mi>x</mi><mo>−</mo>
+                <mtable align="center">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                <mo>−</mo><mi>x</mi>
+              </mrow>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>align="baseline"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mi>x</mi><mo>−</mo>
+              <mtable align="baseline">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+              <mo>−</mo><mi>x</mi>
+            </mrow>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mi>x</mi><mo>−</mo>
+                <mtable align="baseline">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                <mo>−</mo><mi>x</mi>
+              </mrow>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>align="axis"</code> (default)</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mi>x</mi><mo>−</mo>
+              <mtable align="axis">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+              <mo>−</mo><mi>x</mi>
+            </mrow>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mi>x</mi><mo>−</mo>
+                <mtable align="axis">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                <mo>−</mo><mi>x</mi>
+              </mrow>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2><code>align</code> with row number</h2>
+  <table class="mtable-sweep">
+    <caption><code>align</code> and row index</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>align="baseline,1"</code> and <br> <code>align="baseline, 2"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mi>x</mi><mo>−</mo>
+              <mtable align="baseline,1">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+              <mo>−</mo><mi>x</mi><mo>−</mo>
+              <mtable align="baseline, 2">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+              <mo>−</mo><mi>x</mi>
+            </mrow>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mi>x</mi><mo>−</mo>
+                <mtable align="baseline,1">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                <mo>−</mo><mi>x</mi><mo>−</mo>
+                <mtable align="baseline, 2">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                  <mo>−</mo><mi>x</mi>
+              </mrow>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>align="baseline,-2"</code> and <br> <code>align="baseline, -1"</code><br>
+            (should display the same as above row)</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mi>x</mi><mo>−</mo>
+              <mtable align="baseline, -2">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+              <mo>−</mo><mi>x</mi><mo>−</mo>
+              <mtable align="baseline, -1">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+            <mo>−</mo><mi>x</mi>
+            </mrow>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mi>x</mi><mo>−</mo>
+                <mtable align="baseline, -2">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                <mo>−</mo><mi>x</mi><mo>−</mo>
+                <mtable align="baseline, -1">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                  <mo>−</mo><mi>x</mi>
+              </mrow>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>align="axis,1"</code> and <br> <code>align="axis,2"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mi>x</mi><mo>−</mo>
+              <mtable align="axis,1">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+              <mo>−</mo><mi>x</mi><mo>−</mo>
+              <mtable align="axis,2">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+              <mo>−</mo><mi>x</mi>
+            </mrow>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mi>x</mi><mo>−</mo>
+                <mtable align="axis,1">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                <mo>−</mo><mi>x</mi><mo>−</mo>
+                <mtable align="axis,2">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                  <mo>−</mo><mi>x</mi>
+              </mrow>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>align="axis,-2"</code> and <br> <code>align="axis,-1"</code><br>
+            (should display the same as above row)</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mi>x</mi><mo>−</mo>
+              <mtable align="axis,-2">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+              <mo>−</mo><mi>x</mi><mo>−</mo>
+              <mtable align="axis,-1">
+                <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                <mtr><mtd><mi>r</mi></mtd></mtr>
+              </mtable>
+            <mo>−</mo><mi>x</mi>
+            </mrow>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mi>x</mi><mo>−</mo>
+                <mtable align="axis,-2">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                <mo>−</mo><mi>x</mi><mo>−</mo>
+                <mtable align="axis,-1">
+                  <mtr><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd></mtr>
+                  <mtr><mtd><mi>r</mi></mtd></mtr>
+                </mtable>
+                  <mo>−</mo><mi>x</mi>
+              </mrow>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <h2><code>rowalign</code></h2>
+  <table class="mtable-sweep">
+    <caption><code>rowalign</code> list</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Test all the rowalign attributes.</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable rowalign="top bottom center baseline axis">
+              <mtr>
+                <mtd><mtext>top</mtext></mtd>
+                <mtd><mo>−</mo><mi>j</mi></mtd>
+                <mtd>
+                  <mrow>
+                    <mi>t</mi><mo>−</mo>
+                    <mfrac>
+                      <mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>
+                      <mrow><mn>3</mn></mrow>
+                    </mfrac>
+                  </mrow>
+                </mtd>
+                <mtd>
+                  <mrow>
+                    <mo>−</mo>
+                    <mfrac>
+                      <mrow><mn>1</mn></mrow>
+                      <mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow>
+                    </mfrac>
+                  </mrow>
+                </mtd>
+              </mtr>
+              <mtr>
+                <mtd><mtext>bottom</mtext></mtd>
+                <mtd><mi>t</mi><mo>−</mo><mi>j</mi></mtd>
+                <mtd>
+                  <mrow>
+                    <mo>−</mo>
+                    <mfrac>
+                      <mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>
+                      <mrow><mn>3</mn></mrow>
+                    </mfrac>
+                  </mrow>
+                </mtd>
+                <mtd>
+                  <mrow>
+                    <mo>−</mo>
+                    <mfrac>
+                      <mrow><mn>1</mn></mrow>
+                      <mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow>
+                    </mfrac>
+                  </mrow>
+                </mtd>
+              </mtr>
+              <mtr>
+                <mtd><mtext>center</mtext></mtd>
+                <mtd><mi>t</mi><mo>−</mo><mi>j</mi></mtd>
+                <mtd>
+                  <mrow>
+                    <mo>−</mo>
+                    <mfrac>
+                      <mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>
+                      <mrow><mn>3</mn></mrow>
+                    </mfrac>
+                  </mrow>
+                </mtd>
+                <mtd>
+                  <mrow>
+                    <mo>−</mo>
+                    <mfrac>
+                      <mrow><mn>1</mn></mrow>
+                      <mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow>
+                    </mfrac>
+                  </mrow>
+                </mtd>
+              </mtr>
+              <mtr>
+                <mtd><mtext>baseline</mtext></mtd>
+                <mtd><mi>t</mi><mo>−</mo><mi>j</mi></mtd>
+                <mtd>
+                  <mrow>
+                    <mo>−</mo>
+                    <mfrac>
+                      <mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>
+                      <mrow><mn>3</mn></mrow>
+                    </mfrac>
+                  </mrow>
+                </mtd>
+                <mtd>
+                  <mrow>
+                    <mo>−</mo>
+                    <mfrac>
+                      <mrow><mn>1</mn></mrow>
+                      <mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow>
+                    </mfrac>
+                  </mrow>
+                </mtd>
+              </mtr>
+              <mtr>
+                <mtd><mtext>axis</mtext></mtd>
+                <mtd><mi>t</mi><mo>−</mo><mi>j</mi></mtd>
+                <mtd>
+                  <mrow>
+                    <mo>−</mo>
+                    <mfrac>
+                      <mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>
+                      <mrow><mn>3</mn></mrow>
+                    </mfrac>
+                  </mrow>
+                </mtd>
+                <mtd>
+                  <mrow>
+                    <mi>x</mi><mo>−</mo>
+                    <mfrac>
+                      <mrow><mn>1</mn></mrow>
+                      <mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow>
+                    </mfrac>
+                  </mrow>
+                </mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable rowalign="top bottom center baseline axis">
+                <mtr>
+                  <mtd><mtext>top</mtext></mtd>
+                  <mtd><mo>−</mo><mi>j</mi></mtd>
+                  <mtd>
+                    <mrow>
+                      <mi>t</mi><mo>−</mo>
+                      <mfrac>
+                        <mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>
+                        <mrow><mn>3</mn></mrow>
+                      </mfrac>
+                    </mrow>
+                  </mtd>
+                  <mtd>
+                    <mrow>
+                      <mo>−</mo>
+                      <mfrac>
+                        <mrow><mn>1</mn></mrow>
+                        <mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow>
+                      </mfrac>
+                    </mrow>
+                  </mtd>
+                </mtr>
+                <mtr>
+                  <mtd><mtext>bottom</mtext></mtd>
+                  <mtd><mi>t</mi><mo>−</mo><mi>j</mi></mtd>
+                  <mtd>
+                    <mrow>
+                      <mo>−</mo>
+                      <mfrac>
+                        <mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>
+                        <mrow><mn>3</mn></mrow>
+                      </mfrac>
+                    </mrow>
+                  </mtd>
+                  <mtd>
+                    <mrow>
+                      <mo>−</mo>
+                      <mfrac>
+                        <mrow><mn>1</mn></mrow>
+                        <mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow>
+                      </mfrac>
+                    </mrow>
+                  </mtd>
+                </mtr>
+                <mtr>
+                  <mtd><mtext>center</mtext></mtd>
+                  <mtd><mi>t</mi><mo>−</mo><mi>j</mi></mtd>
+                  <mtd>
+                    <mrow>
+                      <mo>−</mo>
+                      <mfrac>
+                        <mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>
+                        <mrow><mn>3</mn></mrow>
+                      </mfrac>
+                    </mrow>
+                  </mtd>
+                  <mtd>
+                    <mrow>
+                      <mo>−</mo>
+                      <mfrac>
+                        <mrow><mn>1</mn></mrow>
+                        <mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow>
+                      </mfrac>
+                    </mrow>
+                  </mtd>
+                </mtr>
+                <mtr>
+                  <mtd><mtext>baseline</mtext></mtd>
+                  <mtd><mi>t</mi><mo>−</mo><mi>j</mi></mtd>
+                  <mtd>
+                    <mrow>
+                      <mo>−</mo>
+                      <mfrac>
+                        <mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>
+                        <mrow><mn>3</mn></mrow>
+                      </mfrac>
+                    </mrow>
+                  </mtd>
+                  <mtd>
+                    <mrow>
+                      <mo>−</mo>
+                      <mfrac>
+                        <mrow><mn>1</mn></mrow>
+                        <mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow>
+                      </mfrac>
+                    </mrow>
+                  </mtd>
+                </mtr>
+                <mtr>
+                  <mtd><mtext>axis</mtext></mtd>
+                  <mtd><mi>t</mi><mo>−</mo><mi>j</mi></mtd>
+                  <mtd>
+                    <mrow>
+                      <mo>−</mo>
+                      <mfrac>
+                        <mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>
+                        <mrow><mn>3</mn></mrow>
+                      </mfrac>
+                    </mrow>
+                  </mtd>
+                  <mtd>
+                    <mrow>
+                      <mi>x</mi><mo>−</mo>
+                      <mfrac>
+                        <mrow><mn>1</mn></mrow>
+                        <mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow>
+                      </mfrac>
+                    </mrow>
+                  </mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2><code>mtr</code> <code>rowalign</code> and <code>columnalign</code></h2>
+  <p class="intro">Per MathML 4, <code>mtr</code> may set <code>rowalign</code> and <code>columnalign</code> (space- or comma-separated lists, one token per column, last repeated) to override the enclosing <code>mtable</code> for that row only; <code>mtd</code> can override again.</p>
+  <table class="mtable-sweep">
+    <caption><code>mtr</code> overrides <code>mtable</code></caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>mtable</code> <code>rowalign="center"</code> <code>columnalign="right"</code>; second <code>mtr</code> uses <code>rowalign="top, baseline, bottom"</code> and <code>columnalign="left center right"</code>.</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable rowalign="center" columnalign="right">
+              <mtr>
+                <mtd><mi>a</mi></mtd>
+                <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
+                <mtd><mi>z</mi></mtd>
+              </mtr>
+              <mtr rowalign="top, baseline, bottom" columnalign="left center right">
+                <mtd><mi>x</mi></mtd>
+                <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
+                <mtd><msqrt><mi>t</mi></msqrt></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable rowalign="center" columnalign="right">
+                <mtr>
+                  <mtd><mi>a</mi></mtd>
+                  <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
+                  <mtd><mi>z</mi></mtd>
+                </mtr>
+                <mtr rowalign="top, baseline, bottom" columnalign="left center right">
+                  <mtd><mi>x</mi></mtd>
+                  <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
+                  <mtd><msqrt><mi>t</mi></msqrt></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3><code>mtable</code> → <code>mtr</code> → <code>mtd</code></h3>
+  <p class="intro"><code>mtable</code> sets <code>rowalign="bottom"</code> and <code>columnalign="right"</code> (lists repeat per row / column). <br>
+    Each <code>mtr</code> overrides with its own <code>rowalign</code> / <code>columnalign</code> lists <br>
+    Selected <code>mtd</code> elements override again. <br>
+    Each cell is prefixed with <code>(r, c)</code> for the resolved alignment (<code>bot</code> for bottom; otherwise the first letter of <code>rowalign</code> / <code>columnalign</code>).</p>
+  <table class="mtable-sweep">
+    <caption>Inherited alignment overrides</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Defaults on <code>mtable</code>; per-row lists on <code>mtr</code>; <code>mtd</code> overrides as in the list below.<br>
+           Each cell starts with <code>(r, c)</code>, telling what the <code>rowalign</code> / <code>columnalign</code> should be.<br>
+           The first letter of the attr value is used, except <code>bot</code> = bottom.</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable rowalign="bottom" columnalign="right">
+              <mtr rowalign="top baseline bottom" columnalign="left center right">
+                <mtd rowalign="baseline" columnalign="right"><mrow><mtext>(b, r)</mtext><mspace width="0.25em"/><msub><mi>Q</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><mi>c</mi><mfrac><mn>2</mn><mn>3</mn></mfrac><mo>+</mo><mi>y</mi></mrow></mfrac></mrow></mtd>
+                <mtd><mrow><mtext>(b, c)</mtext><mspace width="0.25em"/><mo>−</mo><mfrac><mrow><msqrt><mi>x</mi></msqrt></mrow><mn>4</mn></mfrac></mrow></mtd>
+                <mtd><mrow><mtext>(bot, r)</mtext><mspace width="0.25em"/><mi>x</mi></mrow></mtd>
+              </mtr>
+              <mtr rowalign="baseline center center" columnalign="right center left">
+                <mtd><mrow><mtext>(b, r)</mtext><mspace width="0.25em"/><mi>k</mi><mo>+</mo><mi>k</mi></mrow></mtd>
+                <mtd><mrow><mtext>(b, c)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac><mo>+</mo><mi>y</mi></mrow></mfrac></mrow></mtd>
+                <mtd rowalign="center" columnalign="center"><mrow><mtext>(c, c)</mtext><mspace width="0.25em"/><msup><mi>n</mi><mn>2</mn></msup></mrow></mtd>
+              </mtr>
+              <mtr rowalign="baseline axis center" columnalign="left center right">
+                <mtd><mrow><mtext>(b, l)</mtext><mspace width="0.25em"/><mi>u</mi></mrow></mtd>
+                <mtd rowalign="top" columnalign="left"><mrow><mtext>(t, l)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mi>t</mi></mfrac></mrow></mtd>
+                <mtd><mrow><mtext>(c, r)</mtext><mspace width="0.25em"/><mi>r</mi><mo>+</mo><mi>s</mi><mo>+</mo><mi>t</mi><mo>+</mo><mi>u</mi><mo>+</mo><mi>v</mi></mrow></mtd>
+              </mtr>
+              <mtr rowalign="bottom top baseline" columnalign="center left right">
+                <mtd><mrow><mtext>(bot, c)</mtext><mspace width="0.25em"/><mrow><mfrac><msup><mi>x</mi><mn>2</mn></msup><mn>3</mn></mfrac><mo>+</mo><mi>y</mi></mrow></mrow></mtd>
+                <mtd><mrow><mtext>(t, l)</mtext><mspace width="0.25em"/><msubsup><mi>X</mi><mi>i</mi><mrow><mn>2</mn><mo>+</mo><mn>1</mn></mrow></msubsup></mrow></mtd>
+                <mtd><mrow><mtext>(b, r)</mtext><mspace width="0.25em"/><mi>p</mi></mrow></mtd>
+              </mtr>
+              <mtr rowalign="top baseline bottom" columnalign="right left center">
+                <mtd><mrow><mtext>(t, r)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow></mfrac></mrow></mtd>
+                <mtd><mrow><mtext>(b, l)</mtext><mspace width="0.25em"/><msub><mi>L</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><mi>d</mi></mrow></mtd>
+                <mtd rowalign="bottom" columnalign="left"><mrow><mtext>(bot, l)</mtext><mspace width="0.25em"/><mi>g</mi></mrow></mtd>
+              </mtr>
+              <mlabeledtr rowalign="top baseline bottom" columnalign="right left center">
+                <mtd>Label</mtd>
+                <mtd><mrow><mtext>(t, r)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow></mfrac></mrow></mtd>
+                <mtd><mrow><mtext>(b, l)</mtext><mspace width="0.25em"/><msub><mi>L</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><mi>d</mi></mrow></mtd>
+                <mtd rowalign="bottom" columnalign="left"><mrow><mtext>(bot, l)</mtext><mspace width="0.25em"/><mi>g</mi></mrow></mtd>
+              </mlabeledtr>
+            </mtable>
+          </math>
+        </td>
+        <td class="mtable-sweep-td-overflow-visible">
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable rowalign="bottom" columnalign="right">
+                <mtr rowalign="top baseline bottom" columnalign="left center right">
+                  <mtd rowalign="baseline" columnalign="right"><mrow><mtext>(b, r)</mtext><mspace width="0.25em"/><msub><mi>Q</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><mi>c</mi><mfrac><mn>2</mn><mn>3</mn></mfrac><mo>+</mo><mi>y</mi></mrow></mfrac></mrow></mtd>
+                  <mtd><mrow><mtext>(b, c)</mtext><mspace width="0.25em"/><mo>−</mo><mfrac><mrow><msqrt><mi>x</mi></msqrt></mrow><mn>4</mn></mfrac></mrow></mtd>
+                  <mtd><mrow><mtext>(bot, r)</mtext><mspace width="0.25em"/><mi>x</mi></mrow></mtd>
+                </mtr>
+                <mtr rowalign="baseline center center" columnalign="right center left">
+                  <mtd><mrow><mtext>(b, r)</mtext><mspace width="0.25em"/><mi>k</mi><mo>+</mo><mi>k</mi></mrow></mtd>
+                  <mtd><mrow><mtext>(b, c)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac><mo>+</mo><mi>y</mi></mrow></mfrac></mrow></mtd>
+                  <mtd rowalign="center" columnalign="center"><mrow><mtext>(c, c)</mtext><mspace width="0.25em"/><msup><mi>n</mi><mn>2</mn></msup></mrow></mtd>
+                </mtr>
+                <mtr rowalign="baseline axis center" columnalign="left center right">
+                  <mtd><mrow><mtext>(b, l)</mtext><mspace width="0.25em"/><mi>u</mi></mrow></mtd>
+                  <mtd rowalign="top" columnalign="left"><mrow><mtext>(t, l)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mi>t</mi></mfrac></mrow></mtd>
+                  <mtd><mrow><mtext>(c, r)</mtext><mspace width="0.25em"/><mi>r</mi><mo>+</mo><mi>s</mi><mo>+</mo><mi>t</mi><mo>+</mo><mi>u</mi><mo>+</mo><mi>v</mi></mrow></mtd>
+                </mtr>
+                <mtr rowalign="bottom top baseline" columnalign="center left right">
+                  <mtd><mrow><mtext>(bot, c)</mtext><mspace width="0.25em"/><mrow><mfrac><msup><mi>x</mi><mn>2</mn></msup><mn>3</mn></mfrac><mo>+</mo><mi>y</mi></mrow></mrow></mtd>
+                  <mtd><mrow><mtext>(t, l)</mtext><mspace width="0.25em"/><msubsup><mi>X</mi><mi>i</mi><mrow><mn>2</mn><mo>+</mo><mn>1</mn></mrow></msubsup></mrow></mtd>
+                  <mtd><mrow><mtext>(b, r)</mtext><mspace width="0.25em"/><mi>p</mi></mrow></mtd>
+                </mtr>
+                <mtr rowalign="top baseline bottom" columnalign="right left center">
+                  <mtd><mrow><mtext>(t, r)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow></mfrac></mrow></mtd>
+                  <mtd><mrow><mtext>(b, l)</mtext><mspace width="0.25em"/><msub><mi>L</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><mi>d</mi></mrow></mtd>
+                  <mtd rowalign="bottom" columnalign="left"><mrow><mtext>(bot, l)</mtext><mspace width="0.25em"/><mi>g</mi></mrow></mtd>
+                </mtr>
+                <mlabeledtr rowalign="top baseline bottom" columnalign="right left center">
+                  <mtd>Label</mtd>
+                  <mtd><mrow><mtext>(t, r)</mtext><mspace width="0.25em"/><mfrac><mn>1</mn><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow></mfrac></mrow></mtd>
+                  <mtd><mrow><mtext>(b, l)</mtext><mspace width="0.25em"/><msub><mi>L</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><mi>d</mi></mrow></mtd>
+                  <mtd rowalign="bottom" columnalign="left"><mrow><mtext>(bot, l)</mtext><mspace width="0.25em"/><mi>g</mi></mrow></mtd>
+                </mlabeledtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          <p style="margin:0.75em 0 0;font-size:0.92em"><strong>Override map</strong> (row 0 = top of <code>mtable</code>):</p>
+          <ul style="margin:0.35em 0 0 1.25em;font-size:0.92em">
+            <li><strong>Row 0</strong> — <code>mtr</code>: <code>rowalign="top baseline bottom"</code>, <code>columnalign="left center right"</code>; <code>mtd</code> (0,0): <code>rowalign="axis"</code>, <code>columnalign="right"</code>.</li>
+            <li><strong>Row 1</strong> — <code>mtr</code>: <code>rowalign="center"</code> (×3), <code>columnalign="right center left"</code>; <code>mtd</code> (1,2): <code>columnalign="center"</code>.</li>
+            <li><strong>Row 2</strong> — <code>mtr</code>: <code>rowalign="baseline axis center"</code>, <code>columnalign="left center right"</code>; <code>mtd</code> (2,1): <code>rowalign="top"</code>, <code>columnalign="left"</code>.</li>
+            <li><strong>Row 3</strong> — <code>mtr</code> only: <code>rowalign="bottom top baseline"</code>, <code>columnalign="center left right"</code>.</li>
+            <li><strong>Row 4</strong> — <code>mtr</code>: <code>rowalign="top baseline bottom"</code>, <code>columnalign="right left center"</code>; <code>mtd</code> (4,2): <code>rowalign="center"</code>, <code>columnalign="left"</code>.</li>
+            <li><strong>Row 5</strong> — <code>mlabeledtr</code> (same lists as row 4 <code>mtr</code>): row lists apply to the three equation <code>mtd</code>s only; the label column uses <code>mtable</code> <code>rowalign</code> / <code>columnalign</code> for that row/column.</li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2><code>columnalign</code></h2>
+  <p class="intro">Three rows; <code>columnalign="left center right"</code>; columns have very different widths.</p>
+  <table class="mtable-sweep">
+    <caption><code>columnalign</code> list</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Left, center, and right alignment per column</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable columnalign="left center right">
+              <mtr>
+                <mtd><mrow><mi>w</mi><mo>+</mo><mi>w</mi><mo>+</mo><mi>w</mi></mrow></mtd>
+                <mtd><mi>m</mi></mtd>
+                <mtd><mrow><msub><mi>Z</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>y</mi><mo>+</mo><mi>k</mi></mrow></mtd>
+              </mtr>
+              <mtr>
+                <mtd><mrow><msqrt><mi>x</mi></msqrt><mo>+</mo><mn>1</mn><mo>+</mo><mi>s</mi></mrow></mtd>
+                <mtd><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>+</mo><mi>t</mi><mi>x</mi><mo>+</mo><mi>t</mi></mrow></mtd>
+                <mtd><mrow><mi>w</mi><mo>+</mo><mi>i</mi><mo>+</mo><mi>d</mi><mi>i</mi><mo>+</mo><mi>d</mi><mo>+</mo><mi>e</mi></mrow></mtd>
+              </mtr>
+              <mtr>
+                <mtd><mi>x</mi><mo>−</mo><mi>a</mi></mtd>
+                <mtd><mfrac><mrow><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi></mrow><msubsup><mi>b</mi><mn>0</mn><mn>2</mn></msubsup></mfrac></mtd>
+                <mtd><mrow><mi>i</mi><mo>&#x22C5;</mo><mi>i</mi><mo>+</mo><mn>0</mn></mrow></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable columnalign="left center right">
+                <mtr>
+                  <mtd><mrow><mi>w</mi><mo>+</mo><mi>w</mi><mo>+</mo><mi>w</mi></mrow></mtd>
+                  <mtd><mi>m</mi></mtd>
+                  <mtd><mrow><msub><mi>Z</mi><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></msub><mo>+</mo><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>y</mi><mo>+</mo><mi>k</mi></mrow></mtd>
+                </mtr>
+                <mtr>
+                  <mtd><mrow><msqrt><mi>x</mi></msqrt><mo>+</mo><mn>1</mn><mo>+</mo><mi>s</mi></mrow></mtd>
+                  <mtd><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>+</mo><mi>t</mi><mi>x</mi><mo>+</mo><mi>t</mi></mrow></mtd>
+                  <mtd><mrow><mi>w</mi><mo>+</mo><mi>i</mi><mo>+</mo><mi>d</mi><mi>i</mi><mo>+</mo><mi>d</mi><mo>+</mo><mi>e</mi></mrow></mtd>
+                </mtr>
+                <mtr>
+                  <mtd><mi>x</mi><mo>−</mo><mi>a</mi></mtd>
+                  <mtd><mfrac><mrow><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>b</mi></mrow><msubsup><mi>b</mi><mn>0</mn><mn>2</mn></msubsup></mfrac></mtd>
+                  <mtd><mrow><mi>i</mi><mo>&#x22C5;</mo><mi>i</mi><mo>+</mo><mn>0</mn></mrow></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Column and table sizing</h2>
+  <table class="mtable-sweep">
+    <caption><code>columnwidth</code>, <code>width</code></caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>columnwidth="auto 6em fit"</code> with <code>width="28em"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable width="28em" columnwidth="auto 6em fit">
+              <mtr>
+                <mtd><mtext>auto grows</mtext></mtd>
+                <mtd><mtext>6em</mtext></mtd>
+                <mtd><mtext>fit column</mtext></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable width="28em" columnwidth="auto 6em fit">
+                <mtr>
+                  <mtd><mtext>auto grows</mtext></mtd>
+                  <mtd><mtext>6em</mtext></mtd>
+                  <mtd><mtext>fit column</mtext></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>width="50%"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable width="50%">
+              <mtr>
+                <mtd><mtext>half width table</mtext></mtd>
+                <mtd><mtext>b</mtext></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable width="50%">
+                <mtr>
+                  <mtd><mtext>half width table</mtext></mtd>
+                  <mtd><mtext>b</mtext></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Spacing between rows and columns</h2>
+  <table class="mtable-sweep">
+    <caption><code>rowspacing</code>, <code>columnspacing</code></caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>rowspacing="0.1ex 0.7ex 2ex"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable rowspacing="0.1ex 0.7ex 2ex">
+              <mtr><mtd><mn>1</mn></mtd></mtr>
+              <mtr><mtd><mn>2</mn></mtd></mtr>
+              <mtr><mtd><mn>3</mn></mtd></mtr>
+              <mtr><mtd><mn>4</mn></mtd></mtr>
+              <mtr><mtd><mn>5</mn></mtd></mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable rowspacing="0.1ex 0.7ex 2ex">
+                <mtr><mtd><mn>1</mn></mtd></mtr>
+                <mtr><mtd><mn>2</mn></mtd></mtr>
+                <mtr><mtd><mn>3</mn></mtd></mtr>
+                <mtr><mtd><mn>4</mn></mtd></mtr>
+                <mtr><mtd><mn>5</mn></mtd></mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>columnspacing="0.1em 2em"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable columnspacing="0.1em 2em">
+              <mtr>
+                <mtd><mi>a</mi></mtd>
+                <mtd><mi>b</mi></mtd>
+                <mtd><mi>c</mi></mtd>
+                <mtd><mi>d</mi></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable columnspacing="0.1em 2em">
+                <mtr>
+                  <mtd><mi>a</mi></mtd>
+                  <mtd><mi>b</mi></mtd>
+                  <mtd><mi>c</mi></mtd>
+                  <mtd><mi>d</mi></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Frames and row/column lines</h2>
+  <table class="mtable-sweep">
+    <caption><code>rowlines</code>, <code>columnlines</code>, <code>frame</code>, <code>framespacing</code></caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>rowlines="dashed none solid"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable rowlines="dashed none solid">
+              <mtr><mtd><mn>1</mn></mtd><mtd><mi>a</mi></mtd></mtr>
+              <mtr><mtd><mn>2</mn></mtd><mtd><mi>b</mi></mtd></mtr>
+              <mtr><mtd><mn>3</mn></mtd><mtd><mi>c</mi></mtd></mtr>
+              <mtr><mtd><mn>4</mn></mtd><mtd><mi>d</mi></mtd></mtr>
+              <mtr><mtd><mn>5</mn></mtd><mtd><mi>e</mi></mtd></mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable rowlines="dashed none solid">
+                <mtr><mtd><mn>1</mn></mtd><mtd><mi>a</mi></mtd></mtr>
+                <mtr><mtd><mn>2</mn></mtd><mtd><mi>b</mi></mtd></mtr>
+                <mtr><mtd><mn>3</mn></mtd><mtd><mi>c</mi></mtd></mtr>
+                <mtr><mtd><mn>4</mn></mtd><mtd><mi>d</mi></mtd></mtr>
+                <mtr><mtd><mn>5</mn></mtd><mtd><mi>e</mi></mtd></mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>columnlines="dashed none solid"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable columnlines="dashed none solid">
+              <mtr>
+                <mtd><mn>1</mn></mtd>
+                <mtd><mn>2</mn></mtd>
+                <mtd><mn>3</mn></mtd>
+                <mtd><mn>4</mn></mtd>
+                <mtd><mn>5</mn></mtd>
+              </mtr>
+              <mtr>
+                <mtd><mi>a</mi></mtd>
+                <mtd><mi>b</mi></mtd>
+                <mtd><mi>c</mi></mtd>
+                <mtd><mi>d</mi></mtd>
+                <mtd><mi>e</mi></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable columnlines="dashed none solid">
+                <mtr>
+                  <mtd><mn>1</mn></mtd>
+                  <mtd><mn>2</mn></mtd>
+                  <mtd><mn>3</mn></mtd>
+                  <mtd><mn>4</mn></mtd>
+                  <mtd><mn>5</mn></mtd>
+                </mtr>
+                <mtr>
+                  <mtd><mi>a</mi></mtd>
+                  <mtd><mi>b</mi></mtd>
+                  <mtd><mi>c</mi></mtd>
+                  <mtd><mi>d</mi></mtd>
+                  <mtd><mi>e</mi></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>frame="solid"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable frame="solid">
+              <mtr>
+                <mtd><mtext>framed</mtext></mtd>
+                <mtd><mi>b</mi></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable frame="solid">
+                <mtr>
+                  <mtd><mtext>framed</mtext></mtd>
+                  <mtd><mi>b</mi></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>frame="dashed"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable frame="dashed">
+              <mtr>
+                <mtd><mtext>dashed frame</mtext></mtd>
+                <mtd><mi>c</mi></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable frame="dashed">
+                <mtr>
+                  <mtd><mtext>dashed frame</mtext></mtd>
+                  <mtd><mi>c</mi></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>frame="solid"</code> with <code>framespacing="2em 2ex"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable frame="solid" framespacing="1em 0.8ex">
+              <mtr>
+                <mtd><mtext>padded frame</mtext></mtd>
+                <mtd><mi>d</mi></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable frame="solid" framespacing="2em 2ex">
+                <mtr>
+                  <mtd><mtext>padded frame</mtext></mtd>
+                  <mtd><mi>d</mi></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>frame="solid"</code>, <code>rowlines="dashed dashed"</code>,
+          <code>columnlines="dashed dashed"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable frame="solid" rowlines="solid" columnlines="solid">
+              <mtr>
+                <mtd><mn>1</mn></mtd>
+                <mtd><mi>a</mi></mtd>
+                <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
+              </mtr>
+              <mtr>
+                <mtd><msqrt><mi>x</mi></msqrt></mtd>
+                <mtd><mo>+</mo><mi>x</mi></mtd>
+                <mtd><msup><mi>n</mi><msup><mi>k</mi><mn>2</mn></msup></msup></mtd>
+              </mtr>
+              <mtr>
+                <mtd><mi>π</mi></mtd>
+                <mtd><mtext>long text</mtext></mtd>
+                <mtd><mrow><mi>y</mi><mo>=</mo><mn>0</mn></mrow></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable frame="solid" rowlines="solid" columnlines="solid">
+                <mtr>
+                  <mtd><mn>1</mn></mtd>
+                  <mtd><mi>a</mi></mtd>
+                  <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
+                </mtr>
+                <mtr>
+                  <mtd><msqrt><mi>x</mi></msqrt></mtd>
+                  <mtd><mo>+</mo><mi>x</mi></mtd>
+                  <mtd><msup><mi>n</mi><msup><mi>k</mi><mn>2</mn></msup></msup></mtd>
+                </mtr>
+                <mtr>
+                  <mtd><mi>π</mi></mtd>
+                  <mtd><mtext>long text</mtext></mtd>
+                  <mtd><mrow><mi>y</mi><mo>=</mo><mn>0</mn></mrow></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2><code>equalrows</code>, <code>equalcolumns</code></h2>
+  <table class="mtable-sweep">
+    <caption>Equal sizing</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>equalrows="true"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable equalrows="true" rowlines="solid" columnlines="solid" frame="solid">
+              <mtr>
+                <mtd><mi>x</mi></mtd>
+                <mtd>
+                  <msup><mi>x</mi><mn>2</mn></msup>
+                </mtd>
+              </mtr>
+              <mtr>
+                <mtd>
+                  <mfrac>
+                    <mrow><mi>y</mi></mrow>
+                    <msup><mi>x</mi><mn>2</mn></msup>
+                  </mfrac>
+                </mtd>
+                <mtd>
+                  <mfrac>
+                    <mrow><msup><mi>z</mi><mn>3</mn></msup><mo>+</mo><mi>k</mi><mo>+</mo><mi>m</mi></mrow>
+                    <mrow><msqrt><mi>z</mi></msqrt></mrow>
+                  </mfrac>
+                </mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable equalrows="true" rowlines="solid" columnlines="solid" frame="solid">
+                <mtr>
+                  <mtd><mi>x</mi></mtd>
+                  <mtd>
+                    <msup><mi>x</mi><mn>2</mn></msup>
+                  </mtd>
+                </mtr>
+                <mtr>
+                  <mtd>
+                    <mfrac>
+                      <mrow><mi>y</mi></mrow>
+                      <msup><mi>x</mi><mn>2</mn></msup>
+                    </mfrac>
+                  </mtd>
+                  <mtd>
+                    <mfrac>
+                      <mrow><msup><mi>z</mi><mn>3</mn></msup><mo>+</mo><mi>k</mi><mo>+</mo><mi>m</mi></mrow>
+                      <mrow><msqrt><mi>z</mi></msqrt></mrow>
+                    </mfrac>
+                  </mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>equalcolumns="true"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable equalcolumns="true" rowlines="solid" columnlines="solid" frame="solid">
+              <mtr>
+                <mtd><mtext>WW</mtext></mtd>
+                <mtd><mtext>MMMMMMMMMMMM</mtext></mtd>
+              </mtr>
+              <mtr>
+                <mtd>
+                  <mfrac>
+                    <mrow><mi>a</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>c</mi></mrow>
+                    <mrow><mi>d</mi></mrow>
+                  </mfrac>
+                </mtd>
+                <mtd><mtext>ii</mtext></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable equalcolumns="true" rowlines="solid" columnlines="solid" frame="solid">
+                <mtr>
+                  <mtd><mtext>WW</mtext></mtd>
+                  <mtd><mtext>MMMMMMMMMMMM</mtext></mtd>
+                </mtr>
+                <mtr>
+                  <mtd>
+                    <mfrac>
+                      <mrow><mi>a</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>c</mi></mrow>
+                      <mrow><mi>d</mi></mrow>
+                    </mfrac>
+                  </mtd>
+                  <mtd><mtext>ii</mtext></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>equalrows="true"</code> <br> <code>equalcolumns="true"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable equalrows="true" equalcolumns="true" rowlines="solid" columnlines="solid" frame="solid">
+              <mtr>
+                <mtd><mi>x</mi></mtd>
+                <mtd>
+                  <msup><mi>x</mi><mn>2</mn></msup>
+                </mtd>
+              </mtr>
+              <mtr>
+                <mtd>
+                  <mfrac>
+                    <mrow><mi>y</mi></mrow>
+                    <msup><mi>x</mi><mn>2</mn></msup>
+                  </mfrac>
+                </mtd>
+                <mtd>
+                  <mfrac>
+                    <mrow><msup><mi>z</mi><mn>3</mn></msup><mo>+</mo><mi>k</mi><mo>+</mo><mi>m</mi></mrow>
+                    <mrow><msqrt><mi>z</mi></msqrt></mrow>
+                  </mfrac>
+                </mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable equalrows="true" equalcolumns="true" rowlines="solid" columnlines="solid" frame="solid">
+                <mtr>
+                  <mtd><mi>x</mi></mtd>
+                  <mtd>
+                    <msup><mi>x</mi><mn>2</mn></msup>
+                  </mtd>
+                </mtr>
+                <mtr>
+                  <mtd>
+                    <mfrac>
+                      <mrow><mi>y</mi></mrow>
+                      <msup><mi>x</mi><mn>2</mn></msup>
+                    </mfrac>
+                  </mtd>
+                  <mtd>
+                    <mfrac>
+                      <mrow><msup><mi>z</mi><mn>3</mn></msup><mo>+</mo><mi>k</mi><mo>+</mo><mi>m</mi></mrow>
+                      <mrow><msqrt><mi>z</mi></msqrt></mrow>
+                    </mfrac>
+                  </mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2><code>displaystyle</code></h2>
+  <table class="mtable-sweep">
+    <caption>Display style inside cells</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>No <code>displaystyle</code> attribute (MathML 4 default <code>false</code> inside table).</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable>
+              <mtr>
+                <mtd>
+                  <mrow>
+                    <munderover>
+                      <mo>&#x2211;</mo>
+                      <mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow>
+                      <mi>n</mi>
+                    </munderover>
+                    <mi>k</mi>
+                  </mrow>
+                </mtd>
+                <mtd>
+                  <mrow>
+                    <msubsup><mo>&#x222B;</mo><mn>0</mn><mfrac><mn>3</mn><mn>2</mn></mfrac></msubsup>
+                    <mi>x</mi><mi>d</mi><mi>x</mi>
+                  </mrow>
+                </mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable>
+                <mtr>
+                  <mtd>
+                    <mrow>
+                      <munderover>
+                        <mo>&#x2211;</mo>
+                        <mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow>
+                        <mi>n</mi>
+                      </munderover>
+                      <mi>k</mi>
+                    </mrow>
+                  </mtd>
+                  <mtd>
+                    <mrow>
+                      <msubsup><mo>&#x222B;</mo><mn>0</mn><mfrac><mn>3</mn><mn>2</mn></mfrac></msubsup>
+                      <mi>x</mi><mi>d</mi><mi>x</mi>
+                    </mrow>
+                  </mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>displaystyle="true"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable displaystyle="true">
+              <mtr>
+                <mtd>
+                  <mrow>
+                    <munderover>
+                      <mo>&#x2211;</mo>
+                      <mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow>
+                      <mi>n</mi>
+                    </munderover>
+                    <mi>k</mi>
+                  </mrow>
+                </mtd>
+                <mtd>
+                  <mrow>
+                    <msubsup><mo>&#x222B;</mo><mn>0</mn><mfrac><mn>3</mn><mn>2</mn></mfrac></msubsup>
+                    <mi>x</mi><mi>d</mi><mi>x</mi>
+                  </mrow>
+                </mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable displaystyle="true">
+                <mtr>
+                  <mtd>
+                    <mrow>
+                      <munderover>
+                        <mo>&#x2211;</mo>
+                        <mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow>
+                        <mi>n</mi>
+                      </munderover>
+                      <mi>k</mi>
+                    </mrow>
+                  </mtd>
+                  <mtd>
+                    <mrow>
+                      <msubsup><mo>&#x222B;</mo><mn>0</mn><mfrac><mn>3</mn><mn>2</mn></mfrac></msubsup>
+                      <mi>x</mi><mi>d</mi><mi>x</mi>
+                    </mrow>
+                  </mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2><code>mathcolor</code> with rules</h2>
+  <table class="mtable-sweep">
+    <caption>Lines use <code>currentColor</code></caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native <code>mtable</code> (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>mathcolor</code> on parent <code>math</code> with frame and row/column lines.</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" mathcolor="#0a6">
+            <mtable frame="solid" rowlines="solid" columnlines="dashed">
+              <mtr>
+                <mtd><mn>1</mn></mtd>
+                <mtd><mn>2</mn></mtd>
+              </mtr>
+              <mtr>
+                <mtd><mn>3</mn></mtd>
+                <mtd><mn>4</mn></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" mathcolor="#0a6">
+              <mtable frame="solid" rowlines="solid" columnlines="dashed">
+                <mtr>
+                  <mtd><mn>1</mn></mtd>
+                  <mtd><mn>2</mn></mtd>
+                </mtr>
+                <mtr>
+                  <mtd><mn>3</mn></mtd>
+                  <mtd><mn>4</mn></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="mlabeledtr"><code>mlabeledtr</code></h2>
+  <p class="intro">Labeled equation rows are expanded to <code>mtr</code> inside <code>mtable/mtable.js</code> (padding
+    <code>mtd</code> on other rows, <code>intent</code> on the label). On <code>mlabeledtr</code>, <code>rowalign</code> /
+    <code>columnalign</code> lists apply to equation <code>mtd</code>s only; the label column uses <code>mtable</code>
+    defaults for that row/column. On <code>mtable</code>, column-wise lists (<code>columnalign</code>,
+    <code>columnwidth</code>, and <code>mtr</code> <code>rowalign</code> / <code>columnalign</code>) use list index
+    <code>n−1</code> for the label column so the first token is for the first <em>equation</em> column.
+    <code>columnspacing</code> and <code>rowspacing</code> still use physical column/row gaps.
+    <code>columnlines</code> list tokens apply only between equation columns (no rule between the label column and the equation block).
+    The <code>frame</code> border wraps equation columns only (the label sits outside that outline).
+    <code>rowlines</code> are drawn on equation cells only so they do not extend through the label column.
+    Compare native (middle) with the polyfill (right).</p>
+  <table class="mtable-sweep">
+    <caption><code>mlabeledtr</code> expansion, <code>intent</code>, and column-wise lists</caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Native (no polyfill on this subtree)</th>
+        <th scope="col">After <code>_MathTransforms.transform</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Default <code>mtable@side</code> (<code>right</code>): label <code>(2.1)</code> on the right of the first row.</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable>
+              <mlabeledtr>
+                <mtd><mtext>(2.1)</mtext></mtd>
+                <mtd>
+                  <mrow>
+                    <mi>E</mi>
+                    <mo>=</mo>
+                    <mrow>
+                      <mi>m</mi>
+                      <mo>&#x2062;</mo>
+                      <msup><mi>c</mi><mn>2</mn></msup>
+                    </mrow>
+                  </mrow>
+                </mtd>
+              </mlabeledtr>
+              <mtr>
+                <mtd>
+                  <mrow>
+                    <msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup>
+                  </mrow>
+                </mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable>
+                <mlabeledtr>
+                  <mtd><mtext>(2.1)</mtext></mtd>
+                  <mtd>
+                    <mrow>
+                      <mi>E</mi>
+                      <mo>=</mo>
+                      <mrow>
+                        <mi>m</mi>
+                        <mo>&#x2062;</mo>
+                        <msup><mi>c</mi><mn>2</mn></msup>
+                      </mrow>
+                    </mrow>
+                  </mtd>
+                </mlabeledtr>
+                <mtr>
+                  <mtd>
+                    <mrow>
+                      <msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup>
+                    </mrow>
+                  </mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>mtable side="left"</code>: label on the left of the labeled row (second row here).</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable side="left">
+              <mtr>
+                <mtd>
+                  <mrow>
+                    <msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup>
+                  </mrow>
+                </mtd>
+              </mtr>
+              <mlabeledtr>
+                <mtd><mtext>(2.1)</mtext></mtd>
+                <mtd>
+                  <mrow>
+                    <mi>E</mi>
+                    <mo>=</mo>
+                    <mrow>
+                      <mi>m</mi>
+                      <mo>&#x2062;</mo>
+                      <msup><mi>c</mi><mn>2</mn></msup>
+                    </mrow>
+                  </mrow>
+                </mtd>
+              </mlabeledtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable side="left">
+                <mtr>
+                  <mtd>
+                    <mrow>
+                      <msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup>
+                    </mrow>
+                  </mtd>
+                </mtr>
+                <mlabeledtr>
+                  <mtd><mtext>(2.1)</mtext></mtd>
+                  <mtd>
+                    <mrow>
+                      <mi>E</mi>
+                      <mo>=</mo>
+                      <mrow>
+                        <mi>m</mi>
+                        <mo>&#x2062;</mo>
+                        <msup><mi>c</mi><mn>2</mn></msup>
+                      </mrow>
+                    </mrow>
+                  </mtd>
+                </mlabeledtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Label <code>intent</code>: with property <code>:equation-label</code> <br>
+          (console error if <code>data-expected</code> does not match).</td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable>
+              <mlabeledtr>
+                <mtd data-expected="foo:equation-label" intent="foo"><mtext>(intent=&quot;foo&quot;)</mtext></mtd>
+                <mtd>
+                  <mrow>
+                    <mi>E</mi>
+                    <mo>=</mo>
+                    <mrow>
+                      <mi>m</mi>
+                      <mo>&#x2062;</mo>
+                      <msup><mi>c</mi><mn>2</mn></msup>
+                    </mrow>
+                  </mrow>
+                </mtd>
+              </mlabeledtr>
+              <mlabeledtr>
+                <mtd data-expected="foo:equation-label(1)" intent="foo(1)"><mtext>(intent &quot;foo(1)&quot;)</mtext></mtd>
+                <mtd>
+                  <mrow>
+                    <mi>E</mi>
+                    <mo>=</mo>
+                    <mrow>
+                      <mi>m</mi>
+                      <mo>&#x2062;</mo>
+                      <msup><mi>c</mi><mn>2</mn></msup>
+                    </mrow>
+                  </mrow>
+                </mtd>
+              </mlabeledtr>
+              <mlabeledtr>
+                <mtd data-expected=":my-property:equation-label" intent=":my-property"><mtext>(intent=&quot;:my-property&quot;)</mtext></mtd>
+                <mtd>
+                  <mrow>
+                    <mi>E</mi>
+                    <mo>=</mo>
+                    <mrow>
+                      <mi>m</mi>
+                      <mo>&#x2062;</mo>
+                      <msup><mi>c</mi><mn>2</mn></msup>
+                    </mrow>
+                  </mrow>
+                </mtd>
+              </mlabeledtr>
+              <mlabeledtr>
+                <mtd data-expected=":equation-label" intent=":equation-label"><mtext>(intent=&quot;:equation-label&quot;)</mtext></mtd>
+                <mtd>
+                  <mrow>
+                    <mi>E</mi>
+                    <mo>=</mo>
+                    <mrow>
+                      <mi>m</mi>
+                      <mo>&#x2062;</mo>
+                      <msup><mi>c</mi><mn>2</mn></msup>
+                    </mrow>
+                  </mrow>
+                </mtd>
+              </mlabeledtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable>
+                <mlabeledtr>
+                  <mtd data-expected="foo:equation-label" intent="foo"><mtext>(intent=&quot;foo&quot;)</mtext></mtd>
+                  <mtd>
+                    <mrow>
+                      <mi>E</mi>
+                      <mo>=</mo>
+                      <mrow>
+                        <mi>m</mi>
+                        <mo>&#x2062;</mo>
+                        <msup><mi>c</mi><mn>2</mn></msup>
+                      </mrow>
+                    </mrow>
+                  </mtd>
+                </mlabeledtr>
+                <mlabeledtr>
+                  <mtd data-expected="foo:equation-label(1)" intent="foo(1)"><mtext>(intent &quot;foo(1)&quot;)</mtext></mtd>
+                  <mtd>
+                    <mrow>
+                      <mi>E</mi>
+                      <mo>=</mo>
+                      <mrow>
+                        <mi>m</mi>
+                        <mo>&#x2062;</mo>
+                        <msup><mi>c</mi><mn>2</mn></msup>
+                      </mrow>
+                    </mrow>
+                  </mtd>
+                </mlabeledtr>
+                <mlabeledtr>
+                  <mtd data-expected=":my-property:equation-label" intent=":my-property"><mtext>(intent=&quot;:my-property&quot;)</mtext></mtd>
+                  <mtd>
+                    <mrow>
+                      <mi>E</mi>
+                      <mo>=</mo>
+                      <mrow>
+                        <mi>m</mi>
+                        <mo>&#x2062;</mo>
+                        <msup><mi>c</mi><mn>2</mn></msup>
+                      </mrow>
+                    </mrow>
+                  </mtd>
+                </mlabeledtr>
+                <mlabeledtr>
+                  <mtd data-expected=":equation-label" intent=":equation-label"><mtext>(intent=&quot;:equation-label&quot;)</mtext></mtd>
+                  <mtd>
+                    <mrow>
+                      <mi>E</mi>
+                      <mo>=</mo>
+                      <mrow>
+                        <mi>m</mi>
+                        <mo>&#x2062;</mo>
+                        <msup><mi>c</mi><mn>2</mn></msup>
+                      </mrow>
+                    </mrow>
+                  </mtd>
+                </mlabeledtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>mtable columnalign="left center right"</code> <br>
+             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>columnlines="solid dashed"</code> <br>
+           the first row is labeled
+        </td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable columnalign="left center right" columnlines="solid dashed">
+              <mlabeledtr>
+                <mtd><mtext>(Label)</mtext></mtd>
+                <mtd><mi>a</mi></mtd>
+                <mtd><mi>bbb</mi></mtd>
+                <mtd><mi>c</mi></mtd>
+              </mlabeledtr>
+              <mtr>
+                <mtd><mi>xxx</mi></mtd>
+                <mtd><mi>y</mi></mtd>
+                <mtd><mi>zzzz</mi></mtd>
+              </mtr>
+          </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable columnalign="left center right" columnlines="solid dashed">
+                <mlabeledtr>
+                  <mtd><mtext>(Label)</mtext></mtd>
+                  <mtd><mi>a</mi></mtd>
+                  <mtd><mi>bbb</mi></mtd>
+                  <mtd><mi>c</mi></mtd>
+                </mlabeledtr>
+                <mtr>
+                  <mtd><mi>xxx</mi></mtd>
+                  <mtd><mi>y</mi></mtd>
+                  <mtd><mi>zzzz</mi></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><code>mtable columnwidth="7em auto"</code><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>columnlines="solid"</code> <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>columnspacing="1em 1em"</code> <br>
+          the first row is labeled
+        </td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable columnwidth="7em auto" columnlines="solid" columnspacing="1em 1em">
+              <mlabeledtr>
+                <mtd><mtext>(Label)</mtext></mtd>
+                <mtd><mrow><mi>w</mi><mo>+</mo><mi>w</mi><mo>+</mo><mi>w</mi></mrow></mtd>
+                <mtd><mi>z</mi></mtd>
+              </mlabeledtr>
+              <mtr>
+                <mtd><mn>1</mn></mtd>
+                <mtd><mn>2</mn></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable columnwidth="7em auto" columnlines="solid" columnspacing="1em 1em">
+                <mlabeledtr>
+                  <mtd><mtext>(Label)</mtext></mtd>
+                  <mtd><mrow><mi>w</mi><mo>+</mo><mi>w</mi><mo>+</mo><mi>w</mi></mrow></mtd>
+                  <mtd><mi>z</mi></mtd>
+                </mlabeledtr>
+                <mtr>
+                  <mtd><mn>1</mn></mtd>
+                  <mtd><mn>2</mn></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Label on the first and third row.<br>
+          <code>mtable</code>:
+          <code>frame="solid" rowlines="solid" columnlines="dashed" rowspacing="0.6ex" columnspacing="0.5em 1.2em"</code></td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable frame="solid" rowlines="solid" columnlines="dashed" rowspacing="0.6ex" columnspacing="0.5em 1.2em">
+              <mlabeledtr>
+                <mtd><mtext>(Label 1)</mtext></mtd>
+                <mtd><mi>p</mi></mtd>
+                <mtd><mi>q</mi></mtd>
+              </mlabeledtr>
+              <mtr>
+                <mtd><mi>rrr</mi></mtd>
+                <mtd><mi>s</mi></mtd>
+              </mtr>
+              <mlabeledtr>
+                <mtd><mtext>(Label 2)</mtext></mtd>
+                <mtd><mi>s</mi></mtd>
+                <mtd><mi>tttt</mi></mtd>
+              </mlabeledtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable frame="solid" rowlines="solid" columnlines="dashed" rowspacing="0.6ex" columnspacing="0.5em 1.2em">
+                <mlabeledtr>
+                  <mtd><mtext>(Label 1)</mtext></mtd>
+                  <mtd><mi>p</mi></mtd>
+                  <mtd><mi>q</mi></mtd>
+                </mlabeledtr>
+                <mtr>
+                  <mtd><mi>rrr</mi></mtd>
+                  <mtd><mi>s</mi></mtd>
+                </mtr>
+                <mlabeledtr>
+                  <mtd><mtext>(Label 2)</mtext></mtd>
+                  <mtd><mi>s</mi></mtd>
+                  <mtd><mi>tttt</mi></mtd>
+                </mlabeledtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Label on the left side of the table.<br>
+          <code>mtable side="left"</code> with <code>columnalign="center right left"</code> <code>columnlines="solid"</code> on <code>mlabeledtr</code>.
+        </td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable side="left" columnalign="center right left" columnlines="solid">
+              <mtr>
+                <mtd><mi>α</mi></mtd>
+                <mtd><mi>βββ</mi></mtd>
+              </mtr>
+              <mlabeledtr columnalign="right left center">
+                <mtd><mtext>(Label)</mtext></mtd>
+                <mtd><mi>uuuu</mi></mtd>
+                <mtd><mi>v</mi></mtd>
+              </mlabeledtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable side="left" columnalign="center right left" columnlines="solid">
+                <mtr>
+                  <mtd><mi>α</mi></mtd>
+                  <mtd><mi>βββ</mi></mtd>
+                </mtr>
+                <mlabeledtr columnalign="right left center">
+                  <mtd><mtext>(Label)</mtext></mtd>
+                  <mtd><mi>uuuu</mi></mtd>
+                  <mtd><mi>v</mi></mtd>
+                </mlabeledtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          First row should align on top, then baseline, and label falls back to the mtable's <code>rowalign="bottom"</code>.<br>
+          Second row should align on bottom<br>
+          <code>mtable</code> with <code>rowalign="bottom"</code><br>
+          <code>mlabeledtr</code> with <code>rowalign="top baseline" columnalign="left right"</code>
+        </td>
+        <td>
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable rowalign="bottom">
+              <mlabeledtr rowalign="top baseline" columnalign="left right">
+                <mtd><mtext>(1.1)</mtext></mtd>
+                <mtd><mi>x</mi></mtd>
+                <mtd><mrow>
+                    <msubsup><mo>&#x222B;</mo><mn>0</mn><mfrac><mn>3</mn><mn>2</mn></mfrac></msubsup>
+                    <mi>x</mi><mi>d</mi><mi>x</mi>
+                  </mrow>
+                </mtd>
+              </mlabeledtr>
+              <mtr>
+                <mtd><mi>yyyy</mi></mtd>
+                <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
+              </mtr>
+            </mtable>
+          </math>
+        </td>
+        <td>
+          <div class="mtable-test-polyfill-root">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable rowalign="bottom">
+                <mlabeledtr rowalign="top baseline" columnalign="left right">
+                  <mtd><mtext>(1.1)</mtext></mtd>
+                  <mtd><mi>x</mi></mtd>
+                  <mtd><mrow>
+                      <msubsup><mo>&#x222B;</mo><mn>0</mn><mfrac><mn>3</mn><mn>2</mn></mfrac></msubsup>
+                      <mi>x</mi><mi>d</mi><mi>x</mi>
+                    </mrow>
+                  </mtd>
+                </mlabeledtr>
+                <mtr>
+                  <mtd><mi>yyyy</mi></mtd>
+                  <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+
+</html>

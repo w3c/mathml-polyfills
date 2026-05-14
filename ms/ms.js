@@ -1,5 +1,5 @@
 /***
- * Handles lqoute and rquote attrs on ms
+ * Handles lquote and rquote attrs on ms by replacing with mtext (MathML Core).
  ***/
 // @ts-check
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
@@ -24,13 +24,11 @@
   THE SOFTWARE.
 */
 
-
 import { _MathTransforms, MATHML_NS } from '../common/math-transforms.js'
 
-
 /**
- * 
- * @param {string} text 
+ * @param {string} text
+ * @returns {string}
  */
 function collapseWhiteSpace(text) {
     // Collapse the whitespace as specified by the MathML specification.
@@ -40,20 +38,26 @@ function collapseWhiteSpace(text) {
 
 /**
  * @param {HTMLElement} ms
+ * @returns {Element}
  */
 const transformMs = (ms) => {
-    // Ideally, we would attach a shadow root to <ms> and put the result in there, but that's not legal (now)
-    // Instead, we just move the lquote/rquote attrs into the ms and change the DOM.
-    // If lquote or rquote appear in the string contents, they should be escaped.
     const lquote = ms.getAttribute('lquote') || '"';
     const rquote = ms.getAttribute('rquote') || '"';
     let content = collapseWhiteSpace(ms.textContent);
-    content = content.replace(lquote,'\\'+lquote);
-    if (rquote !== lquote) {
-        content = content.replace(rquote,'\\'+rquote);
+    if (lquote === rquote) {
+        content = content.split(lquote).join('\\' + lquote);
+    } else {
+        content = content.split(lquote).join('\\' + lquote);
+        content = content.split(rquote).join('\\' + rquote);
     }
-    ms.textContent = lquote + content + rquote;
-    return 
-}
+    const mtext = document.createElementNS(MATHML_NS, 'mtext');
+    for (const attr of Array.from(ms.attributes)) {
+        if (attr.name !== 'lquote' && attr.name !== 'rquote') {
+            mtext.setAttribute(attr.name, attr.value);
+        }
+    }
+    mtext.textContent = lquote + content + rquote;
+    return mtext;
+};
 
 _MathTransforms.add('ms', transformMs);
