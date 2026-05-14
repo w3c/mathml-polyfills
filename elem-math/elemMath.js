@@ -23,28 +23,58 @@
   THE SOFTWARE.
 */
 
-/*
- * The basic idea is that each digit gets its own column in the resulting table
- * There are lots of wrinkles on this, including getting alignment correct, drawing lines, etc.
- * https://w3c.github.io/mathml/#stacks-of-characters-mstack
+/**
+ * Elementary MathML: {@link https://w3c.github.io/mathml/#stacks-of-characters-mstack mstack} and
+ * {@link https://w3c.github.io/mathml/#elementary-math-subtraction-addition-multiplication-and-long-division mlongdiv}.
  *
- * The algorithm works by building a data structure that closely mirrors the resulting table.
- * Once all the rows are processed, that data structure is turned into an HTML table.
+ * Each digit occupies one column in an internal row model; after layout, that model is rendered as a CSS grid
+ * (see {@link ELEM_MATH_CSS}) with HTML cell elements, typically inside a shadow root.
+ *
+ * @module elem-math/elemMath
  */
 
 import { _MathTransforms, MATHML_NS } from '../common/math-transforms.js'
 
+/** Uppercase `tagName` for the `m-elem-math` custom element. */
+const M_ELEM_MATH_TAG = 'M-ELEM-MATH';
+
+/** CSS for the grid container (`.elem-math`) and cells; concatenated into the global polyfill stylesheet. */
 const ELEM_MATH_CSS = `
-table.elem-math {
-    border-collapse: collapse;
-    border-spacing: 0px;
-}
-table.elem-math tr {
-    vertical-align: baseline;
+div.elem-math {
+    display: inline-grid;
+    grid-auto-flow: row;
+    /* Use baseline so plain-digit cells line up with merged-carry cells whose digit sits below the carry. */
+    align-items: baseline;
+    grid-auto-columns: max-content;
+    gap: 0;
 }
 
-td.curved-line {
+.elem-math-cell {
+    display: inline-block;
+    /* IMPORTANT: do not set 'align-self: stretch' on every cell -- that overrides 'align-items: baseline'
+       from the grid. Exception: cells that only draw a vertical rule (border-left/right) must stretch to
+       the row height so the rule meets rows where neighbors use border-bottom (msline); otherwise the
+       rule ends short by the border-bottom width. */
+    position: relative;
+    overflow: visible;
+}
+
+.elem-math-cell.elem-math-vrule-cell {
+    align-self: stretch;
+    box-sizing: border-box;
+}
+
+/* Empty rows added after underlines need explicit height (no content to give them one). */
+.elem-math-spacer {
+    align-self: stretch;
+    height: .5ex;
+}
+
+/* Curved bracket: absolutely positioned child so placement is relative to the cell box, not the grid item. */
+.elem-math-cell .curved-line {
     position: absolute;
+    top: 0;
+    left: 0;
     padding-top: 0em;
     width: 0.75em;
     border: 0.3ex solid;  /* match border bottom */
@@ -56,14 +86,7 @@ td.curved-line {
     margin-right: 0.75em;
 }
 
-mtd.precedes-separator {
-    padding-right: 0 !important;    /* override an inline style */
-}
-
-mtd.separator {
-    padding-left: 0  !important;    /* override an inline style */
-    padding-right: 0 !important;    /* override an inline style */
-}
+/* .precedes-separator / .separator / .follows-separator: horizontal padding set in JS (expandMStackElement). */
 
 .carry {
     font-size: 60%;
@@ -123,24 +146,31 @@ mtd.separator {
 }
 `
 
-// msline defined values
+/** `msline` / `mslinethickness="thin"` resolved length. */
 const MSLINETHICKNESS_THIN = '.1ex'
+/** Default `mslinethickness="medium"`. */
 const MSLINETHICKNESS_MEDIUM = '.35ex'
+/** `mslinethickness="thick"`. */
 const MSLINETHICKNESS_THICK = '.65ex'
 
-// mstack defined charspacing values
+/** `charspacing="tight"` on `mstack` / `mlongdiv`. */
 const MSTACK_TIGHT = '0em'
+/** `charspacing="medium"` (default). */
 const MSTACK_MEDIUM = '.2em'
+/** `charspacing="loose"`. */
 const MSTACK_LOOSE = '.4em'
 
-const NON_BREAKING_SPACE = '\u00A0';
-const NO_SPACE = '\u200A';  // hair space (need something that is a char for use in carries)
+const NON_BREAKING_SPACE = '\u00A0'
+/** Hair space (U+200A); placeholder in padded / empty cells so columns and borders lay out consistently. */
+const NO_SPACE = '\u200A'
 
+/**
+ * Inherited MathML attributes gathered from ancestor `mstyle` and `math` (first wins per name).
+ */
 class MathMLAttrs {
     /**
-     * Call the constructor when an mstyle is found
-     * @param {Element} el
-     * @param {Object} [previousAttrs=null] 
+     * @param {Element} el - Starting node (`mstack`, `mlongdiv`, or `mstyle` when merging).
+     * @param {Record<string, string>} [previousAttrs] - Copy-on-write base when `el` is `mstyle`.
      */
     constructor(el, previousAttrs) {
         this.attrs = {};
@@ -157,7 +187,6 @@ class MathMLAttrs {
         } else {
             this.attrs = Object.assign({}, previousAttrs);
             if (el.tagName.toLowerCase() === 'mstyle') {
-                // Override any attr that is already present
                 for (let attr of el.attributes) {
                     this.attrs[attr.name] = attr.value;
                 }
@@ -166,8 +195,8 @@ class MathMLAttrs {
     }
 
     /**
-     * Add an attr of 'el' if it isn't already present in 'this.attrs' (helper fn for the constructor)
-     * @param {Element} el 
+     * Records attributes from `el` only for names not already in `this.attrs`.
+     * @param {Element} el
      */
     addAttrs(el) {
         for (let attr of el.attributes) {
@@ -178,10 +207,9 @@ class MathMLAttrs {
     }
 
     /**
-     * 
-     * @param {Element} el 
-     * @param {string} name 
-     * @param {string} defaultVal 
+     * @param {Element} el
+     * @param {string} name
+     * @param {string} defaultVal
      * @returns {string}
      */
     getAttr(el, name, defaultVal) {
@@ -192,12 +220,12 @@ class MathMLAttrs {
     }
 }
 
+/** Metadata for one `mscarry` merged into a digit cell. */
 class Carry {
     /**
-     * 
-     * @param {string} location 
-     * @param {string} crossout 
-     * @param {number} scriptsizemultiplier
+     * @param {string} location - `mscarry` `location` (e.g. `n`, `nw`, `s`).
+     * @param {string} crossout - `crossout` token(s).
+     * @param {number} scriptsizemultiplier - Percent scale for carry glyph (e.g. 60).
      */
     constructor(location, crossout, scriptsizemultiplier) {
         this.location = location;
@@ -206,13 +234,15 @@ class Carry {
     }
 }
 
+/**
+ * One column cell in the internal grid (digit, padding, carry wrapper, etc.).
+ */
 class TableCell {
-     // Holds data to construct the actual <td>
-	/**
-	 * @param {string | Element} [value]             // contents (digit) of the cell
-     * @param {string} [style='']                   // style info for the cell
-	 * @param {Carry} [carry=null]                  // a single carry
-	 */
+    /**
+     * @param {string | Element} value - Digit string, or element for `mscarry`.
+     * @param {string} [style=''] - Extra inline CSS for the rendered cell.
+     * @param {Carry} [carry] - If set, `value` must be an `Element`.
+     */
     constructor(value, style, carry) {
         if (carry) {
             if (typeof value !== "object") {
@@ -226,20 +256,24 @@ class TableCell {
             if (typeof value !== "string") {
                 throw new Error("Elementary math mscarry isn't a 'string'");
             }
-            this.data = document.createTextNode(value);
+            // `<none/>` in `msrow` yields `''`; empty text collapses line height and breaks row `border-bottom` alignment.
+            this.data = document.createTextNode(value === '' ? NO_SPACE : value);
         }
-        this.carry = carry;                        // for multiple carries, 'data' is already built up -- value is last carry seen
+        /** @type {Carry | undefined} */
+        this.carry = carry;
         this.style = style || '';
     }
 }
 
+/**
+ * One row of {@link TableCell}s after `msgroup` / `position` shifts are applied.
+ */
 class TableRow {
-      // Holds data to construct the actual <tr>
-	/**
-	 * @param {TableCell[]} data                 // all cells in the row
-	 * @param {number} [digitsOnRight]           // # of digits to the right of '.' (includes '.') (can be negative due to shift)
-	 * @param {number} [shift]                   // # amount of shift (position) -- need to track because of underlines
-	 */
+    /**
+     * @param {TableCell[]} data - Cells left-to-right.
+     * @param {number} [digitsOnRight] - Cells right of decimal align point (includes `.`), for `stackalign="decimalpoint"`.
+     * @param {number} [shift] - `msgroup` / `position` shift; negative pads left and adjusts `nRight`.
+     */
     constructor(data, digitsOnRight, shift) {
         if (shift === 0) {
             this.data = data; 
@@ -252,13 +286,16 @@ class TableRow {
         this.nRight = digitsOnRight;
         this.shift = shift;
         this.style = '';
-        this.addSpacingAfterRow = false;    // want to add a little spacing later on
-        this.alignAt = 0;                 // no alignment needed (-1 is last line; 1 is first line)
+        /** Insert a spacer grid row after this one (e.g. after `msline` underline). */
+        this.addSpacingAfterRow = false;
+        /** Carry merge hint: `1` first line, `-1` last line, `0` none. */
+        this.alignAt = 0;
     }
 
     /**
-     * @param {string} lineUnderThickness
-     * @param {string} color
+     * Full-width `border-bottom` on this row (e.g. `msline` with default length).
+     * @param {string} lineUnderThickness - CSS border width (e.g. `.35ex`).
+     * @param {string} color - `mathcolor` / resolved color.
      */
     addUnderline(lineUnderThickness, color) {
         this.style += `border-bottom: ${lineUnderThickness} solid ${color};`;
@@ -266,19 +303,13 @@ class TableRow {
     }
 
     /**
-     * 
-     * @param {number} shift 
-     * @param {number} length 
-     * @param {string} thickness 
-     * @param {string} color
+     * Underline a run of cells with `border-bottom` (finite `msline length`).
+     * @param {number} shift - Column index offset (`msline` / `position`).
+     * @param {number} length - Number of cells to underline.
+     * @param {string} thickness - CSS border width.
+     * @param {string} color - Border color.
      */
     addUnderlineToCells(shift, length, thickness, color) {
-        // the underlines should act independently of the previous line
-        // however, to do the underline, we need to attach them as borders to the above the cells
-
-        // pad previous row on left/right if needed
-        // note: order of padding is important so that 'right' is correct)
-        // note: we create new TableCells because we will modify it by adding an underline
         let nLeftOfDecimalPoint = this.data.length - this.nRight;
         let right = nLeftOfDecimalPoint - shift;
         if (shift + length > nLeftOfDecimalPoint) {
@@ -291,19 +322,16 @@ class TableRow {
             right = this.data.length;
         }
 
-        // now add the underlines
         for (let i = right - length; i < right; i++) {
             this.data[i].style += `border-bottom: ${thickness} solid ${color};`;
         }
         this.addSpacingAfterRow = true;
     }
 
-    // two helper functions that adds padding to the left or right side of an array
     /**
-     * 
-     * @param {TableCell[]} arr 
+     * @param {TableCell[]} arr
      * @param {number} amount
-     * @returns TableCell[]
+     * @returns {TableCell[]}
      */
     padOnLeft(arr, amount) {
         let newCells = Array(amount);
@@ -314,10 +342,9 @@ class TableRow {
     }
     
     /**
-     * 
-     * @param {TableCell[]} arr 
-     * @param {number} amount 
-     * @returns TableCell[]
+     * @param {TableCell[]} arr
+     * @param {number} amount
+     * @returns {TableCell[]}
      */
     padOnRight(arr, amount) {
         let newCells = Array(amount);
@@ -329,14 +356,13 @@ class TableRow {
 }
 
 
+/**
+ * Expands one `mstack` or `mlongdiv` into a grid DOM. Rows are not stored on the instance; methods take {@link TableRow} arrays.
+ */
 class ElemMath {
-	/** 
-     * mstack and mlondiv
-     * Note: we do *not* store the rows of the stack in here because (potentially) mlongdiv has its own stack for divisor/result
-     *   Instead, we pass the rows as arguments to the various methods
-     * 
-	 * @param {Element} mstackOrLongDiv
-	 */
+    /**
+     * @param {Element} mstackOrLongDiv - `mstack` or `mlongdiv` element.
+     */
 	constructor(mstackOrLongDiv) {
         this.stack = mstackOrLongDiv;
         this.attrs = new MathMLAttrs(mstackOrLongDiv);
@@ -352,17 +378,17 @@ class ElemMath {
             this.charSpacing = MSTACK_TIGHT;
         }
 
-        this.longdivstyle = mstackOrLongDiv.tagName === 'mstack' ? '' : this.getAttr(mstackOrLongDiv, 'longdivstyle', 'lefttop');        
+        this.longdivstyle = mstackOrLongDiv.tagName === 'mstack' ? '' : this.getAttr(mstackOrLongDiv, 'longdivstyle', 'lefttop');
 
         // FIX: todo -- not yet dealt with
+        /* `align` on mstack is not implemented (source reads typo `algin`). */
         this.align = this.getAttr(mstackOrLongDiv,'algin', 'baseline');
     }
 
     /**
-     * 
-     * @param {Element} el 
-     * @param {string} name 
-     * @param {string} defaultVal 
+     * @param {Element} el
+     * @param {string} name
+     * @param {string} defaultVal
      * @returns {string}
      */
     getAttr(el, name, defaultVal) {
@@ -370,27 +396,23 @@ class ElemMath {
     }
     
     /**
-     * Add another row to the stack.
-     * If the last row is a row of carries, then this row is merged with them so there is no new row
-     * If this row is a row of carries also, then the merging is done differently 
+     * Appends `newRow`, or merges it into the previous row when that row is `mscarries`.
      * @param {TableRow[]} rows
-     * @param {TableRow} newRow 
+     * @param {TableRow} newRow
+     * @returns {void}
      */
     add(rows, newRow) {
         /**
-         * 
-         * @param {TableCell} cell 
-         * @param {string} crossoutStyle 
-         * @returns {TableCell}  (updated cell)
+         * @param {TableCell} cell
+         * @param {string} crossoutStyle - Space-separated `crossout` tokens.
+         * @returns {TableCell}
          */
         function addCrossoutToData(cell, crossoutStyle) {
-            // some crossouts are handled with :before or :after
-            // since there can only be one of these, we create a nested span for each crossout 
             const crossouts = crossoutStyle.split(' ');
             let result = cell.data;
             crossouts.forEach( function(crossout) {
-                if (crossout === 'none' || crossout==='') { // '' -- happens when there are two or more spaces in a row
-                    return;    // nothing to do
+                if (crossout === 'none' || crossout==='') {
+                    return;
                 }
                 let span = document.createElement("span");
                 span.appendChild(result);
@@ -409,7 +431,7 @@ class ElemMath {
                         span.className = 'crossout-horiz';
                         break;
                     default:
-                        span.className = 'crossout-up';         // do something  
+                        span.className = 'crossout-up';
                         console.log(`Unknown crossout type '${crossoutStyle}`);
                         break;               
                 }
@@ -419,17 +441,16 @@ class ElemMath {
             return cell;
         }
         /**
-         * 
-         * @param {TableCell} cell 
-         * @param {TableCell} previousCell 
-         * @returns {TableCell}  (updated data)
+         * @param {TableCell} cell
+         * @param {TableCell} previousCell
+         * @returns {TableCell}
          */
         function mergeCarryAndData(cell, previousCell) {
             let data = cell.data;
             if (data.textContent === NO_SPACE) {
                 let span = document.createElement('span');
                 span.appendChild(data);
-                data.textContent = '0';      // need digit width to get decent spacing/placement of the carry
+                data.textContent = '0';
                 span.className = "hidden-digit";
                 data = span;
             }
@@ -478,15 +499,12 @@ class ElemMath {
 
         let previousRow = rows[rows.length - 1];
 
-        // if the previous row is a carry row, then the non "fill" spots will have a carry -- just need to find one
         if (rows.length === 0 ||
             !previousRow.data.find( cell => cell.carry )) {
-            rows.push(newRow);    // "normal" row -- just add it
+            rows.push(newRow);
             return;
         }
 
-        // have to merge the rows
-        // first make them the same size, padding on left/right if needed
         const extraToAddOnLeft = (newRow.data.length - newRow.nRight) - (previousRow.data.length - previousRow.nRight);
         if (extraToAddOnLeft !== 0) {
             if (extraToAddOnLeft < 0) {
@@ -500,12 +518,14 @@ class ElemMath {
         if (extraToAddOnRight !== 0) {
             if (extraToAddOnRight < 0) {
                 newRow.data = newRow.padOnRight(newRow.data, -extraToAddOnRight);
+                newRow.nRight = previousRow.nRight;
             } else {
                 previousRow.data = previousRow.padOnRight(previousRow.data, extraToAddOnRight);
+                previousRow.nRight += extraToAddOnRight;
+                newRow.nRight = previousRow.nRight;
             }
         }
 
-        // merge the data now that the rows have the same number of elements
         for (let i=0; i < newRow.data.length; i++) {
             const prevCell = previousRow.data[i];
             let cell = newRow.data[i];
@@ -516,21 +536,18 @@ class ElemMath {
                 newRow.data[i] = cell; 
             }
         }
-        rows[rows.length - 1] = newRow;      // replace the carry row with the current row
+        rows[rows.length - 1] = newRow;
     }
 
     /**
-     * 
-     * @param {Element} msrow 
-     * @returns {[TableCell[], number]}  
+     * Flattens `msrow` / `mstyle` row content into cells; decimal alignment uses the first `mn`'s decimal point.
+     * @param {Element} msrow
+     * @returns {[TableCell[], number]} Cells and `nRight` when `stackalign === 'decimalpoint'`.
      */
     process_msrow(msrow) {
-        // The spec doesn't say how to determine decimal alignment in an msrow
-        // Here, we take the first 'mn' we find to be the determination of a '.'.
-        // Anything after the 'mn' is considered to be to the right of the '.'
         let foundNumber = false;
         let nDigitsRightOfDecimalPt = 0;
-        //** @type {TableCell[]}  */
+        /** @type {TableCell[]} */
         let cells = [];
         for (let i=0; i<msrow.children.length; i++) {
             const child = msrow.children[i];
@@ -561,19 +578,17 @@ class ElemMath {
     }
 
     /**
-     * 
-     * @param {Element} row 
-     * @param {string} location 
-     * @param {string} crossout 
-     * @param {number} scriptsizemultiplier
+     * @param {Element} row - `mscarries` element.
+     * @param {string} location - Default `mscarry` `location`.
+     * @param {string} crossout - Default `mscarry` `crossout`.
+     * @param {number} scriptsizemultiplier - Percent (already scaled, e.g. 60).
      * @returns {TableCell[]}
      */
     process_mscarries(row, location, crossout, scriptsizemultiplier) {
         let cells = [];
         let child = row.children[0];
-        // children are pulled out of the row and put in the TableCell, so we can't use a standard 'for' loop
         while (child) {
-            let nextChild = child.nextElementSibling;       // do this before child is modified
+            let nextChild = child.nextElementSibling;
             let cellLocation = location;
             let cellCrossout = crossout
             if (child.tagName.toLowerCase() === 'mscarry') {
@@ -589,32 +604,32 @@ class ElemMath {
     }
 
     /**
-	 * @param {Element} node
+     * Walks `node` children (`msgroup` applies `rowShift` to subsequent siblings).
+     * @param {Element} node - `mstack`, `mlongdiv`, or `msgroup`.
      * @param {TableRow[]} rows
-	 * @param {number} position
-	 * @param {number} [rowShift=0]
+     * @param {number} position - Base column offset from ancestor `msgroup`s.
+     * @param {number} [rowShift=0] - Per-`msgroup` `shift`.
      * @returns {TableRow[]}
-	 */
+     */
     processChildren(node, rows, position, rowShift) {
         if (!node.children) {
             return rows;
         }
         rowShift = rowShift || 0;
-        
-        // Note: we only want to compute a decimal position (which is an align point) when stackAlign==='decimalpoint'; otherwise alignment will be off
+
         for (let i= (node.tagName.toLowerCase() === 'mlongdiv' ? 2 : 0); i<node.children.length; i++) {
             rows = this.processChild(node.children[i], rows, position);
-            position += rowShift;           // non-zero when specified by msgroup; applies to 2nd and subsequent rows
+            position += rowShift;
         }
         return rows;
     }
 
     /**
-	 * @param {Element} child
+     * @param {Element} child
      * @param {TableRow[]} rows
-	 * @param {number} position
+     * @param {number} position
      * @returns {TableRow[]}
-	 */
+     */
     processChild(child, rows, position) {
         let shift = position + parseInt(this.getAttr(child, 'position', '0'));
         switch (child.tagName.toLowerCase()) {
@@ -699,18 +714,15 @@ class ElemMath {
     }
 
     /**
-     * 
+     * Pads every row to a common width per `stackalign`.
      * @param {TableRow[]} rows
      * @param {string} stackAlign
      * @returns {TableRow[]}
      */
     processShifts(rows, stackAlign) {
         let maxLeftOfDecimalPt = 0;
-        let maxRightOfDecimalPt = 0;      // only used when doing decimal alignment
+        let maxRightOfDecimalPt = 0;
 
-        // we want to fill out all the entries in each row
-        // when doing decimal alignment, we need to keep track of int and fractional part
-        // first, compute the max digits across all the rows
         for (const row of rows) {
             if (stackAlign === 'decimalpoint') {
                 maxLeftOfDecimalPt = Math.max(maxLeftOfDecimalPt, row.data.length - row.nRight);
@@ -720,7 +732,6 @@ class ElemMath {
             }
         }
 
-        // now pad each row
         for (const row of rows) {
             switch (stackAlign) {
                 case 'decimalpoint':
@@ -734,7 +745,7 @@ class ElemMath {
                 case 'center': {
                     const padding = maxLeftOfDecimalPt - row.data.length;
                     row.data = row.padOnRight(row.data, padding/2);
-                    row.data = row.padOnLeft(row.data, padding - padding/2);  // remainder after half fill above
+                    row.data = row.padOnLeft(row.data, padding - padding/2);
                     break;
                 }
                 case 'right':
@@ -749,15 +760,16 @@ class ElemMath {
     }
 
     /**
-     * 
-     * @param {Element} divisor 
-     * @param {Element} result 
-     * @param {TableRow[]} stackRows
+     * Merges `mlongdiv` divisor/result rows and delimiters per `longdivstyle`.
+     * @param {Element | null} divisor - First child of `mlongdiv` (may be null).
+     * @param {Element | null} result - Second child.
+     * @param {TableRow[]} stackRows - Main stack body (from child 2 onward).
      * @returns {TableRow[]}
      */
     addOnLongDivParts(divisor, result, stackRows) {
         /**
-         * @param {TableRow} row 
+         * @param {TableRow} row
+         * @returns {number} Count of trailing `NO_SPACE` cells from the right.
          */
         function countPaddingOnRight(row) {
             for (let i = row.data.length-1; i>=0; i--) {
@@ -770,13 +782,12 @@ class ElemMath {
         }
         /**
          * @param {TableRow} row
-         * @param {number} nKeep    // number of padded cells to keep (if not enough cells, appropriate # is added)
+         * @param {number} nKeep - Trailing empty cells to retain.
          * @returns {TableRow}
          */
         function removePaddingOnRight(row, nKeep) {
             let nDeletedRight = 0;
 
-            // delete empty cells from end
             for (let i = row.data.length-1; i>=0; i--) {
                 const cell = row.data[i];
                 if (cell.data.textContent !== NO_SPACE) {
@@ -790,7 +801,6 @@ class ElemMath {
                 }
             }
 
-            // add on any needed cells
             for (let i=0; i<nKeep; i++) {
                 row.data.push( new TableCell(NO_SPACE) );
             }
@@ -801,15 +811,12 @@ class ElemMath {
 
         const mathcolor = this.getAttr(this.stack, 'mathcolor', 'black');
 
-        // Note: we assure there are divisors, results and at least one row in the stack for layout by creating dummy entries if needed.
-        //   For a few styles, a second row is needed -- those are handled in those cases.
-
         if (stackRows.length == 0) {
             stackRows.push( new TableRow( [new TableCell(NO_SPACE)], 0, 0 ) );
         }
 
         // FIX: this is broken for anything that is more than one row tall.
-        /** @type{TableRow[]} */
+        /** @type {TableRow[]} */
         let divisorRows = divisor ? this.processChild(divisor, [], 0) : [new TableRow( [new TableCell(NO_SPACE)], 0, 0 )];
         let divisorRow = divisorRows[0];        // FIX: currently can only handle one row
         let iLastDivisorDigit = divisorRow.data.length-1;
@@ -874,9 +881,7 @@ class ElemMath {
 
                 }
 
-                // First, add a row of padding on right and put a line down the right side of them
                 if (this.longdivstyle !== 'stackedrightright') {
-                    // want to suck these lines in -- find out how much padding there is on each line and remove some
                     const nLine1Padding = countPaddingOnRight(stackRows[0]);
                     const nLine2Padding = countPaddingOnRight(stackRows[1]);
                     const nRemove = Math.min(nLine1Padding, nLine2Padding);
@@ -901,7 +906,6 @@ class ElemMath {
                     resultRow.data[0].style += 'padding-left: 0.5em;';
                 }
 
-                // Attach the divisor to the first line (note: the divisor and result are *not* decimal aligned)
                 const nCellsLargerResultThanDivisor = resultRow.data.length - divisorRow.data.length;
                 if (nCellsLargerResultThanDivisor > 0) {
                     divisorRow.data = divisorRow.padOnRight(divisorRow.data, nCellsLargerResultThanDivisor);
@@ -911,7 +915,6 @@ class ElemMath {
                 stackRows[0].data = stackRows[0].data.concat(divisorRow.data);
                 stackRows[0].nRight += divisorRow.data.length
 
-                // Attach the result to the second line
                 stackRows[1].data = stackRows[1].data.concat(resultRow.data);
                 stackRows[1].nRight += resultRow.data.length
                 break;
@@ -933,28 +936,24 @@ class ElemMath {
                     stackRows[i].data.unshift(newCell);
                 }       
 
-                // Add some padding on the right to the divisor and result to separate them from the line
                 divisorRow.data[divisorRow.data.length-1].style += 'padding-right: 0.5em;';
                 resultRow.data[resultRow.data.length-1].style += 'padding-right: 0.5em;';
 
-                // Attach the divisor to the first line (note: the divisor and result are *not* decimal aligned)
                 const nCellsLargerResultThanDivisor = resultRow.data.length - divisorRow.data.length;
                 if (nCellsLargerResultThanDivisor > 0) {
                     divisorRow.data = divisorRow.padOnLeft(divisorRow.data, nCellsLargerResultThanDivisor);
                 }
                 divisorRow.addUnderlineToCells(-divisorRow.nRight, divisorRow.data.length, MSLINETHICKNESS_MEDIUM, mathcolor);
                 divisorRow.addSpacingAfterRow = false;
-                    stackRows[0].data = divisorRow.data.concat(stackRows[0].data);
+                stackRows[0].data = divisorRow.data.concat(stackRows[0].data);
 
-                // Attach the result to the second line
                 stackRows[1].data = resultRow.data.concat(stackRows[1].data);
                 break;
             }
 
             case 'righttop': {
-                // First, put the result on top with a line underneath
                 resultRow.addUnderline(MSLINETHICKNESS_MEDIUM, mathcolor);
-                resultRow.addSpacingAfterRow = false;        // don't want to add extra spacing
+                resultRow.addSpacingAfterRow = false;
                 let mergedRows = resultRows.concat(stackRows);
                 stackRows = this.processShifts(mergedRows, this.stackAlign);
 
@@ -973,21 +972,19 @@ class ElemMath {
 
                 // First, put the result on top with a line underneath
                 resultRow.addUnderlineToCells(-resultRow.nRight, Math.max(resultRow.data.length, stackRows[0].data.length), MSLINETHICKNESS_MEDIUM, mathcolor);
-                resultRow.addSpacingAfterRow = false;        // don't want to add extra spacing
+                resultRow.addSpacingAfterRow = false;
                 let mergedRows = resultRows.concat(stackRows);
                 stackRows = this.processShifts(mergedRows, this.stackAlign);
 
                 if (this.longdivstyle === 'stackedleftlinetop') {
                     divisorRow.data[divisorRow.data.length-1].style += `border-right: ${MSLINETHICKNESS_MEDIUM} solid ${mathcolor};`;
-                    divisorRow.data[divisorRow.data.length-1].style += `border-right: ${MSLINETHICKNESS_MEDIUM} solid ${mathcolor};`;divisorRow.data[divisorRow.data.length-1].data.style += 'position:relative';
                     divisorRow.addUnderlineToCells(-divisorRow.nRight, divisorRow.data.length, MSLINETHICKNESS_MEDIUM, mathcolor);
                 } else {
-                    // add the ")" to the element (handled like a curved border with css)
                     divisorRow.data = divisorRow.padOnRight(divisorRow.data, 1)
                     iLastDivisorDigit += 1;
-                    
+
                     divisorRow.data[iLastDivisorDigit].class = 'curved-line';
-                    divisorRow.data[iLastDivisorDigit].style = '';       // let CSS deal with it
+                    divisorRow.data[iLastDivisorDigit].style = '';
                 }
                 stackRows[1].data = divisorRow.data.concat(stackRows[1].data);
                 break;
@@ -995,7 +992,6 @@ class ElemMath {
         }
         let answer = this.processShifts(stackRows, this.stackAlign);
         if (this.longdivstyle === 'lefttop') {
-            // extend the line to the left one cell to be above the added ')'
             stackRows[0].data[iLastDivisorDigit].style += `border-bottom: ${MSLINETHICKNESS_MEDIUM} solid ${mathcolor};`;
         }
         return answer;
@@ -1003,20 +999,31 @@ class ElemMath {
 	
 
     /**
-     * Sets classes that shrink the padding on columns containing separators because it looks better
-     * @param {TableRow[]} stackRows 
-     * @returns nothing
+     * Tags separator columns (`.`, `,`) and related cells so {@link ElemMath#expandMStackElement} can tighten padding.
+     * @param {TableRow[]} stackRows
+     * @returns {void}
      */
     shrinkSeparatorColumns(stackRows) {
         if (stackRows.length === 0) {
             return;
         }
 
-        // scan each row for a separator (could be '' in some rows)
-        // remove an the index from the set of separators if it is not a separator or an empty cell (if all empty cells, also delete)
-        // if all the indices that are empty, don't count them -- could be a vertical line
-        let separatorCols = new Set(Array(stackRows[0].data.length).keys());      // indices of the columns
-        let allEmptyCells = new Set(Array(stackRows[0].data.length).keys());      // indices of columns that are completely empty
+        /**
+         * @param {TableCell} cell
+         * @param {string} extras - Space-separated class names to merge onto `cell.class`.
+         */
+        const mergeClasses = (cell, extras) => {
+            const set = new Set((cell.class || '').trim().split(/\s+/).filter(Boolean));
+            for (const c of extras.trim().split(/\s+/)) {
+                if (c) {
+                    set.add(c);
+                }
+            }
+            cell.class = [...set].join(' ');
+        };
+
+        let separatorCols = new Set(Array(stackRows[0].data.length).keys());
+        let allEmptyCells = new Set(Array(stackRows[0].data.length).keys());
         for (let row of stackRows) {
             /** @type {TableCell[]} */
             let cols = row.data;
@@ -1031,33 +1038,116 @@ class ElemMath {
             }
         }
 
-        // remove any remaining columns that are all empty cells
         allEmptyCells.forEach( i => separatorCols.delete(i));
         
         for (let iCol of separatorCols) {
             stackRows.forEach( row => {
-                row.data[iCol].class = "separator";
+                mergeClasses(row.data[iCol], "separator");
                 if (iCol > 0) {
-                    row.data[iCol-1].class = "precedes-separator";
+                    mergeClasses(row.data[iCol - 1], "precedes-separator");
                 }
             })
+        }
+
+        stackRows.forEach(row => {
+            for (let i = 0; i < row.data.length; i++) {
+                const text = row.data[i].data.textContent;
+                if (text === ',') {
+                    mergeClasses(row.data[i], 'separator separator-comma');
+                    if (i > 0) {
+                        mergeClasses(row.data[i - 1], 'precedes-separator');
+                    }
+                    if (i + 1 < row.data.length) {
+                        mergeClasses(row.data[i + 1], 'follows-separator');
+                    }
+                } else if (text === '.') {
+                    mergeClasses(row.data[i], 'separator separator-decimal');
+                    if (i > 0) {
+                        mergeClasses(row.data[i - 1], 'precedes-separator');
+                    }
+                    if (i + 1 < row.data.length) {
+                        mergeClasses(row.data[i + 1], 'follows-separator');
+                    }
+                }
+            }
+        });
+
+        /** Align column max-content when only some rows touch a comma (grid track sizing). */
+        const followsSepCols = new Set();
+        stackRows.forEach(row => {
+            for (let i = 0; i < row.data.length; i++) {
+                const cls = row.data[i].class;
+                if (cls && cls.split(/\s+/).includes('follows-separator')) {
+                    followsSepCols.add(i);
+                }
+            }
+        });
+        for (const iCol of followsSepCols) {
+            stackRows.forEach(row => {
+                if (iCol < row.data.length) {
+                    mergeClasses(row.data[iCol], 'follows-separator');
+                }
+            });
+        }
+
+        const precedesSepCols = new Set();
+        stackRows.forEach(row => {
+            for (let i = 0; i < row.data.length; i++) {
+                const cls = row.data[i].class;
+                if (cls && cls.split(/\s+/).includes('precedes-separator')) {
+                    precedesSepCols.add(i);
+                }
+            }
+        });
+        for (const iCol of precedesSepCols) {
+            stackRows.forEach(row => {
+                if (iCol < row.data.length) {
+                    mergeClasses(row.data[iCol], 'precedes-separator');
+                }
+            });
         }
     }
 
 
     /**
-     * @param {Element} el -- either mstack or mlongdiv (if later, first two children are divisor and result which can be <none/>)
-     * @returns {Element} -- table equivalent to be inserted into DOM
+     * Serializes the laid-out {@link TableRow} model into a grid container (HTML `div.elem-math`) and cell `div`s.
+     * @param {Element} el - `mstack` or `mlongdiv`.
+     * @returns {HTMLDivElement} Root element with class `elem-math`.
      */
     expandMStackElement(el) {
-        // Return a <table> element representing the expanded <mstack>.
-
-        // Compute spacing and split it between the left and right side
-        // Note: this pattern works for scientific notation (e.g., '-3.4e-2') because we only care about numeric part in front of 'e'
         let numberRegEx = /[-+]?\d*\.?\d*/g;
         const charSpacing = parseFloat(numberRegEx.exec(this.charSpacing)[0])/2.0 + this.charSpacing.slice(numberRegEx.lastIndex);
         this.charSpacing.slice(numberRegEx.lastIndex);
-        const cellStyle = `padding: .1ex ${charSpacing} 0 ${charSpacing}; text-align: ${this.charAlign};`;
+
+        /**
+         * Horizontal padding for digit cells; commas/decimals tightened here (not via stylesheet) so shadow/cascade cannot drop it.
+         * @param {TableCell} cellData
+         * @returns {{ boxStyle: string }}
+         */
+        const cellBoxStyle = (cellData) => {
+            const tokens = (cellData.class || '').trim().split(/\s+/).filter(Boolean);
+            const has = (/** @type {string} */ c) => tokens.includes(c);
+            if (has('curved-line')) {
+                return { boxStyle: `padding-top: .1ex; padding-right: 0; padding-bottom: 0; padding-left: 0;` };
+            }
+            let pl = charSpacing;
+            let pr = charSpacing;
+            if (has('separator')) {
+                pl = '0';
+                pr = '0';
+            }
+            if (has('precedes-separator')) {
+                pr = '0';
+            }
+            if (has('follows-separator')) {
+                pl = '0';
+            }
+            const t = cellData.data.textContent;
+            const textAlign = t === '.' ? 'center' : this.charAlign;
+            return {
+                boxStyle: `padding-top: .1ex; padding-right: ${pr}; padding-bottom: 0; padding-left: ${pl}; text-align: ${textAlign};`,
+            };
+        };
 
         /** @type {TableRow[]} */
         let stackRows = [];
@@ -1067,140 +1157,145 @@ class ElemMath {
             stackRows = this.addOnLongDivParts(el.children[0], el.children[1], stackRows);
         }
 
-        // avoid adding an extra space after the last line
         if (stackRows.length > 0) {
             stackRows[stackRows.length-1].addSpacingAfterRow = false;
         }
 
-        // set a class for columns of separators so that they are narrower (looks better)
         this.shrinkSeparatorColumns(stackRows);
 
-        let table = document.createElement('table');
-        table.setAttribute('class', 'elem-math');
+        const gridRoot = document.createElement('div');
+        gridRoot.setAttribute('class', 'elem-math');
+
+        const maxColumns = stackRows.reduce((max, row) => Math.max(max, row.data.length), 0);
+        if (maxColumns > 0) {
+            gridRoot.style.gridTemplateColumns = `repeat(${maxColumns}, max-content)`;
+        }
+
+        let rowIndex = 1;
         for (const row of stackRows) {
-            let htmlRow = document.createElement('tr');
-            if (row.style) {
-                htmlRow.setAttribute('style', row.style);
-            }
-            for (const cellData of row.data) {
-                let htmlTD = document.createElement('td');
+            for (let colIndex = 0; colIndex < row.data.length; colIndex++) {
+                const cellData = row.data[colIndex];
+                let htmlCell = document.createElement('div');
+                htmlCell.className = 'elem-math-cell';
+                if (cellData.style && /(^|;)\s*border-(left|right):/.test(cellData.style)) {
+                    htmlCell.classList.add('elem-math-vrule-cell');
+                }
                 if (cellData.alignAt) {
                     let span = document.createElement('span');
                     span.style.display = cellData.alignAt === 1 ? 'inline-table' : 'inline-block';
                     span.appendChild(cellData.data);
                     cellData.data = span;
                 }
-                if (cellData.class === 'curved-line') {
+
+                const classTokens = (cellData.class || '').trim().split(/\s+/).filter(Boolean);
+                const isCurvedLine = classTokens.includes('curved-line');
+
+                if (isCurvedLine) {
+                    const curve = document.createElement('div');
+                    curve.className = 'curved-line';
+                    curve.textContent = NON_BREAKING_SPACE;
+                    htmlCell.appendChild(curve);
                     cellData.data.textContent = NON_BREAKING_SPACE;
+                    htmlCell.appendChild(cellData.data);
+                } else {
+                    htmlCell.appendChild(cellData.data);
                 }
 
-                htmlTD.appendChild(cellData.data);
-                if (cellData.class !== 'curved-line') {
-                    htmlTD.setAttribute('style', cellStyle + cellData.style);    // cellData.style so it overrides
-                }
-                if (cellData.class) {
-                    htmlTD.setAttribute('class', cellData.class);                           // could be undefined
-                }
-                htmlRow.appendChild(htmlTD);
-            }
-            table.appendChild(htmlRow);
-            if (row.addSpacingAfterRow) {
-                // can't put a margin on a table row or push it into the table cells above, so we add a dummy row here
-                // we need to continue any left/right border from the previous line
-                let newRow = document.createElement('tr');
-                newRow.style.height = '.5ex';
-
-                for (const cellData of row.data) {
-                    let newCell = document.createElement('td');
-                    if (/(border-left|border-right)/.test(cellData.style)) {
-                        // extract borders -- this assumes the code never uses 'border: 1 2 3 4;'
-                        const borders = cellData.style.match(/(border-left|border-right).*?;/g);
-                        newCell.setAttribute('style', borders);
+                const { boxStyle } = cellBoxStyle(cellData);
+                if (row.style || cellData.style || boxStyle) {
+                    const style = `${row.style || ''}${boxStyle}${cellData.style || ''}`;
+                    if (style) {
+                        htmlCell.setAttribute('style', style);
                     }
-                   newRow.appendChild(newCell); 
-                };
-                table.appendChild(newRow);
+                }
+                if (cellData.class && !isCurvedLine) {
+                    for (const cls of cellData.class.trim().split(/\s+/)) {
+                        if (cls) {
+                            htmlCell.classList.add(cls);
+                        }
+                    }
+                }
+                htmlCell.style.gridColumn = (colIndex + 1).toString();
+                htmlCell.style.gridRow = rowIndex.toString();
+                gridRoot.appendChild(htmlCell);
             }
+
+            if (row.addSpacingAfterRow) {
+                const spacerRow = rowIndex + 1;
+                for (let colIndex = 0; colIndex < row.data.length; colIndex++) {
+                    const cellData = row.data[colIndex];
+                    let newCell = document.createElement('div');
+                    newCell.className = 'elem-math-cell elem-math-spacer';
+                    if (/(border-left|border-right)/.test(cellData.style)) {
+                        newCell.classList.add('elem-math-vrule-cell');
+                        const borders = cellData.style.match(/(border-left|border-right).*?;/g);
+                        if (borders) {
+                            newCell.setAttribute('style', borders.join(''));
+                        }
+                    }
+                    newCell.style.gridColumn = (colIndex + 1).toString();
+                    newCell.style.gridRow = spacerRow.toString();
+                    gridRoot.appendChild(newCell);
+                }
+                rowIndex += 1;
+            }
+
+            rowIndex += 1;
         }
 
-        return table;
+        return gridRoot;
     }
 }
 
 /**
- * 
- * @param {ShadowRoot} shadowRoot 
- */
-function addStyleSheetToShadowRoot(shadowRoot) {
-    const style = document.createElement("style");
-    const link = document.createElement("link");
-    link.rel = 'stylesheet';
-    link.type = 'text/css';
-    link.href = import.meta.url + '/../elemMath.css';
-//    link.href = './elemMath.css';
-    style.appendChild(link);
-    shadowRoot.appendChild(style); 
-}
-
-/**
- * @param {HTMLElement} el
+ * Replaces `mstack` / `mlongdiv` in light DOM with a MathML wrapper whose shadow root holds the CSS grid.
+ *
+ * MathML does not allow a shadow root on `mstack` / `mlongdiv`, so the tree becomes
+ * `mtext > span (shadow host) > math > el`, with `div.elem-math` (the grid) appended to the shadow root.
+ * Skips work when `el` is already under `m-elem-math` (that element builds its own shadow tree).
+ *
+ * @param {HTMLElement} el - `mstack` or `mlongdiv` node still in the document.
+ * @returns {null}
  */
 let transformElemMath = (el) => {
-    // Ideally, we would attach a shadow root to the <mstack> or <mlongdiv>, but that's not legal (now)
-    // Instead, we wrap 'el' (the root of the elementary) with "<mtext><span><math> el <math></span></mtext>".
-    // The span can serve as the shadow root.
-    // [current transformer makes a clone, so can't do this] As an optimization (likely very common), if the parent of 'el' is 'math', we more directly add a <span> around the 'math'.
-    // Very ugly, but at least the DOM doesn't have the ugly table in it.
-    // This seems like the least disruptive change to the original structure.
-
-    // hack to allow definition of custom element "m-elem-math" to also work with 'transformElemMath()'
-    if (el.parentElement && (el.parentElement.tagName === 'M-ELEM-MATH' ||
-                            (el.parentElement.parentElement && el.parentElement.parentElement.tagName === 'M-ELEM-MATH'))) {
-        return;
+    if (el.parentElement && (el.parentElement.tagName === M_ELEM_MATH_TAG ||
+                            (el.parentElement.parentElement && el.parentElement.parentElement.tagName === M_ELEM_MATH_TAG))) {
+        return null;
     }
 
-    // put the math with table into a shadow DOM
-    const spanShadowHost =  document.createElement("span");
-    let shadowRoot = spanShadowHost.attachShadow({mode: "open"});
+    const spanShadowHost = document.createElement('span');
+    const shadowRoot = spanShadowHost.attachShadow({ mode: 'open' });
     shadowRoot.appendChild(_MathTransforms.getCSSStyleSheet());
 
-    // create the table equivalent and put it into the shadow DOM
     const elParent = el.parentElement;
     const nextSibling = el.nextElementSibling;
-    const table = new ElemMath(el).expandMStackElement(el);
-    spanShadowHost.shadowRoot.appendChild(table);
+    const gridRoot = new ElemMath(el).expandMStackElement(el);
+    shadowRoot.appendChild(gridRoot);
 
-    // need to create <mtext> <span> <math> elem math </math> </span> </mtext>
-    let mtext = document.createElementNS(MATHML_NS, "mtext");
-    mtext.appendChild(spanShadowHost);                      // now have <mtext> <span> ...
-    let math = document.createElementNS(MATHML_NS, "math");
-    spanShadowHost.appendChild(math);                       // now have <mtext> <span> <math> ...
-    math.appendChild(el);                   // make el a child of math -- clone because can't detach el from DOM
+    const mtext = document.createElementNS(MATHML_NS, 'mtext');
+    mtext.appendChild(spanShadowHost);
+    const math = document.createElementNS(MATHML_NS, 'math');
+    spanShadowHost.appendChild(math);
+    math.appendChild(el);
     elParent.insertBefore(mtext, nextSibling);
 
     return null;
-}
+};
 
 _MathTransforms.add('mstack', transformElemMath, ELEM_MATH_CSS);
-_MathTransforms.add('mlongdiv', transformElemMath); // don't need two copies of the styles, ELEM_MATH_CSS not included
+/** `mlongdiv` reuses the same transform; styles are registered once on `mstack`. */
+_MathTransforms.add('mlongdiv', transformElemMath);
 
-// import {poly} from '../common/math-polys-core.js'
-// poly.define('mstack', transformElemMath)
-// poly.define('mlongdiv', transformElemMath)
-
-
+/**
+ * Declarative hook: first child must be `mstack` or `mlongdiv`; layout is moved into this element's shadow root.
+ */
 customElements.define('m-elem-math', class extends HTMLElement {
     constructor() {
         super();
-        
-        // create the table equivalent
-        const  table = new ElemMath(this.children[0]).expandMStackElement(this.children[0]);
-        
-        // put the table into a shadow DOM
-        const shadowRoot =  this.attachShadow({mode: 'open'});
+        const gridRoot = new ElemMath(this.children[0]).expandMStackElement(this.children[0]);
+        const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(_MathTransforms.getCSSStyleSheet());
-        shadowRoot.appendChild(table);
+        shadowRoot.appendChild(gridRoot);
     }
-  });
-  
-  
+});
+
