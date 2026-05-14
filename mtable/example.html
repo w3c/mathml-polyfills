@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  AMS-style equation number host — copy-paste reference for integrators.
+  Documented in the module banner of mtable/mtable.js (“One pattern…”).
+
+  • Copy the entire <style> block into your stylesheet (or merge the rules).
+  • Copy the <div class="mlabeledtr-ams-host">…</div> subtree into your page.
+  • Import ./mtable.js (side effect) so the mtable/mlabeledtr handler registers with _MathTransforms;
+    importing only ../common/math-transforms.js is not enough.
+  • Run _MathTransforms.transform() on an element that contains the <math> (same as mtable/index.html).
+
+  This file is runnable locally: open in a browser from the repo (module script resolves relative to this file).
+-->
+<head>
+  <meta charset="utf-8" />
+  <title>AMS equation number host — copy-paste example</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 1.5rem;
+      max-width: 40rem;
+    }
+
+    .mlabeledtr-ams-host math > mtable {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .mlabeledtr-ams-host[data-ml-side="right"] math > mtable > mtr > mtd:last-child,
+    .mlabeledtr-ams-host[data-ml-side="left"] math > mtable > mtr > mtd:first-child {
+      padding-inline: 0.5em;
+    }
+
+    .mlabeledtr-ams-host math > mtable mtable[data-mlabeledtr-label-table] {
+      font-size: 0.95em;
+    }
+  </style>
+  <script type="module">
+    import { _MathTransforms } from '../common/math-transforms.js';
+    import './mtable.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.mtable-test-polyfill-root').forEach((root) => {
+        _MathTransforms.transform(root);
+      });
+    });
+  </script>
+</head>
+<body>
+  <p>
+    Host width = “text column”; <code>data-ml-side</code> mirrors MathML
+    <code>mtable@side</code>. Same markup works with full CSS polyfill or native spacing + nested wrap.
+  </p>
+
+  <div
+    class="mlabeledtr-ams-host mtable-test-polyfill-root"
+    data-ml-side="right"
+    style="width: 100%; max-width: 36rem"
+  >
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mtable side="right" width="100%" columnalign="center right">
+        <mlabeledtr>
+          <mtd><mtext>(2.1)</mtext></mtd>
+          <mtd>
+            <mfrac>
+              <mrow><mn>1</mn></mrow>
+              <msqrt><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow></msqrt>
+            </mfrac>
+          </mtd>
+        </mlabeledtr>
+      </mtable>
+    </math>
+  </div>
+</body>
+</html>
