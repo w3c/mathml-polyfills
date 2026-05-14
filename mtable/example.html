@@ -19,7 +19,7 @@
     body {
       font-family: system-ui, sans-serif;
       margin: 1.5rem;
-      max-width: 40rem;
+      max-width: 100%;
     }
 
     .mlabeledtr-ams-host math > mtable {
@@ -49,14 +49,15 @@
 </head>
 <body>
   <p>
-    Host width = “text column”; <code>data-ml-side</code> mirrors MathML
-    <code>mtable@side</code>. Same markup works with full CSS polyfill or native spacing + nested wrap.
+    Example of styling labels to extend to window width. The works in all browsers with the mtable polyfill.
+    It makes use of <code>mlabeledtr</code> and <code>matable@side</code>.
   </p>
+  <p>The example assumes it is run on a local server in the mathml-polyfills repository.</p>
 
   <div
     class="mlabeledtr-ams-host mtable-test-polyfill-root"
     data-ml-side="right"
-    style="width: 100%; max-width: 36rem"
+    style="width: 100%;"
   >
     <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
       <mtable side="right" width="100%" columnalign="center right">
@@ -66,6 +67,16 @@
             <mfrac>
               <mrow><mn>1</mn></mrow>
               <msqrt><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow></msqrt>
+            </mfrac>
+          </mtd>
+        </mlabeledtr>
+        <mtr><mtd><msub><mi>x</mi><mn>1</mn></msub><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><msub><mi>x</mi><mn>3</mn></msub></mtd></mtr>
+        <mlabeledtr>
+          <mtd><mtext>(2.2)</mtext></mtd>
+          <mtd>
+            <mfrac>
+              <msqrt><mrow><mfrac><mn>2</mn><mn>3</mn></mfrac></mrow></msqrt>
+              <mrow><mn>2</mn></mrow>
             </mfrac>
           </mtd>
         </mlabeledtr>
