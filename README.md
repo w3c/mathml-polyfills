@@ -8,7 +8,7 @@ See discussion on [wiki](https://github.com/w3c/mathml-polyfills/wiki/MathML-Pol
 
 ## Test pages
 
-* [acid-test.html](https://w3c.github.io/mathml-polyfills/acid-test.html) — combined examples for many polyfills (button to apply transforms)
+* [acid-test.html](https://w3c.github.io/mathml-polyfills/acid-test.html) — combined examples at the repository root for many polyfills (button to apply transforms); includes an [`mtable`](https://w3c.github.io/mathml-polyfills/acid-test.html#mtable) section
 * [bevelled/index.html](https://w3c.github.io/mathml-polyfills/bevelled/index.html) — `bevelled` attribute on `mfrac`
 * [elem-math/index.html](https://w3c.github.io/mathml-polyfills/elem-math/index.html) — elementary math (`mstack`, `mlongdiv`, etc.)
 * [href/index.html](https://w3c.github.io/mathml-polyfills/href/index.html) — `href` on MathML elements
@@ -20,6 +20,7 @@ See discussion on [wiki](https://github.com/w3c/mathml-polyfills/wiki/MathML-Pol
 * [namedspace/index.html](https://w3c.github.io/mathml-polyfills/namedspace/index.html) — named MathML spaces
 * [scriptshift/index.html](https://w3c.github.io/mathml-polyfills/scriptshift/index.html) — `subscriptshift` / `superscriptshift` on `msub`, `msup`, `msubsup`
 * [semantics/index.html](https://w3c.github.io/mathml-polyfills/semantics/index.html) — `semantics` presentation order
+* [table/index.html](https://w3c.github.io/mathml-polyfills/table/index.html) — `mtable` presentation attributes inside HTML `<table>` cells (before / after transform)
 
 -----
 
