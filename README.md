@@ -15,7 +15,7 @@ See discussion on [wiki](https://github.com/w3c/mathml-polyfills/wiki/MathML-Pol
 * [mathvariant/index.html](https://w3c.github.io/mathml-polyfills/mathvariant/index.html) — `mathvariant` → Unicode math alphanumerics
 * [menclose/index.html](https://w3c.github.io/mathml-polyfills/menclose/index.html) — `menclose` notations
 * [mfenced/index.html](https://w3c.github.io/mathml-polyfills/mfenced/index.html) — `mfenced`
-* [mlabeledtr/index.html](https://w3c.github.io/mathml-polyfills/mlabeledtr/index.html) — `mlabeledtr`
+* [mtable/index.html](https://w3c.github.io/mathml-polyfills/mtable/index.html) — `mtable` presentation attributes and [`mlabeledtr`](https://w3c.github.io/mathml-polyfills/mtable/index.html#mlabeledtr)
 * [ms/index.html](https://w3c.github.io/mathml-polyfills/ms/index.html) — `ms` quotes
 * [namedspace/index.html](https://w3c.github.io/mathml-polyfills/namedspace/index.html) — named MathML spaces
 * [scriptshift/index.html](https://w3c.github.io/mathml-polyfills/scriptshift/index.html) — `subscriptshift` / `superscriptshift` on `msub`, `msup`, `msubsup`
