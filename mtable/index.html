@@ -1271,7 +1271,7 @@
                 <mtd><mrow><mi>y</mi><mo>=</mo><mn>0</mn></mrow></mtd>
               </mtr>
             </mtable>
-        </math>
+          </math>
         </td>
         <td>
           <div class="mtable-test-polyfill-root">
@@ -1681,9 +1681,9 @@
               </mlabeledtr>
               <mtr>
                 <mtd>
-                  <math xmlns="http://www.w3.org/1998/Math/MathML">
+                  <mrow>
                     <msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup>
-                  </math>
+                  </mrow>
                 </mtd>
               </mtr>
             </mtable>
@@ -1709,9 +1709,9 @@
                 </mlabeledtr>
                 <mtr>
                   <mtd>
-                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <mrow>
                       <msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup>
-                    </math>
+                    </mrow>
                   </mtd>
                 </mtr>
               </mtable>
@@ -1726,9 +1726,9 @@
             <mtable side="left">
               <mtr>
                 <mtd>
-                  <math xmlns="http://www.w3.org/1998/Math/MathML">
+                  <mrow>
                     <msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup>
-                  </math>
+                  </mrow>
                 </mtd>
               </mtr>
               <mlabeledtr>
@@ -1754,9 +1754,9 @@
               <mtable side="left">
                 <mtr>
                   <mtd>
-                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <mrow>
                       <msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup>
-                    </math>
+                    </mrow>
                   </mtd>
                 </mtr>
                 <mlabeledtr>
@@ -1990,7 +1990,9 @@
         </td>
       </tr>
       <tr>
-        <td><code>mtable:  <code>frame="solid" rowlines="solid" columnlines="dashed" rowspacing="0.6ex" columnspacing="0.5em 1.2em"</code></td>
+        <td>Label on the first and third row.<br>
+          <code>mtable</code>:
+          <code>frame="solid" rowlines="solid" columnlines="dashed" rowspacing="0.6ex" columnspacing="0.5em 1.2em"</code></td>
         <td>
           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
             <mtable frame="solid" rowlines="solid" columnlines="dashed" rowspacing="0.6ex" columnspacing="0.5em 1.2em">
@@ -2030,22 +2032,25 @@
                   <mtd><mi>tttt</mi></mtd>
                 </mlabeledtr>
               </mtable>
-              </math>
+            </math>
           </div>
         </td>
       </tr>
       <tr>
-        <td><code>mtable side="left"</code> with <code>columnalign="right left center"</code> on <code>mlabeledtr</code>: equation-only row lists + label column from <code>mtable</code>; <code>mtable</code> column lists still use slot <code>n−1</code> for the label <em>column</em> (here column 0).</td>
+        <td>
+          Label on the left side of the table.<br>
+          <code>mtable side="left"</code> with <code>columnalign="center right left"</code> <code>columnlines="solid"</code> on <code>mlabeledtr</code>.
+        </td>
         <td>
           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
             <mtable side="left" columnalign="center right left" columnlines="solid">
               <mtr>
                 <mtd><mi>α</mi></mtd>
-                <mtd><mi>β</mi></mtd>
+                <mtd><mi>βββ</mi></mtd>
               </mtr>
               <mlabeledtr columnalign="right left center">
-                <mtd><mtext>τ</mtext></mtd>
-                <mtd><mi>u</mi></mtd>
+                <mtd><mtext>(Label)</mtext></mtd>
+                <mtd><mi>uuuu</mi></mtd>
                 <mtd><mi>v</mi></mtd>
               </mlabeledtr>
             </mtable>
@@ -2057,11 +2062,11 @@
               <mtable side="left" columnalign="center right left" columnlines="solid">
                 <mtr>
                   <mtd><mi>α</mi></mtd>
-                  <mtd><mi>β</mi></mtd>
+                  <mtd><mi>βββ</mi></mtd>
                 </mtr>
                 <mlabeledtr columnalign="right left center">
-                  <mtd><mtext>τ</mtext></mtd>
-                  <mtd><mi>u</mi></mtd>
+                  <mtd><mtext>(Label)</mtext></mtd>
+                  <mtd><mi>uuuu</mi></mtd>
                   <mtd><mi>v</mi></mtd>
                 </mlabeledtr>
               </mtable>
@@ -2070,16 +2075,27 @@
         </td>
       </tr>
       <tr>
-        <td><code>mlabeledtr rowalign</code> / <code>columnalign</code> with default <code>side=&quot;right&quot;</code>: list tokens apply to equation <code>mtd</code>s in order (here <code>bottom</code> / <code>left</code> on <code>x</code>); the label column uses <code>mtable</code> defaults for that column (typically <code>baseline</code> / <code>center</code>).</td>
+        <td>
+          First row should align on top, then baseline, and label falls back to the mtable's <code>rowalign="bottom"</code>.<br>
+          Second row should align on bottom<br>
+          <code>mtable</code> with <code>rowalign="bottom"</code><br>
+          <code>mlabeledtr</code> with <code>rowalign="top baseline" columnalign="left right"</code>
+        </td>
         <td>
           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            <mtable columnlines="solid">
-              <mlabeledtr rowalign="bottom baseline" columnalign="left right">
-                <mtd><mtext>(1)</mtext></mtd>
+            <mtable rowalign="bottom">
+              <mlabeledtr rowalign="top baseline" columnalign="left right">
+                <mtd><mtext>(1.1)</mtext></mtd>
                 <mtd><mi>x</mi></mtd>
+                <mtd><mrow>
+                    <msubsup><mo>&#x222B;</mo><mn>0</mn><mfrac><mn>3</mn><mn>2</mn></mfrac></msubsup>
+                    <mi>x</mi><mi>d</mi><mi>x</mi>
+                  </mrow>
+                </mtd>
               </mlabeledtr>
               <mtr>
-                <mtd><mi>y</mi></mtd>
+                <mtd><mi>yyyy</mi></mtd>
+                <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
               </mtr>
             </mtable>
           </math>
@@ -2087,13 +2103,19 @@
         <td>
           <div class="mtable-test-polyfill-root">
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-              <mtable columnlines="solid">
-                <mlabeledtr rowalign="bottom baseline" columnalign="left right">
-                  <mtd><mtext>(1)</mtext></mtd>
+              <mtable rowalign="bottom">
+                <mlabeledtr rowalign="top baseline" columnalign="left right">
+                  <mtd><mtext>(1.1)</mtext></mtd>
                   <mtd><mi>x</mi></mtd>
+                  <mtd><mrow>
+                      <msubsup><mo>&#x222B;</mo><mn>0</mn><mfrac><mn>3</mn><mn>2</mn></mfrac></msubsup>
+                      <mi>x</mi><mi>d</mi><mi>x</mi>
+                    </mrow>
+                  </mtd>
                 </mlabeledtr>
                 <mtr>
-                  <mtd><mi>y</mi></mtd>
+                  <mtd><mi>yyyy</mi></mtd>
+                  <mtd><mfrac><mn>1</mn><mn>2</mn></mfrac></mtd>
                 </mtr>
               </mtable>
             </math>
