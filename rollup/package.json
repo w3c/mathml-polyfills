@@ -1,0 +1,11 @@
+{
+  "name": "mathml-polyfills",
+  "version": "0.1.0",
+  "devDependencies": {
+    "rollup": "^4.60.4"
+  },
+  "main": "allpolyfillsbundle-module.js",
+  "scripts": {
+    "build": "npx rollup ../all-polyfills.js -f iife -o allpolyfillsbundle-script.js  --output.name allpolyfillsbundle && npx rollup ../all-polyfills.js -f es -o allpolyfillsbundle-module.js"
+  }
+}

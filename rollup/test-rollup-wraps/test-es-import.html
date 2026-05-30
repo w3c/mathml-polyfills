@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>Test-ES-Imort</title></head>
+<body>
+<h1>Test-ES-Import</h1>
+
+<p>Here comes _MathTransforms:</p>
+<ul><li>If _MathTransforms is defined it should appear here.</li></ul>
+</body>
+<script type="module">
+    import {_MathTransforms} from "../allpolyfillsbundle-module.js";
+    window.addEventListener("DOMContentLoaded", () => {
+      if(_MathTransforms) {
+        document.getElementsByTagName("li")[0].remove()
+        const ul = document.getElementsByTagName("ul")[0]
+        for(let name of Object.keys(_MathTransforms)) {
+          const li = document.createElement("li");
+          li.innerText = name + " : " + typeof(_MathTransforms[name]);
+          ul.appendChild(li)
+        }
+      } else {
+        document.getElementsByTagName("li")[0].innerText = "Not _MathTransforms found";
+      }
+})
+</script>
+</html>
+
