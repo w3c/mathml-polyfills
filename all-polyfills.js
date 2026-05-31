@@ -1,4 +1,4 @@
-export { _MathTransforms } from './common/math-transforms.js'
+export {_MathTransforms} from './common/math-transforms.js'
 import './mglyph/mglyph.js'
 import './mfenced/mfenced.js'
 import './semantics/semantics.js'
@@ -11,9 +11,19 @@ import './namedspace/namedspace.js'
 import './menclose/menclose.js'
 import './linethickness/linethickness.js'
 import './ms/ms.js'
-import './mathvariant/mathvariant.js?v=1.0'
+import './mathvariant/mathvariant.js'
 import './mpadded/mpadded.js'
 import './mtable/mtable.js'
 import './elem-math/elemMath.js'
 import './linebreaking/linebreaking.js'
 import './href/href.js'
+
+window.addEventListener('DOMContentLoaded', function() {
+  const runTransformsOnPageLoad =
+    typeof (window.doNotRunTransformsOnPageLoad) === "undefined" ? true : window.doNotRunTransformsOnPageLoad;
+  if (runTransformsOnPageLoad) {
+    for (let m of document.querySelectorAll("math")) {
+      _MathTransforms.transform(m);
+    }
+  }
+})

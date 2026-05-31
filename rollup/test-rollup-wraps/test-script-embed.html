@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>Test-Script-Embed</title></head>
+<body>
+<h1>Test-Script-Embed</h1>
+
+<p>Here comes allpolyfillsbundle._MathTransforms:</p>
+<ul><li>If allpolyfillsbundle._MathTransforms is defined it should appear here.</li></ul>
+</body>
+<script src="../allpolyfillsbundle-script.js"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    const _MathTransforms = allpolyfillsbundle._MathTransforms;
+    if(_MathTransforms) {
+      document.getElementsByTagName("li")[0].remove()
+      const ul = document.getElementsByTagName("ul")[0]
+      for(let name of Object.keys(_MathTransforms)) {
+        const li = document.createElement("li");
+        li.innerText = name + " : " + typeof(_MathTransforms[name]);
+        ul.appendChild(li)
+      }
+    } else {
+      document.getElementsByTagName("li")[0].innerText = "Not _MathTransforms found";
+    }
+  })
+</script>
+</html>
+

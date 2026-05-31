@@ -6,6 +6,12 @@ on [MathML Core](https://w3c.github.io/mathml-core/) and other
 web technologies natively implemented in browsers.
 See discussion on [wiki](https://github.com/w3c/mathml-polyfills/wiki/MathML-Polyfill-Task-Force-Guidelines)
 
+## Packages to use in your project
+
+The set of polyfills, as referenced by [all-polyfills.js](all-polyfills.js) can be used as a simple script element
+in HTML pages, as module for ES6 or as an NPM package.
+See [README in rollup](rollup/).
+
 ## Test pages
 
 * [acid-test.html](https://w3c.github.io/mathml-polyfills/acid-test.html) — combined examples at the repository root for many polyfills (button to apply transforms); includes an [`mtable`](https://w3c.github.io/mathml-polyfills/acid-test.html#mtable) section
@@ -25,3 +31,4 @@ See discussion on [wiki](https://github.com/w3c/mathml-polyfills/wiki/MathML-Pol
 -----
 
 [Source Repository](https://github.com/w3c/mathml-polyfills)
+
