@@ -1,6 +1,5 @@
 mfenced-min.js
 rollup/node_modules
-rollup/allpolyfillsbundle-*
 rollup/test-rollup-wraps/node_modules
 rollup/test-rollup-wraps/test-with-webpack/node_modules
 rollup/test-rollup-wraps/test-with-webpack/dist

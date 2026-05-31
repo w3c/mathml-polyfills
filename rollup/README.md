@@ -4,6 +4,10 @@ The numerous MathML polyfills can be used as one standard tool that processes al
 so that they become MathML-core compatible. This is done by the functions referenced from
 `_MathMLTransforms` at load time and any time the scripts ask.
 
+By default, the script or module processes all `math` elements in the web-page upload
+load of the page. Should you want to disable this, define before the inclusion or imports,
+`window.doNotRunTransformsOnPageLoad = true`.
+
 ## Building the bundles
 
 Go to the `rollup` folder and invoke: `npm install` then invoke `npm run build`.
@@ -22,17 +26,19 @@ The packaging in all forms is tested in the folder `test-rollupwraps`.
 You can copy the file `allpolyfillsbundle-script.js` to your `js` directory and 
 use the MathML polyfills in HTML with an element such as `<script src="js/allpolyfillsbundle-script.js"></script>`.
 
-## Use a ES6 module
+For those who want to avoid copying, you can use the github-pages version 
+`<script src="https://w3c.github.io/mathml-polyfills/rollup/allpolyfillsbundle-script.js"></script>`
+But note that the gains or security may not be as you expect (see [this page](https://httptoolkit.com/blog/public-cdn-risks/) for more).
+
+## Use an ES6 module
 
 In a script of type module (supported in all current browsers) you can use MathML polyfills with
 `import {_MathTransforms} from "./allpolyfillsbundle-module.js"`.
 
 ## Use an NPM package
 
-The following method is temporary until we deploy an NPM package.
-In this directory (`rollup`) run `npm run link` which will store temporarily the folder as an npm package 
-to be integrated in other places.
+Add the `mathml-polyfills` package to your dependencies: From your project, 
+run `npm install --save mathml-polyfills`.
 
-Then from the directory you want to integrate it, assuming it has a `package.json`, run `npm run link mathml-polyfills`.
 You can now refer to the MathML polyfills with the following import
 `import {_MathTransforms} from "mathml-polyfills"`

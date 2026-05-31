@@ -8,7 +8,8 @@ See discussion on [wiki](https://github.com/w3c/mathml-polyfills/wiki/MathML-Pol
 
 ## Packages to use in your project
 
-The set of polyfills, as referenced by [all-polyfills.js](all-polyfills.js) can be used as a simple script element in HTML pages, as module for ES6 or as an NPM package.
+The set of polyfills, as referenced by [all-polyfills.js](all-polyfills.js) can be used as a simple script element 
+in HTML pages, as module for ES6 or as an NPM package.
 See [README in rollup](rollup/).
 
 ## Test pages
