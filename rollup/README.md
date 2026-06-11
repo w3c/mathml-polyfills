@@ -51,3 +51,9 @@ Add the `mathml-polyfills` package to your dependencies: From your project,  run
 You can now refer to the MathML polyfills with the following import:
 
 `import {_MathTransforms} from "mathml-polyfills"`
+
+Once one of the import methods has been used you can use the `_MathTransforms` object:
+
+- to invoke `_MathTransform.transform` on freshly appeared `math` elements
+- to invoke `_MathTransform._createStylesheet` to create the stylesheet to be included
+- ... to use the `_MathTransform.plugins` to operate single transformations
