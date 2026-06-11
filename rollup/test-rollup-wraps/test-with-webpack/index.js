@@ -1,3 +1,4 @@
+/* See the file ../../../LICENSE.txt for the LICENSE of this file. */
 import {_MathTransforms} from "mathml-polyfills";
 window.addEventListener("DOMContentLoaded", () => {
   const h1 = document.createElement("h1"); h1.innerHTML = "Test mathml-polyfills With Webpack";

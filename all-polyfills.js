@@ -1,3 +1,4 @@
+/* See the file ../LICENSE.txt for the LICENSE of this file. */
 export {_MathTransforms} from './common/math-transforms.js'
 import './mglyph/mglyph.js'
 import './mfenced/mfenced.js'

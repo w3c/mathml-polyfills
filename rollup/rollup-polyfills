@@ -1,4 +1,5 @@
 #!/bin/sh
+# See the file ../LICENSE.txt for the LICENSE of this file.
 
 # npx -p @rollup/plugin-node-resolve
 

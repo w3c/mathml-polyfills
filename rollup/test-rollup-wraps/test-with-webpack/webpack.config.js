@@ -1,3 +1,5 @@
+
+/* See the file ../../../LICENSE.txt for the LICENSE of this file. */
 import HtmlWebpackPlugin from "html-webpack-plugin";
 
 export default {
