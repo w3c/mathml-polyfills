@@ -4,7 +4,11 @@
   "devDependencies": {
     "rollup": "^4.60.4"
   },
+  "keywords": ["mathml", "formulas", "mathml-core", "mathml3", "mathml4", "polyfill", "compatibility", "w3c", "standards"],
+  "author": "W3C Math Working Group, Igalia S.L., Paul Libbrecht",
   "main": "allpolyfillsbundle-module.js",
+  "repository": "https://github.com/w3c/mathml-polyfills/",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "npx rollup ../all-polyfills.js -f iife -o allpolyfillsbundle-script.js  --output.name allpolyfillsbundle && npx rollup ../all-polyfills.js -f es -o allpolyfillsbundle-module.js"
   }
