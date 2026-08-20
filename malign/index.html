@@ -53,11 +53,11 @@
     }
 
     .before-math {
-      outline-color: #c65353;
+      outline-color: #d82525;
     }
 
     .malign-after {
-      outline-color: #1a5fb4;
+      outline-color: #0bdd04;
     }
 
     caption.tests-caption {
@@ -94,8 +94,10 @@
     <code>mtable/mtable.js</code>: it measures each alignment group, then replaces every
     <code>maligngroup</code>/<code>malignmark</code> with a computed-width <code>&lt;mspace&gt;</code> so the
     groups line up vertically within each table column.
-    The <strong>Before</strong> column is outside the transform scope (red outline); the
-    <strong>After</strong> column is inside <code>.malign-after</code> (blue outline) and is transformed on load.
+    <ul>
+      <li>The <strong>Before</strong> column is outside the transform scope (red outline)</li>
+      <li>The <strong>After</strong> column is inside <code>.malign-after</code> (blue outline) and is transformed on load.</li>
+    </ul>
   </p>
 
   <table class="tests">
@@ -103,8 +105,9 @@
     <thead>
       <tr>
         <th scope="col">Description</th>
-        <th scope="col">Before (native)</th>
-        <th scope="col">After (polyfill)</th>
+        <th scope="col" style="color: #c65353;">Before (native)</th>
+        <th scope="col" style="color: #0bdd04;">After (polyfill)</th>
+ 
       </tr>
     </thead>
     <tbody>
