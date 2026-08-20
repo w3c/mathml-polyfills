@@ -1468,6 +1468,96 @@
         </tr>
     </table>
 
+    <h2>Alignment Groups (maligngroup / malignmark)</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(malign)">Apply Transform</button>
+    </label>
+    <table id="malign">
+        <tr>
+            <td>
+                Two equations aligned on decimal points, coefficients/variables, and the "=" sign
+                (MathML3 &sect;3.5.5.8 example).
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mtable groupalign="{decimalpoint left left decimalpoint left left decimalpoint}">
+                        <mtr>
+                            <mtd>
+                                <mrow>
+                                    <mrow>
+                                        <mrow>
+                                            <maligngroup/><mn>8.44</mn><mo>&#x2062;</mo>
+                                            <maligngroup/><mi>x</mi>
+                                        </mrow>
+                                        <maligngroup/><mo>+</mo>
+                                        <mrow>
+                                            <maligngroup/><mn>55</mn><mo>&#x2062;</mo>
+                                            <maligngroup/><mi>y</mi>
+                                        </mrow>
+                                    </mrow>
+                                    <maligngroup/><mo>=</mo>
+                                    <maligngroup/><mn>0</mn>
+                                </mrow>
+                            </mtd>
+                        </mtr>
+                        <mtr>
+                            <mtd>
+                                <mrow>
+                                    <mrow>
+                                        <mrow>
+                                            <maligngroup/><mn>3.1</mn><mo>&#x2062;</mo>
+                                            <maligngroup/><mi>x</mi>
+                                        </mrow>
+                                        <maligngroup/><mo>-</mo>
+                                        <mrow>
+                                            <maligngroup/><mn>0.7</mn><mo>&#x2062;</mo>
+                                            <maligngroup/><mi>y</mi>
+                                        </mrow>
+                                    </mrow>
+                                    <maligngroup/><mo>=</mo>
+                                    <maligngroup/><mrow><mo>-</mo><mn>1.1</mn></mrow>
+                                </mrow>
+                            </mtd>
+                        </mtr>
+                    </mtable>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                A column of numbers auto-aligned on the decimal point (groupalign="decimalpoint").
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mtable groupalign="{decimalpoint}">
+                        <mtr><mtd><mrow><maligngroup/><mn>1.2</mn></mrow></mtd></mtr>
+                        <mtr><mtd><mrow><maligngroup/><mn>34.567</mn></mrow></mtd></mtr>
+                        <mtr><mtd><mrow><maligngroup/><mn>891</mn></mrow></mtd></mtr>
+                        <mtr><mtd><mrow><maligngroup/><mn>.0625</mn></mrow></mtd></mtr>
+                    </mtable>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Explicit malignmark (edge="left") aligning the "=" signs.
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mtable>
+                        <mtr><mtd><mrow>
+                            <maligngroup/><mi>x</mi><malignmark edge="left"/><mo>=</mo><mn>1</mn>
+                        </mrow></mtd></mtr>
+                        <mtr><mtd><mrow>
+                            <maligngroup/><mrow><mi>a</mi><mo>+</mo><mi>bcd</mi></mrow><malignmark edge="left"/><mo>=</mo><mn>2</mn>
+                        </mrow></mtd></mtr>
+                    </mtable>
+                </math>
+            </td>
+        </tr>
+    </table>
+
     <h2>Elementary Math</h2>
     <label>
         Click to see the effect of the transform on the following table:

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>maligngroup / malignmark (via malign/malign.js)</title>
+  <script type="module">
+    // Import malign BEFORE mtable so it measures the live DOM before mtable clones it.
+    import { _MathTransforms } from '../common/math-transforms.js';
+    import '../malign/malign.js';
+    import '../mtable/mtable.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.malign-after').forEach((root) => {
+        _MathTransforms.transform(root);
+      });
+    });
+  </script>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 1rem 1.5rem 2rem;
+    }
+
+    math {
+      font-family: 'Stix Two Math', 'Cambria Math', 'Asana Math', serif;
+    }
+
+    table.tests {
+      border-collapse: collapse;
+      margin: 1.25em 0;
+      max-width: 100%;
+    }
+
+    table.tests th,
+    table.tests td {
+      border: 1px solid #bbb;
+      padding: 0.65em 0.85em;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    table.tests th {
+      background: #f0f0f0;
+    }
+
+    .before-math,
+    .malign-after {
+      outline: 1px dashed #888;
+      padding: 4px;
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    .before-math {
+      outline-color: #c65353;
+    }
+
+    .malign-after {
+      outline-color: #1a5fb4;
+    }
+
+    caption.tests-caption {
+      font-weight: bold;
+      text-align: left;
+      margin-bottom: 0.5em;
+    }
+
+    p.serve-note {
+      border: 1px solid #c9a227;
+      background: #fffbeb;
+      padding: 0.75em 1em;
+      max-width: 55em;
+    }
+
+    code {
+      font-size: 0.92em;
+    }
+  </style>
+</head>
+
+<body>
+  <h1><code>maligngroup</code> / <code>malignmark</code> alignment</h1>
+
+  <p class="serve-note">
+    Serve the repo root over HTTP (e.g. <code>python -m http.server 8080</code>) and open
+    <code>http://localhost:8080/malign/index.html</code> so ES modules load.
+  </p>
+
+  <p>
+    Tests for
+    <a href="https://www.w3.org/TR/MathML3/chapter3.html#presm.malign">MathML3 &sect;3.5.5 alignment markers</a>.
+    <code>malign/malign.js</code> is registered on <code>mtable:has(maligngroup)</code> and runs before
+    <code>mtable/mtable.js</code>: it measures each alignment group, then replaces every
+    <code>maligngroup</code>/<code>malignmark</code> with a computed-width <code>&lt;mspace&gt;</code> so the
+    groups line up vertically within each table column.
+    The <strong>Before</strong> column is outside the transform scope (red outline); the
+    <strong>After</strong> column is inside <code>.malign-after</code> (blue outline) and is transformed on load.
+  </p>
+
+  <table class="tests">
+    <caption class="tests-caption">Before vs after <code>_MathTransforms.transform</code></caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Before (native)</th>
+        <th scope="col">After (polyfill)</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr>
+        <td>
+          Spec &sect;3.5.5.8 example.<br>
+          <code>mtable</code><br>
+          <code>groupalign=</code><br>
+          <code>"{decimalpoint left left</code><br>
+          <code>decimalpoint left left decimalpoint}"</code><br>
+          <small>Two equations aligned on the decimal points, the coefficients/variables, and
+          the <code>=</code> sign.</small>
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable groupalign="{decimalpoint left left decimalpoint left left decimalpoint}">
+                <mtr>
+                  <mtd>
+                    <mrow>
+                      <mrow>
+                        <mrow>
+                          <maligngroup/><mn>8.44</mn><mo>&#x2062;</mo>
+                          <maligngroup/><mi>x</mi>
+                        </mrow>
+                        <maligngroup/><mo>+</mo>
+                        <mrow>
+                          <maligngroup/><mn>55</mn><mo>&#x2062;</mo>
+                          <maligngroup/><mi>y</mi>
+                        </mrow>
+                      </mrow>
+                      <maligngroup/><mo>=</mo>
+                      <maligngroup/><mn>0</mn>
+                    </mrow>
+                  </mtd>
+                </mtr>
+                <mtr>
+                  <mtd>
+                    <mrow>
+                      <mrow>
+                        <mrow>
+                          <maligngroup/><mn>3.1</mn><mo>&#x2062;</mo>
+                          <maligngroup/><mi>x</mi>
+                        </mrow>
+                        <maligngroup/><mo>-</mo>
+                        <mrow>
+                          <maligngroup/><mn>0.7</mn><mo>&#x2062;</mo>
+                          <maligngroup/><mi>y</mi>
+                        </mrow>
+                      </mrow>
+                      <maligngroup/><mo>=</mo>
+                      <maligngroup/><mrow><mo>-</mo><mn>1.1</mn></mrow>
+                    </mrow>
+                  </mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="malign-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable groupalign="{decimalpoint left left decimalpoint left left decimalpoint}">
+                <mtr>
+                  <mtd>
+                    <mrow>
+                      <mrow>
+                        <mrow>
+                          <maligngroup/><mn>8.44</mn><mo>&#x2062;</mo>
+                          <maligngroup/><mi>x</mi>
+                        </mrow>
+                        <maligngroup/><mo>+</mo>
+                        <mrow>
+                          <maligngroup/><mn>55</mn><mo>&#x2062;</mo>
+                          <maligngroup/><mi>y</mi>
+                        </mrow>
+                      </mrow>
+                      <maligngroup/><mo>=</mo>
+                      <maligngroup/><mn>0</mn>
+                    </mrow>
+                  </mtd>
+                </mtr>
+                <mtr>
+                  <mtd>
+                    <mrow>
+                      <mrow>
+                        <mrow>
+                          <maligngroup/><mn>3.1</mn><mo>&#x2062;</mo>
+                          <maligngroup/><mi>x</mi>
+                        </mrow>
+                        <maligngroup/><mo>-</mo>
+                        <mrow>
+                          <maligngroup/><mn>0.7</mn><mo>&#x2062;</mo>
+                          <maligngroup/><mi>y</mi>
+                        </mrow>
+                      </mrow>
+                      <maligngroup/><mo>=</mo>
+                      <maligngroup/><mrow><mo>-</mo><mn>1.1</mn></mrow>
+                    </mrow>
+                  </mtd>
+                </mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>groupalign="right left"</code> on a single column.<br>
+          <small>Integer parts right-aligned, fractional parts left-aligned (manual decimal alignment).</small>
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable groupalign="{right left}">
+                <mtr><mtd><mrow><maligngroup/><mn>12</mn><maligngroup/><mn>.5</mn></mrow></mtd></mtr>
+                <mtr><mtd><mrow><maligngroup/><mn>3</mn><maligngroup/><mn>.75</mn></mrow></mtd></mtr>
+                <mtr><mtd><mrow><maligngroup/><mn>100</mn><maligngroup/><mn>.125</mn></mrow></mtd></mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="malign-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable groupalign="{right left}">
+                <mtr><mtd><mrow><maligngroup/><mn>12</mn><maligngroup/><mn>.5</mn></mrow></mtd></mtr>
+                <mtr><mtd><mrow><maligngroup/><mn>3</mn><maligngroup/><mn>.75</mn></mrow></mtd></mtr>
+                <mtr><mtd><mrow><maligngroup/><mn>100</mn><maligngroup/><mn>.125</mn></mrow></mtd></mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>groupalign="decimalpoint"</code> single group.<br>
+          <small>Numbers aligned on the <code>.</code> automatically, no marks needed.</small>
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable groupalign="{decimalpoint}">
+                <mtr><mtd><mrow><maligngroup/><mn>1.2</mn></mrow></mtd></mtr>
+                <mtr><mtd><mrow><maligngroup/><mn>34.567</mn></mrow></mtd></mtr>
+                <mtr><mtd><mrow><maligngroup/><mn>891</mn></mrow></mtd></mtr>
+                <mtr><mtd><mrow><maligngroup/><mn>.0625</mn></mrow></mtd></mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="malign-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable groupalign="{decimalpoint}">
+                <mtr><mtd><mrow><maligngroup/><mn>1.2</mn></mrow></mtd></mtr>
+                <mtr><mtd><mrow><maligngroup/><mn>34.567</mn></mrow></mtd></mtr>
+                <mtr><mtd><mrow><maligngroup/><mn>891</mn></mrow></mtd></mtr>
+                <mtr><mtd><mrow><maligngroup/><mn>.0625</mn></mrow></mtd></mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>malignmark</code> with <code>edge="left"</code>.<br>
+          <small>Explicit mark before the <code>=</code> aligns the equals signs.</small>
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable>
+                <mtr><mtd><mrow>
+                  <maligngroup/><mi>x</mi><malignmark edge="left"/><mo>=</mo><mn>1</mn>
+                </mrow></mtd></mtr>
+                <mtr><mtd><mrow>
+                  <maligngroup/><mrow><mi>a</mi><mo>+</mo><mi>bcd</mi></mrow><malignmark edge="left"/><mo>=</mo><mn>2</mn>
+                </mrow></mtd></mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="malign-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mtable>
+                <mtr><mtd><mrow>
+                  <maligngroup/><mi>x</mi><malignmark edge="left"/><mo>=</mo><mn>1</mn>
+                </mrow></mtd></mtr>
+                <mtr><mtd><mrow>
+                  <maligngroup/><mrow><mi>a</mi><mo>+</mo><mi>bcd</mi></mrow><malignmark edge="left"/><mo>=</mo><mn>2</mn>
+                </mrow></mtd></mtr>
+              </mtable>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+</body>
+
+</html>
