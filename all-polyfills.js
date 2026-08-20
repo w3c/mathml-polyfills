@@ -36,4 +36,5 @@ if (document.readyState === "loading") {
   mathmlPolyfillsLoad()
 }
 
+export { _MathTransforms };
 export default _MathTransforms;

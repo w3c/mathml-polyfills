@@ -6,6 +6,10 @@
     <title>Browser transform MathML tests</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="./menclose/menclose.css">
+    <script>
+        // Keep acid-test button-driven: all-polyfills.js auto-runs transforms on load unless this is false.
+        window.doNotRunTransformsOnPageLoad = false;
+    </script>
     <script type="module">
         import { _MathTransforms } from './all-polyfills.js?v=1.01'
 
