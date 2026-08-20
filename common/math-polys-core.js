@@ -1,3 +1,4 @@
+/* See the file ../LICENSE.txt for the LICENSE of this file. */
 let config = { childList: true, subtree: true };
 let ops = {}
 

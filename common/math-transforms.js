@@ -2,6 +2,7 @@
 /* -*- Mode: Java; tab-width: 4; indent-tabs-mode:nil; c-basic-offset: 4 -*- */
 /* vim: set ts=4 et sw=4 tw=80: */
 
+/* See the file ../LICENSE.txt for the LICENSE of this file. */
 
 export const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
 
