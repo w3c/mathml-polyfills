@@ -74,7 +74,26 @@
   </head>
   <body>
     <h1>Elementary math</h1>
-
+<math display="block"><mstack>
+                        <msgroup>
+                          <mn>123</mn>
+                          <msrow><mo>&#xD7;</mo><mn>321</mn></msrow>
+                        </msgroup><msline/>
+                        <msgroup shift='1'>
+                            <mn>123</mn>
+                            <mn>246</mn>
+                            <mn>369</mn>
+                        </msgroup>
+                        <msline/>
+                        </mstack></math>
+    <p>next</p>
+    <math display="block"><mstack>
+                        <mscarries crossout='updiagonalstrike'><mn>2</mn><mn>12</mn><none/></mscarries>
+                        <mn>2,327</mn>
+                        <msrow><mo>-</mo><mn>1,156</mn></msrow>
+                        <msline/>
+                        <mn>1,171</mn>
+                        </mstack></math>
     <p>This page contains some tests for the <a href=https://w3c.github.io/mathml/#elementary-math>MathML elementary math elements</a>.
       These are rendered via the 'elemMath.js' polyfill.
     </p>
