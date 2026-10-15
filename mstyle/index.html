@@ -1,0 +1,561 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>mstyle (via mstyle/mstyle.js)</title>
+  <script type="module">
+    // mstyle must register before the polyfills that consume the attributes it copies.
+    import { _MathTransforms } from '../common/math-transforms.js';
+    import '../mstyle/mstyle.js';
+    import '../linethickness/linethickness.js';
+    import '../bevelled/bevelled.js';
+    import '../horiz-align/horiz-align.js';
+    import '../scriptshift/scriptshift.js';
+    import '../menclose/menclose.js';
+    // rowalign / columnalign are copied onto mtable; this polyfill lays them out.
+    import '../mtable/mtable.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.mstyle-after').forEach((root) => {
+        _MathTransforms.transform(root);
+      });
+    });
+  </script>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 1rem 1.5rem 2rem;
+    }
+
+    math {
+      font-family: 'Stix Two Math', 'Cambria Math', 'Asana Math', serif;
+    }
+
+    table.tests {
+      border-collapse: collapse;
+      margin: 1.25em 0;
+      max-width: 100%;
+    }
+
+    table.tests th,
+    table.tests td {
+      border: 1px solid #bbb;
+      padding: 0.65em 0.85em;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    table.tests th {
+      background: #f0f0f0;
+    }
+
+    .before-math,
+    .mstyle-after {
+      outline: 1px dashed #888;
+      padding: 4px;
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    .before-math {
+      outline-color: #c65353;
+    }
+
+    .mstyle-after {
+      outline-color: #1a5fb4;
+    }
+
+    caption.tests-caption {
+      font-weight: bold;
+      text-align: left;
+      margin-bottom: 0.5em;
+    }
+
+    p.serve-note {
+      border: 1px solid #c9a227;
+      background: #fffbeb;
+      padding: 0.75em 1em;
+      max-width: 55em;
+    }
+
+    code {
+      font-size: 0.92em;
+    }
+
+    .script-size math {
+      font-size: 64px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1><code>mstyle</code> attribute defaults</h1>
+
+  <p class="serve-note">
+    Serve the repo root over HTTP (e.g. <code>python -m http.server 8080</code>) and open
+    <code>http://localhost:8080/mstyle/index.html</code> so ES modules load.
+  </p>
+
+  <p>
+    MathML 3 lets <code>mstyle</code> change the default of presentation attributes for its descendants.
+    MathML Core treats <code>mstyle</code> as an <code>mrow</code> and only inherits
+    <code>displaystyle</code>, <code>scriptlevel</code>, <code>mathcolor</code>, <code>mathbackground</code>,
+    <code>mathsize</code>, and <code>dir</code>.
+    <code>mstyle/mstyle.js</code> copies the other attributes onto the elements that accept them
+    (closest <code>mstyle</code> wins; an explicit value on the element wins).
+    The <strong>Before</strong> column is outside the transform (red outline); the
+    <strong>After</strong> column is inside <code>.mstyle-after</code> (blue outline).
+  </p>
+
+  <table class="tests">
+    <caption class="tests-caption">Before vs after <code>_MathTransforms.transform</code></caption>
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Before (native)</th>
+        <th scope="col">After (polyfill)</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr>
+        <td>
+          Spec example: <code>maxsize="50%"</code> limits both parentheses.<br>
+          <small>Copied onto each <code>mo</code>.</small>
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle maxsize="50%">
+                <mrow>
+                  <mo>(</mo>
+                  <mfrac><mi>a</mi><mi>b</mi></mfrac>
+                  <mo>)</mo>
+                </mrow>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="mstyle-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle maxsize="50%">
+                <mrow>
+                  <mo>(</mo>
+                  <mfrac><mi>a</mi><mi>b</mi></mfrac>
+                  <mo>)</mo>
+                </mrow>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>linethickness</code>. Nested <code>mstyle</code> wins; an explicit
+          <code>mfrac</code> value wins over both.<br>
+          <small>After: medium, then thick, then <code>1px</code>.</small>
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle linethickness="0.2em">
+                <mfrac><mn>1</mn><mn>2</mn></mfrac>
+                <mstyle linethickness="thick">
+                  <mfrac><mn>3</mn><mn>4</mn></mfrac>
+                </mstyle>
+                <mfrac linethickness="1px"><mn>5</mn><mn>6</mn></mfrac>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="mstyle-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle linethickness="0.2em">
+                <mfrac><mn>1</mn><mn>2</mn></mfrac>
+                <mstyle linethickness="thick">
+                  <mfrac><mn>3</mn><mn>4</mn></mfrac>
+                </mstyle>
+                <mfrac linethickness="1px"><mn>5</mn><mn>6</mn></mfrac>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>width</code> applies to <code>mspace</code> only, not <code>mpadded</code>.<br>
+          <small>The empty <code>mspace</code> becomes <code>2em</code>. The <code>mpadded</code> (around the 'z') stays unpadded.</small>
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle width="2em">
+                <mrow>
+                  <mi>x</mi>
+                  <mspace/>
+                  <mi>y</mi>
+                  <mpadded><mi>z</mi></mpadded>
+                </mrow>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="mstyle-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle width="2em">
+                <mrow>
+                  <mi>x</mi>
+                  <mspace/>
+                  <mi>y</mi>
+                  <mpadded><mi>z</mi></mpadded>
+                </mrow>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>lspace</code> applies to <code>mo</code> only, not <code>mpadded</code>.
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle lspace="2em">
+                <mrow>
+                  <mi>a</mi>
+                  <mo>+</mo>
+                  <mi>b</mi>
+                  <mpadded><mi>c</mi></mpadded>
+                </mrow>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="mstyle-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle lspace="2em">
+                <mrow>
+                  <mi>a</mi>
+                  <mo>+</mo>
+                  <mi>b</mi>
+                  <mpadded><mi>c</mi></mpadded>
+                </mrow>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>align="right"</code> applies to <code>munder</code>, not <code>mtable</code>.
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle align="right">
+                <munder>
+                  <mi>x+y</mi>
+                  <mi>n</mi>
+                </munder>
+                <mtable>
+                  <mtr><mtd><mi>a</mi></mtd><mtd><mi>bb</mi></mtd></mtr>
+                </mtable>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="mstyle-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle align="right">
+                <munder>
+                  <mi>x+y</mi>
+                  <mi>n</mi>
+                </munder>
+                <mtable>
+                  <mtr><mtd><mi>a</mi></mtd><mtd><mi>bb</mi></mtd></mtr>
+                </mtable>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>align="left"</code> applies to <code>mover</code>, not <code>mtable</code>.
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle align="left">
+                <mover>
+                  <mi>x+y</mi>
+                  <mi>n</mi>
+                </mover>
+                <mtable>
+                  <mtr><mtd><mi>a</mi></mtd><mtd><mi>bb</mi></mtd></mtr>
+                </mtable>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="mstyle-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle align="left">
+                <mover>
+                  <mi>x+y</mi>
+                  <mi>n</mi>
+                </mover>
+                <mtable>
+                  <mtr><mtd><mi>a</mi></mtd><mtd><mi>bb</mi></mtd></mtr>
+                </mtable>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>align="right"</code> applies to <code>munderover</code>, not <code>mtable</code>.
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle align="right">
+                <munderover>
+                  <mi>x+y</mi>
+                  <mi>n</mi>
+                  <mi>m</mi>
+                </munderover>
+                <mtable>
+                  <mtr><mtd><mi>a</mi></mtd><mtd><mi>bb</mi></mtd></mtr>
+                </mtable>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="mstyle-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle align="right">
+                <munderover>
+                  <mi>x+y</mi>
+                  <mi>n</mi>
+                  <mi>m</mi>
+                </munderover>
+                <mtable>
+                  <mtr><mtd><mi>a</mi></mtd><mtd><mi>bb</mi></mtd></mtr>
+                </mtable>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>rowalign="bottom center top"</code> and <code>columnalign="right left center"</code> apply to <code>mtable</code>, not <code>mtr</code> or <code>mtd</code>.
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle rowalign="bottom center top" columnalign="right left center">
+                <mtable>
+                  <mtr>
+                    <mtd><mi>a</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>c</mi></mtd>
+                    <mtd><mi>x</mi></mtd>
+                    <mtd><mfrac><mfrac><mi>y</mi><mi>1</mi></mfrac><mfrac><mi>z</mi><mi>2</mi></mfrac></mfrac></mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd><mfrac><mfrac><mi>a</mi><mi>1</mi></mfrac><mfrac><mi>b</mi><mi>2</mi></mfrac></mfrac></mtd>
+                    <mtd><mi>u</mi><mo>+</mo><mi>v</mi><mo>+</mo><mi>w</mi></mtd>
+                    <mtd><mi>z</mi></mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd><mi>d</mi></mtd>
+                    <mtd><mfrac><mfrac><mi>e</mi><mi>1</mi></mfrac><mfrac><mi>f</mi><mi>2</mi></mfrac></mfrac></mtd>
+                    <mtd><mi>p</mi><mo>+</mo><mi>q</mi><mo>+</mo><mi>r</mi></mtd>
+                  </mtr>
+                </mtable>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="mstyle-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle rowalign="bottom center top" columnalign="right left center">
+                <mtable>
+                  <mtr>
+                    <mtd><mi>a</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>c</mi></mtd>
+                    <mtd><mi>x</mi></mtd>
+                    <mtd><mfrac><mfrac><mi>y</mi><mi>1</mi></mfrac><mfrac><mi>z</mi><mi>2</mi></mfrac></mfrac></mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd><mfrac><mfrac><mi>a</mi><mi>1</mi></mfrac><mfrac><mi>b</mi><mi>2</mi></mfrac></mfrac></mtd>
+                    <mtd><mi>u</mi><mo>+</mo><mi>v</mi><mo>+</mo><mi>w</mi></mtd>
+                    <mtd><mi>z</mi></mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd><mi>d</mi></mtd>
+                    <mtd><mfrac><mfrac><mi>e</mi><mi>1</mi></mfrac><mfrac><mi>f</mi><mi>2</mi></mfrac></mfrac></mtd>
+                    <mtd><mi>p</mi><mo>+</mo><mi>q</mi><mo>+</mo><mi>r</mi></mtd>
+                  </mtr>
+                </mtable>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          Attributes consumed by other polyfills:
+          <code>notation</code>, <code>bevelled</code>, <code>subscriptshift</code>.
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle notation="box" bevelled="true" subscriptshift="1em">
+                <menclose><mi>x</mi></menclose>
+                <mfrac><mi>a</mi><mi>b</mi></mfrac>
+                <msub><mi>x</mi><mn>1</mn></msub>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="mstyle-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle notation="box" bevelled="true" subscriptshift="1em">
+                <menclose><mi>x</mi></menclose>
+                <mfrac><mi>a</mi><mi>b</mi></mfrac>
+                <msub><mi>x</mi><mn>1</mn></msub>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>scriptsizemultiplier="0.4"</code> and <code>scriptminsize="18pt"</code>.<br>
+          <small>At 64px, the first superscript is ~26pt; the next one stays at least 18pt.</small>
+        </td>
+        <td>
+          <div class="before-math script-size">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle scriptsizemultiplier="0.4" scriptminsize="18pt">
+                <msup>
+                  <mi>x</mi>
+                  <msup>
+                    <mi>y</mi>
+                    <mi>z</mi>
+                  </msup>
+                </msup>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="mstyle-after script-size">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle scriptsizemultiplier="0.4" scriptminsize="18pt">
+                <msup>
+                  <mi>x</mi>
+                  <msup>
+                    <mi>y</mi>
+                    <mi>z</mi>
+                  </msup>
+                </msup>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>mathsize="200%"</code> on <code>mstyle</code>.<br>
+          <small>Left on <code>mstyle</code>. Not copied onto the enclosed <code>mi</code>, <code>mn</code>, <code>mo</code>, or <code>mtext</code>.</small>
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle mathsize="200%">
+                <mi>x</mi>
+                <mn>2</mn>
+                <mo>+</mo>
+                <mtext>text</mtext>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="mstyle-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mstyle mathsize="200%">
+                <mi>x</mi>
+                <mn>2</mn>
+                <mo>+</mo>
+                <mtext>text</mtext>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <code>display="inline"</code> on <code>math</code>, <code>displaystyle="true"</code> on <code>mstyle</code>.<br>
+          <small>Left on <code>mstyle</code>. Not copied onto the enclosed elements. The before/after should be the same.</small>
+        </td>
+        <td>
+          <div class="before-math">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+              <mstyle displaystyle="true">
+                <munderover>
+                  <mo>∑</mo>
+                  <mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow>
+                  <mi>n</mi>
+                </munderover>
+                <mfrac><mi>a</mi><mi>b</mi></mfrac>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+        <td>
+          <div class="mstyle-after">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+              <mstyle displaystyle="true">
+                <munderover>
+                  <mo>∑</mo>
+                  <mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow>
+                  <mi>n</mi>
+                </munderover>
+                <mfrac><mi>a</mi><mi>b</mi></mfrac>
+              </mstyle>
+            </math>
+          </div>
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+</body>
+
+</html>
