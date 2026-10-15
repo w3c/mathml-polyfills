@@ -24,10 +24,10 @@ See [README in rollup](rollup/).
 * [mfenced/index.html](https://w3c.github.io/mathml-polyfills/mfenced/index.html) — `mfenced`
 * [mtable/index.html](https://w3c.github.io/mathml-polyfills/mtable/index.html) — `mtable` presentation attributes and [`mlabeledtr`](https://w3c.github.io/mathml-polyfills/mtable/index.html#mlabeledtr)
 * [ms/index.html](https://w3c.github.io/mathml-polyfills/ms/index.html) — `ms` quotes
+* [mstyle/index.html](https://w3c.github.io/mathml-polyfills/mstyle/index.html) — MathML 3 `mstyle` attribute defaults on MathML Core (before / after transform)
 * [namedspace/index.html](https://w3c.github.io/mathml-polyfills/namedspace/index.html) — named MathML spaces
 * [scriptshift/index.html](https://w3c.github.io/mathml-polyfills/scriptshift/index.html) — `subscriptshift` / `superscriptshift` on `msub`, `msup`, `msubsup`
 * [semantics/index.html](https://w3c.github.io/mathml-polyfills/semantics/index.html) — `semantics` presentation order
-* [table/index.html](https://w3c.github.io/mathml-polyfills/table/index.html) — `mtable` presentation attributes inside HTML `<table>` cells (before / after transform)
 
 -----
 

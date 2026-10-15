@@ -1473,6 +1473,58 @@
         </tr>
     </table>
 
+    <h2>Style Change (mstyle)</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(mstyle)">Apply Transform</button>
+    </label>
+    <table id="mstyle">
+        <tr>
+            <td>
+                mstyle linethickness="0.4em" applies to the fraction bar (MathML 3 default push-down).
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mstyle linethickness="0.4em">
+                        <mfrac>
+                            <mi>a</mi>
+                            <mi>b</mi>
+                        </mfrac>
+                    </mstyle>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                mstyle maxsize="100%" limits the stretch of both parentheses.
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <mstyle maxsize="100%">
+                        <mo>(</mo>
+                        <mfrac><mi>a</mi><mi>b</mi></mfrac>
+                        <mo>)</mo>
+                    </mstyle>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                scriptsizemultiplier="0.5" halves each script level (scriptminsize 12pt).
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block" style="font-size: 48px">
+                    <mstyle scriptsizemultiplier="0.5" scriptminsize="12pt">
+                        <msup>
+                            <mi>x</mi>
+                            <msup><mi>y</mi><mi>z</mi></msup>
+                        </msup>
+                    </mstyle>
+                </math>
+            </td>
+        </tr>
+    </table>
+
     <h2>Alignment Groups (maligngroup / malignmark)</h2>
     <label>
         Click to see the effect of the transform on the following table:
