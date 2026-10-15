@@ -175,13 +175,13 @@ function ancestorHasActiveScriptSizing(el) {
 function isAccentScript(el) {
   const parent = el.parentElement;
   if (!parent || !isMath(parent)) return false;
-  const index = Array.prototype.indexOf.call(parent.children, el);
+  const childIndex = Array.prototype.indexOf.call(parent.children, el);
   const flag = (/** @type {string} */ name) => (parent.getAttribute(name) || '').toLowerCase() === 'true';
-  const n = parent.localName;
-  if (n === 'munder' && index === 1 && flag('accentunder')) return true;
-  if (n === 'mover' && index === 1 && flag('accent')) return true;
-  if (n === 'munderover' && index === 1 && flag('accentunder')) return true;
-  if (n === 'munderover' && index === 2 && flag('accent')) return true;
+  const parentName = parent.localName;
+  if (parentName === 'munder' && childIndex === 1 && flag('accentunder')) return true;
+  if (parentName === 'mover' && childIndex === 1 && flag('accent')) return true;
+  if (parentName === 'munderover' && childIndex === 1 && flag('accentunder')) return true;
+  if (parentName === 'munderover' && childIndex === 2 && flag('accent')) return true;
   return false;
 }
 
