@@ -11,6 +11,11 @@ export const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
  */
   export const _MathTransforms = {
     _plugins: new Map(),
+    // Registration order, including repeated selectors. `_plugins` keeps only the
+    // last callback for a selector, which is the wrong order for `math`: mstyle
+    // registers it first and linebreaking replaces the callback in that same
+    // early slot, so the line-breaking clone was taken before later polyfills ran.
+    _pluginList: [],
     _css: '',
     _createStyleSheet: str => {
       if (str.length !== _MathTransforms.cssKey) {    // always true the first time because _MathTransforms.cssKey is undefined
@@ -28,17 +33,15 @@ export const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
     return foo; },
 
     transform: root => {
-      for (const selector of _MathTransforms._plugins.keys()) {
-        let transformer = _MathTransforms._plugins.get(selector);
-
+      for (const plugin of _MathTransforms._pluginList) {
         // find the matching elements..
         // this is problematic since you could add some
-        let matches = Array.from(root.querySelectorAll(selector));
+        let matches = Array.from(root.querySelectorAll(plugin.selector));
 
         // Since these are in tree-order, if we process them in reverse order (child first)
         // we should side-step the gnarliest of potential nesting issues
         matches.reverse().forEach(el => {
-          let transformed = transformer(el);
+          let transformed = plugin.cb(el);
           if (transformed && transformed !== el) {
             el.parentElement.replaceChild(transformed, el);
           }
@@ -47,6 +50,7 @@ export const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
     },
   
     add: (selector, cb, css='') => {
+      _MathTransforms._pluginList.push({ selector, cb });
       _MathTransforms._plugins.set(selector, cb);
       _MathTransforms._css += css;
     }

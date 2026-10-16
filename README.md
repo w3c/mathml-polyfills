@@ -18,6 +18,7 @@ See [README in rollup](rollup/).
 * [bevelled/index.html](https://w3c.github.io/mathml-polyfills/bevelled/index.html) — `bevelled` attribute on `mfrac`
 * [elem-math/index.html](https://w3c.github.io/mathml-polyfills/elem-math/index.html) — elementary math (`mstack`, `mlongdiv`, etc.)
 * [href/index.html](https://w3c.github.io/mathml-polyfills/href/index.html) — `href` on MathML elements
+* [maction/index.html](https://w3c.github.io/mathml-polyfills/maction/index.html) — `maction` selection, toggle, and tooltip
 * [malign/index.html](https://w3c.github.io/mathml-polyfills/malign/index.html) — `maligngroup` / `malignmark` alignment inside `mtable` (before / after transform)
 * [mathvariant/index.html](https://w3c.github.io/mathml-polyfills/mathvariant/index.html) — `mathvariant` → Unicode math alphanumerics
 * [menclose/index.html](https://w3c.github.io/mathml-polyfills/menclose/index.html) — `menclose` notations

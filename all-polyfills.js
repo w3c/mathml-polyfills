@@ -1,6 +1,9 @@
 /* See the file ../LICENSE.txt for the LICENSE of this file. */
 import {_MathTransforms} from './common/math-transforms.js'
 import { applyMathStyleRoot } from './mstyle/mstyle.js'
+// After mstyle (attribute copy) and before measuring polyfills, so the
+// selected maction child is visible when those polyfills measure.
+import './maction/maction.js'
 import './mglyph/mglyph.js'
 import './mfenced/mfenced.js'
 import './semantics/semantics.js'

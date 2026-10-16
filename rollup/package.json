@@ -11,6 +11,6 @@
   "repository": "https://github.com/w3c/mathml-polyfills/",
   "license": "MIT",
   "scripts": {
-    "build": "npx rollup ../all-polyfills.js -f iife -o allpolyfillsbundle-script.js  --output.name _MathTransforms && npx rollup ../all-polyfills.js -f es -o allpolyfillsbundle-module.js"
+    "build": "npx rollup ../all-polyfills.js -f iife -o allpolyfillsbundle-script.js  --output.name _MathTransforms && npx rollup ../all-polyfills.js -f iife -o allpolyfillsbundle.js --output.name allpolyfillsbundle && npx rollup ../all-polyfills.js -f es -o allpolyfillsbundle-module.js"
   }
 }
