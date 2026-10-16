@@ -44,11 +44,11 @@
  * get the computed padding width). The surrounding `mtable`/`mtr`/`mtd` layout, including
  * `columnalign` and `columnspacing`, is left to the `mtable` polyfill (or native support).
  *
- * Registration note: `_MathTransforms` keys plugins by selector, so we cannot add a second
- * `mtable` handler without clobbering `mtable/mtable.js`. Instead this registers on `maligngroup`
- * and, on the first (still-connected) group encountered, processes that group's enclosing alignment
- * scope (its nearest `mtable`) in one pass. Import this module BEFORE `mtable/mtable.js` so
- * measurement runs on the live DOM before the `mtable` transform clones the subtree.
+ * Registration note: handlers run in import order, and the same selector can be registered
+ * more than once. This module still registers on `maligngroup` rather than `mtable`, and it is
+ * imported BEFORE `mtable/mtable.js`, so measurement runs on the live DOM before the `mtable`
+ * transform clones the subtree. On the first still-connected group, it processes that group's
+ * enclosing alignment scope (its nearest `mtable`) in one pass.
  */
 
 import { _MathTransforms, MATHML_NS, forceLayout } from '../common/math-transforms.js';

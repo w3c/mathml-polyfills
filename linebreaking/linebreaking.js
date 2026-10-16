@@ -1184,6 +1184,12 @@ function addCustomElement(math) {
         return null;
     }
 
+    // The shadow clone is static: event listeners are not copied, and a nested
+    // shadow root (elementary math) is easy to lose. Leave these trees live.
+    if (math.querySelector('maction, mstack, mlongdiv')) {
+        return null;
+    }
+
     if (math.tagName.toLowerCase() === SHADOW_ELEMENT_NAME) {
         return math;        // already is a custom element
     } else if (math.parentElement.tagName.toLowerCase() === SHADOW_ELEMENT_NAME) {

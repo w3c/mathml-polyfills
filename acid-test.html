@@ -11,7 +11,7 @@
         window.doNotRunTransformsOnPageLoad = false;
     </script>
     <script type="module">
-        import { _MathTransforms } from './all-polyfills.js?v=1.01'
+        import { _MathTransforms } from './all-polyfills.js?v=1.03'
 
         document.head.appendChild ( _MathTransforms.getCSSStyleSheet() );
         window.transform = function (elementId) {
@@ -1693,6 +1693,63 @@
             </td>
         </tr>
 
+    </table>
+
+<h2>Enlivening Expressions (maction)</h2>
+    <label>
+        Click to see the effect of the transform on the following table:
+        <button onclick="transform(maction)">Apply Transform</button>
+    </label>
+    <table id="maction">
+        <tr>
+            <td>
+                selection="2" shows the second child. MathML Core shows only the first.
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <maction actiontype="highlight" selection="2">
+                        <mi>first</mi>
+                        <mi>second</mi>
+                    </maction>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                actiontype="toggle". Click the expression to cycle the children.
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <maction actiontype="toggle">
+                        <mfrac>
+                            <mn>6</mn>
+                            <mn>8</mn>
+                        </mfrac>
+                        <mfrac>
+                            <mn>3</mn>
+                            <mn>4</mn>
+                        </mfrac>
+                    </maction>
+                </math>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                actiontype="tooltip". Hover or focus the first child; the second child is the popup.
+            </td>
+            <td>
+                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                    <maction actiontype="tooltip">
+                        <mi>x</mi>
+                        <mrow>
+                            <mi>x</mi>
+                            <mo>+</mo>
+                            <mn>1</mn>
+                        </mrow>
+                    </maction>
+                </math>
+            </td>
+        </tr>
     </table>
 
 <h2>MathML href linking</h2>
