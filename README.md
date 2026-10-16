@@ -12,6 +12,10 @@ The set of polyfills, as referenced by [all-polyfills.js](all-polyfills.js) can 
 in HTML pages, as module for ES6 or as an NPM package.
 See [README in rollup](rollup/).
 
+## Demo
+
+[demo.html](https://w3c.github.io/mathml-polyfills/demo.html) — type or paste MathML and see it rendered with all of the polyfills.
+
 ## Test pages
 
 * [acid-test.html](https://w3c.github.io/mathml-polyfills/acid-test.html) — combined examples at the repository root for many polyfills (button to apply transforms)
