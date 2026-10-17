@@ -1105,7 +1105,7 @@ const SHADOW_ELEMENT_NAME = "math-with-linebreaks";
  */
 function lineBreakDisplayMath(customElement, maxLineWidth) {
     maxLineWidth = Math.min(maxLineWidth, parseFloat(customElement.getAttribute(FULL_WIDTH)));
-    const math = customElement.shadowRoot.lastElementChild;
+    const math = displayedMath(customElement);
     if (math.childElementCount > 1) {
         // add an mrow underneath 'math' -- having an mrow makes the rest of the code work more cleanly
         const mrow = newElement('mrow');
@@ -1157,10 +1157,59 @@ const EM_WIDTH = 'data-em-in-pixels'
  * @param {Element} customElement 
  * @param {Element} math 
  */
+/**
+ * The shadow root shows a clone. The light-DOM math is slotted and clipped so it
+ * stays in the accessibility tree: MathCAT reads that node's MathML, and does not
+ * enter a shadow root. The clone is aria-hidden so NVDA does not speak it instead.
+ * @param {ShadowRoot} shadowRoot
+ */
+function addAccessibleSourceSlot(shadowRoot) {
+    const style = document.createElement('style');
+    style.textContent = `
+        slot.math-a11y-source {
+            display: block;
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    `;
+    shadowRoot.appendChild(style);
+    const slot = document.createElement('slot');
+    slot.className = 'math-a11y-source';
+    shadowRoot.appendChild(slot);
+}
+
+/**
+ * Direct child of the shadow root that is drawn. Not the slotted source math.
+ * @param {Element} customElement
+ * @returns {Element}
+ */
+function displayedMath(customElement) {
+    const children = customElement.shadowRoot.children;
+    for (let i = children.length - 1; i >= 0; i--) {
+        if (children[i].localName === 'math') return children[i];
+    }
+    return customElement.shadowRoot.lastElementChild;
+}
+
+/**
+ * @param {Element} mathClone
+ */
+function hideCloneFromAT(mathClone) {
+    mathClone.setAttribute('aria-hidden', 'true');
+}
+
 function setShadowRootContents(customElement, math) {
     /** @type {HTMLElement} */
     // @ts-ignore
     const mathClone = cloneElementWithShadowRoot(math);
+    hideCloneFromAT(mathClone);
     customElement.shadowRoot.appendChild(mathClone);
     // keep track of the width before linebreaking
     let fullWidth = mathClone.lastElementChild.getBoundingClientRect().right - mathClone.firstElementChild.getBoundingClientRect().left;
@@ -1218,8 +1267,8 @@ const resizeObserver = new ResizeObserver(entries => {
             //            FULL ${customElement.getAttribute(FULL_WIDTH)}; $y: ${customElement.getBoundingClientRect().y}`);
             if (entry.contentRect.width < parseInt(customElement.getAttribute(FULL_WIDTH))) {  // room to break is less than full width
                 const mathClone = cloneElementWithShadowRoot(customElement.firstElementChild);
-                const oldDisplayedMath = customElement.shadowRoot.lastElementChild;
-                oldDisplayedMath.replaceWith(mathClone);
+                hideCloneFromAT(mathClone);
+                displayedMath(customElement).replaceWith(mathClone);
                 customElement.setAttribute(LINE_BREAK_WIDTH, entry.contentRect.width.toString());
                 //console.log("   linebreaking...")
                 lineBreakDisplayMath(customElement, entry.contentRect.width.toString());
@@ -1227,8 +1276,8 @@ const resizeObserver = new ResizeObserver(entries => {
                 parseInt(customElement.getAttribute(LINE_BREAK_WIDTH)) <= parseInt(customElement.getAttribute(FULL_WIDTH))) {
                 // enough room for line but previous one was linebroken -- don't linebreak
                 const mathClone = cloneElementWithShadowRoot(customElement.firstElementChild);
-                const oldDisplayedMath = customElement.shadowRoot.lastElementChild;
-                oldDisplayedMath.replaceWith(mathClone);
+                hideCloneFromAT(mathClone);
+                displayedMath(customElement).replaceWith(mathClone);
                 customElement.setAttribute(LINE_BREAK_WIDTH, (2 * entry.contentRect.width).toString()); // 2*width to make sure no linebreaking
                 lineBreakDisplayMath(customElement, 2 * entry.contentRect.width.toString());
             }
@@ -1244,6 +1293,7 @@ customElements.define(SHADOW_ELEMENT_NAME, class extends HTMLElement {
 
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(_MathTransforms.getCSSStyleSheet());
+        addAccessibleSourceSlot(shadowRoot);
         const math = this.firstElementChild;
         //console.log(`in constructor...math width ${math ? math.getBoundingClientRect().width : 'set elsewhere'}`);
         if (math) {
@@ -1260,6 +1310,7 @@ customElements.define(SHADOW_ELEMENT_NAME, class extends HTMLElement {
     UAStyle.innerHTML = `
            math-with-linebreaks {
                 display: block;
+                position: relative;
             }
     `
     document.head.insertBefore(UAStyle, document.head.firstElementChild)
