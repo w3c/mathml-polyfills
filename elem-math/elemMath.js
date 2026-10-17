@@ -229,7 +229,8 @@ class TableCell {
                 throw new Error("Elementary math mscarry isn't an 'object'");
             }
             this.data = document.createElement((carry.location === 'n' || carry.location === 's') ? 'div' : 'span');
-            this.data.appendChild(value);
+            // Clone so the source mscarry stays in the light DOM for MathCAT.
+            this.data.appendChild(value.cloneNode(true));
             this.data.className = 'carry';
             this.data.style.fontSize = Math.round(carry.scriptsizemultiplier).toString() + '%';
         } else {
@@ -1228,36 +1229,55 @@ class ElemMath {
 }
 
 /**
- * Replaces `mstack` / `mlongdiv` in light DOM with a MathML wrapper whose shadow root holds the CSS grid.
- *
- * MathML does not allow a shadow root on `mstack` / `mlongdiv`, so the tree becomes
- * `mtext > span (shadow host) > math > el`, with `div.elem-math` (the grid) appended to the shadow root.
- * Skips work when `el` is already under `m-elem-math` (that element builds its own shadow tree).
+ * Draws `mstack` / `mlongdiv` as a CSS grid in an aria-hidden shadow host.
+ * The original element stays in the document so MathCAT can serialize it.
+ * Skips work when `el` is already under `m-elem-math`.
  *
  * @param {HTMLElement} el - `mstack` or `mlongdiv` node still in the document.
  * @returns {null}
  */
+/**
+ * Keep {@code el} available to MathCAT while drawing the grid. Clipping leaves
+ * the element in the accessibility tree; aria-hidden would remove it.
+ * @param {HTMLElement} el
+ */
+function hideFromSight(el) {
+    el.style.position = 'absolute';
+    el.style.width = '1px';
+    el.style.height = '1px';
+    el.style.padding = '0';
+    el.style.margin = '-1px';
+    el.style.overflow = 'hidden';
+    el.style.clip = 'rect(0, 0, 0, 0)';
+    el.style.whiteSpace = 'nowrap';
+    el.style.border = '0';
+}
+
 let transformElemMath = (el) => {
     if (el.parentElement && (el.parentElement.tagName === M_ELEM_MATH_TAG ||
                             (el.parentElement.parentElement && el.parentElement.parentElement.tagName === M_ELEM_MATH_TAG))) {
         return null;
     }
 
-    const spanShadowHost = document.createElement('span');
-    const shadowRoot = spanShadowHost.attachShadow({ mode: 'open' });
+    const gridHost = document.createElement('span');
+    gridHost.setAttribute('aria-hidden', 'true');
+    const shadowRoot = gridHost.attachShadow({ mode: 'open' });
     shadowRoot.appendChild(_MathTransforms.getCSSStyleSheet());
-
-    const elParent = el.parentElement;
-    const nextSibling = el.nextElementSibling;
     const gridRoot = new ElemMath(el).expandMStackElement(el);
+    gridRoot.setAttribute('aria-hidden', 'true');
     shadowRoot.appendChild(gridRoot);
 
-    const mtext = document.createElementNS(MATHML_NS, 'mtext');
-    mtext.appendChild(spanShadowHost);
-    const math = document.createElementNS(MATHML_NS, 'math');
-    spanShadowHost.appendChild(math);
-    math.appendChild(el);
-    elParent.insertBefore(mtext, nextSibling);
+    // When the stack is the whole math, keep that math's markup free of the
+    // visual host. MathCAT serializes the math element NVDA lands on.
+    const mathAncestor = el.closest('math');
+    const soleChild = mathAncestor && mathAncestor.childElementCount === 1 && mathAncestor.firstElementChild === el;
+    const anchor = soleChild ? mathAncestor : el;
+    const wrap = document.createElement(soleChild ? 'div' : 'span');
+    wrap.style.position = 'relative';
+    if (!soleChild) wrap.style.display = 'inline-block';
+    anchor.before(wrap);
+    wrap.append(anchor, gridHost);
+    hideFromSight(/** @type {HTMLElement} */ (anchor));
 
     return null;
 };
@@ -1273,9 +1293,30 @@ customElements.define('m-elem-math', class extends HTMLElement {
     constructor() {
         super();
         const gridRoot = new ElemMath(this.children[0]).expandMStackElement(this.children[0]);
+        gridRoot.setAttribute('aria-hidden', 'true');
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(_MathTransforms.getCSSStyleSheet());
+        const style = document.createElement('style');
+        style.textContent = `
+            slot.math-a11y-source {
+                display: block;
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+        `;
+        shadowRoot.appendChild(style);
+        const slot = document.createElement('slot');
+        slot.className = 'math-a11y-source';
+        shadowRoot.appendChild(slot);
         shadowRoot.appendChild(gridRoot);
+        this.style.position = 'relative';
     }
 });
 
