@@ -56,10 +56,16 @@
     @media (max-width: 800px) {
       .layout { grid-template-columns: 1fr; }
     }
-    label, .panel-title {
+    label {
       display: block;
       font-weight: 600;
       margin-bottom: 0.35rem;
+    }
+    .layout h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin: 0 0 0.5rem;
     }
     .controls {
       display: flex;
@@ -99,6 +105,10 @@
       font-family: "STIX Two Math", "Cambria Math", "Latin Modern Math", "Asana Math", serif;
       font-size: 1.35rem;
     }
+    #preview:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
     #preview > * { margin: 0.6rem 0; }
     #message {
       min-height: 1.4em;
@@ -128,8 +138,8 @@
           <option value="">Choose an example…</option>
         </select>
       </div>
-      <label for="source">MathML</label>
-      <textarea id="source" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML">
+      <h2 id="source-heading">MathML</h2>
+      <textarea id="source" aria-labelledby="source-heading" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML">
   <mrow>
     <mi mathvariant="double-struck">C</mi>
     <mo>=</mo>
@@ -146,8 +156,8 @@
       <p id="message" role="status"></p>
     </section>
     <section>
-      <div class="panel-title" id="preview-label">Rendered</div>
-      <div id="preview" role="region" aria-labelledby="preview-label"></div>
+      <h2 id="preview-label">Rendered</h2>
+      <div id="preview" tabindex="0" role="region" aria-labelledby="preview-label"></div>
     </section>
   </main>
   <script type="module">
@@ -170,7 +180,7 @@
         <mn>1</mn>
         <mi>z</mi>
       </mfrac>
-      <ms>path</ms>
+      <mn>2</mn>
     </mfenced>
   </mrow>
 </math>`
