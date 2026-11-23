@@ -5924,27 +5924,37 @@ class ElemMath {
     }
 
     /**
-     * Flattens `msrow` / `mstyle` row content into cells; decimal alignment uses the first `mn`'s decimal point.
+     * Flattens `msrow` / `mstyle` row content into cells.
+     * `nRight` counts cells from the alignment point through the end of the row.
+     * That point is the first decimal point. Sibling `mn`s before it are integer digits
+     * (a number split into one `mn` per digit stays left of the point). With no decimal
+     * point, only content after the number — a trailing operator, for example — is on the right.
      * @param {Element} msrow
      * @returns {[TableCell[], number]} Cells and `nRight` when `stackalign === 'decimalpoint'`.
      */
     process_msrow(msrow) {
         let foundNumber = false;
+        // After this, every later cell is at or to the right of the alignment point.
+        let pastAlignPoint = false;
         let nDigitsRightOfDecimalPt = 0;
         /** @type {TableCell[]} */
         let cells = [];
         for (let i=0; i<msrow.children.length; i++) {
             const child = msrow.children[i];
             if (child.tagName.toLowerCase() === 'mn') {
-                const chars = child.textContent.trim().split('');
+                const text = child.textContent.trim();
+                const chars = text.split('');
                 cells = cells.concat( chars.map( c => new TableCell(c)) );
-                if (foundNumber) {
+                if (pastAlignPoint) {
                     nDigitsRightOfDecimalPt += chars.length;
                 } else {
-                    const iDecimalPt = child.textContent.trim().indexOf(this.getAttr(child, 'decimalpoint', '.'));
-                    nDigitsRightOfDecimalPt = iDecimalPt < 0 ? 0 : chars.length - iDecimalPt;
-                    foundNumber = true;
+                    const iDecimalPt = text.indexOf(this.getAttr(child, 'decimalpoint', '.'));
+                    if (iDecimalPt >= 0) {
+                        nDigitsRightOfDecimalPt += chars.length - iDecimalPt;
+                        pastAlignPoint = true;
+                    }
                 }
+                foundNumber = true;
             } else {
                 // everything should be in one column.
                 // FIX: the child might be something complex -- textContent might be inappropriate
@@ -5953,8 +5963,11 @@ class ElemMath {
                     text = '\u2212';  // use proper minus sign
                 }
                 cells.push( new TableCell(text) );
-                if (foundNumber) {
+                // A decimal token, or anything after the number (such as "+"), starts the right side.
+                // Leading operators and `<none/>` stay to the left.
+                if (pastAlignPoint || foundNumber || text === this.getAttr(child, 'decimalpoint', '.')) {
                     nDigitsRightOfDecimalPt += 1;
+                    pastAlignPoint = true;
                 }
             }
         }
