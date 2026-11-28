@@ -67,7 +67,7 @@ export const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
  */
 export function cloneElementWithShadowRoot(el, clone) {
   if (clone === undefined) {
-      clone = el.cloneNode(true);
+      clone = /** @type {Element} */ (el.cloneNode(true));
   }
 
   // rather than clone each element and then the children, we're assuming cloning the whole tree is most efficient
