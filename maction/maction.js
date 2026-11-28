@@ -191,7 +191,7 @@ function selectedNumber(el, count) {
  */
 function showOnly(el, shown) {
   for (const child of el.children) {
-    child.style.display = child === shown ? SHOWN : HIDDEN;
+    /** @type {MathMLElement} */ (child).style.display = child === shown ? SHOWN : HIDDEN;
   }
 }
 
@@ -355,7 +355,7 @@ function openTooltip(el) {
   if (message) {
     const clone = cloneElementWithShadowRoot(message);
     // The live message is display:none. Drop that so the popup can show it.
-    clone.style.display = '';
+    /** @type {MathMLElement} */ (clone).style.display = '';
     math.appendChild(clone);
   }
   tip.appendChild(math);
@@ -402,7 +402,7 @@ function scheduleTooltip(el) {
 }
 
 /**
- * @param {Element} el
+ * @param {MathMLElement} el
  * @param {string} type
  */
 function bindOnce(el, type) {
@@ -456,7 +456,7 @@ function bindOnce(el, type) {
 }
 
 /**
- * @param {Element} el
+ * @param {MathMLElement} el - Matched by the 'maction' selector.
  * @returns {Element}
  */
 const transformMaction = (el) => {

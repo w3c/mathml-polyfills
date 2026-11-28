@@ -243,6 +243,10 @@ class TableCell {
         /** @type {Carry | undefined} */
         this.carry = carry;
         this.style = style || '';
+        /** Space-separated class names for the rendered cell (e.g. `separator`, `curved-line`). */
+        this.class = '';
+        /** Set when a carry is merged into this cell: `1` or `-1` picks how the merged content is displayed; `0` if none. */
+        this.alignAt = 0;
     }
 }
 
@@ -674,7 +678,7 @@ class ElemMath {
 
             case 'mstyle': {
                 const oldAttrs = this.attrs;
-                this.attrs = new MathMLAttrs(child, oldAttrs);
+                this.attrs = new MathMLAttrs(child, oldAttrs.attrs);
                 if (child.children.length === 1 && child.children[0].tagName.toLowerCase() === 'msline') {
                     // FIX: not legal according to spec, but should be able to wrap msline in mstyle to change mathcolor
                     // FIX:   spec should be fixed

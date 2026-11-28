@@ -631,8 +631,14 @@ function getEmbellishedOperator(el) {
 }
 
 /**
- * 
- * @param {[any]} stack
+ * An entry on the parser's element stack: an operator element, or an array
+ * holding entries that have already been reduced (an operand).
+ * @typedef {Element | ParseNode[]} ParseNode
+ */
+
+/**
+ *
+ * @param {any[]} stack
  * @returns {any}
  */
 function top(stack) {
@@ -640,8 +646,8 @@ function top(stack) {
 }
 
 /**
- * 
- * @param {[] | Element} elementStackEntry 
+ *
+ * @param {ParseNode} elementStackEntry
  * @returns {boolean}
  */
 function isOperand(elementStackEntry) {
@@ -660,10 +666,10 @@ function isPrefix(mo) {
 
 /**
  * The "reduce" step of parsing.
- * @param {[number]} opStack
- * @param {[Element | [Element]]} elementStack
+ * @param {number[]} opStack
+ * @param {ParseNode[]} elementStack
  * @param {number} childPrecedence
- * @returns {[[number], [Element | [Element]]}
+ * @returns {[number[], ParseNode[]]}
 
  */
 function parseReduce(opStack, elementStack, childPrecedence) {
@@ -707,14 +713,14 @@ function addInvisibleFunctionApply(opStack, elementStack) {
     const childPrecedence = operatorPrecedence(InvisibleFunctionApply);
     [opStack, elementStack] = parseReduce(opStack, elementStack, childPrecedence);
     opStack.push(childPrecedence);
-    elementStack.push(InvisibleFunctionApplyMo);
+    elementStack.push(InvisibleFunctionApplyMo());
 }
 
 /**
- * @param {Element} treeRoot 
- * @param {[number]} opStack
- * @param {[Element | [Element]]} elementStack
- * @returns {[[number], [Element | [Element]]}
+ * @param {Element} treeRoot
+ * @param {number[]} opStack
+ * @param {ParseNode[]} elementStack
+ * @returns {[number[], ParseNode[]]}
  */
 function buildParseTree(treeRoot, opStack, elementStack) {
     // Act like a operator precedence parser, where operator precedences are shifted on or "reduced" based on their precedence
@@ -765,7 +771,7 @@ function buildParseTree(treeRoot, opStack, elementStack) {
 
 /**
  * Store nesting depth info for each 'mo' as an attr. Depth is based on depth in tree of arrays
- * @param {[Element | [Element]]} elementStack
+ * @param {ParseNode[]} elementStack
  * @param {number} depth
  */
 function setDepthAttr(elementStack, depth) {
@@ -814,7 +820,7 @@ function isWellStructured(treeRoot) {
     //   this allows for +/-, multiple forms of times, or multiple relations to exist.
     // Especially for n-ary functions, we can't easily tell if this good structure or "luck".
     // We check up to three mrows and if all seem well structured, we say this is well structured.
-    const mrows = Array.from(treeRoot.querySelectorAll('mrow'));
+    const mrows = /** @type {Element[]} */ (Array.from(treeRoot.querySelectorAll('mrow')));
     if (treeRoot.tagName === 'mrow' || treeRoot.tagName === 'math') { // could be 'math' with no mrows
         mrows.push(treeRoot);
     }
@@ -877,7 +883,10 @@ function addDepthInfo(linebreakRoot) {
                 if (elementStack.length != 2) {
                     [opStack, elementStack] = parseReduce(opStack, elementStack, -1);
                 }
-                setDepthAttr(elementStack[1], 0);
+                const parseTree = elementStack[1];
+                if (Array.isArray(parseTree)) {     // a lone element has no operators below it to give a depth
+                    setDepthAttr(parseTree, 0);
+                }
             }
         }
     })
@@ -1271,7 +1280,7 @@ const resizeObserver = new ResizeObserver(entries => {
                 displayedMath(customElement).replaceWith(mathClone);
                 customElement.setAttribute(LINE_BREAK_WIDTH, entry.contentRect.width.toString());
                 //console.log("   linebreaking...")
-                lineBreakDisplayMath(customElement, entry.contentRect.width.toString());
+                lineBreakDisplayMath(customElement, entry.contentRect.width);
             } else if (!customElement.hasAttribute(LINE_BREAK_WIDTH) ||
                 parseInt(customElement.getAttribute(LINE_BREAK_WIDTH)) <= parseInt(customElement.getAttribute(FULL_WIDTH))) {
                 // enough room for line but previous one was linebroken -- don't linebreak
@@ -1279,7 +1288,7 @@ const resizeObserver = new ResizeObserver(entries => {
                 hideCloneFromAT(mathClone);
                 displayedMath(customElement).replaceWith(mathClone);
                 customElement.setAttribute(LINE_BREAK_WIDTH, (2 * entry.contentRect.width).toString()); // 2*width to make sure no linebreaking
-                lineBreakDisplayMath(customElement, 2 * entry.contentRect.width.toString());
+                lineBreakDisplayMath(customElement, 2 * entry.contentRect.width);
             }
             // else enough room and wasn't linebroken
         }
