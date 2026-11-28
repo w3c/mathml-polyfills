@@ -10,15 +10,21 @@ Should you want to disable this, define before the inclusion or imports,
 
 ## Building the bundles
 
-The repository carries the latest results of the build since we last ran it. So you can just use that first.
+The repository carries built bundles. You don't need to rebuild them when you change a polyfill:
+on every push to `main`, the GitHub workflow rebuilds them, commits them if they changed, and
+deploys the site with them. Pull requests that change a polyfill are type-checked and test-built
+by the "Check polyfills" workflow.
 
-Building again:
+Building locally:
 
 - Go to the `rollup` folder and invoke: `npm install` then invoke `npm run build`.
 - Or, if you have installed rollup globally, you can invoke `./rollup-polyfills`.
 
-This will create the files `allpolyfillsbundle-module.js` and `allpolyfillsbundle-script.js` 
-in this directory.
+This will create the files `allpolyfillsbundle-module.js`, `allpolyfillsbundle-script.js`
+and `allpolyfillsbundle.js` in this directory.
+
+Type-checking: `npm run typecheck` (in the `rollup` folder) checks the polyfill files that start
+with `// @ts-check`, using [`../tsconfig.json`](../tsconfig.json).
 
 ## Tests
 
