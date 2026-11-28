@@ -1,0 +1,45 @@
+# Type-checks the polyfills and makes sure the bundles still build, for pull requests that change them.
+# Pull requests don't need to include rebuilt bundles: the deploy workflow rebuilds and commits them on main.
+name: Check polyfills
+
+on:
+  pull_request:
+    paths:
+      - '**.js'
+      - 'tsconfig.json'
+      - 'rollup/package.json'
+      - 'rollup/package-lock.json'
+      - '.github/workflows/check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: rollup/package-lock.json
+
+      - name: Install build tools
+        working-directory: rollup
+        run: npm ci
+
+      - name: Type-check polyfills
+        working-directory: rollup
+        run: npm run typecheck
+
+      - name: Build bundles
+        working-directory: rollup
+        run: npm run build
+
+      - name: Show bundle changes
+        run: git diff --stat -- rollup/allpolyfillsbundle*.js

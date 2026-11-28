@@ -1,0 +1,21 @@
+{
+  // Type-checks the polyfill sources; nothing is emitted.
+  // Run from the rollup folder: npm run typecheck
+  // Only files that start with // @ts-check are checked (checkJs is off).
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "lib": ["es2022", "dom", "dom.iterable"],
+    "types": [],
+    "skipLibCheck": true,
+    // TypeScript 7 defaults to strict. Match the non-strict checking VS Code does for // @ts-check files.
+    "strict": false
+  },
+  "include": ["*.js", "*/**/*.js"],
+  // rollup/ holds the generated bundles (which copy the // @ts-check lines) and node_modules.
+  "exclude": ["rollup", "_site"]
+}
